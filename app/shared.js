@@ -3,6 +3,29 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import dayjs from "dayjs";
 
+export const generateAccountNumber = (parentAccountNumber) => {
+
+  //console.log(parentAccountNumber)
+  console.log(getMaxChildAccountNumber(parentAccountNumber))
+  // Assuming the parent account number is an integer or string that can be converted
+  const parentNumber = parseInt(parentAccountNumber, 10);
+
+  if (isNaN(parentNumber)) {
+    throw new Error('Invalid parent account number');
+  }
+
+  // Increment the parent number to create a child account
+  const childAccountNumber = parentNumber + 1;
+
+  //return childAccountNumber.toString(); // Return as string to handle leading zeros
+};
+
+export const getMaxChildAccountNumber = async (accountNumber) => {
+  const response = await Axios.get(`${api}/accounts/maxChildAccountNumber/${accountNumber}`);
+
+  return response.data;
+};
+
 export const exportToExcel = (divId) => {
   const wb = XLSX.utils.table_to_book(document.getElementById(divId));
   XLSX.writeFile(wb, divId + '.xlsx');

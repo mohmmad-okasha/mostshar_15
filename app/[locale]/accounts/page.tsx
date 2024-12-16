@@ -13,6 +13,7 @@ import {
   capitalize,
   handlePrint,
   cardStyle,
+  generateAccountNumber,
 } from "@/app/shared";
 
 //Styling
@@ -79,8 +80,11 @@ export default function App() {
     { value: "Expenses", label: "Expenses" },
   ];
 
-  const AccounsOptions = [{ value: "Main", label: "Main" }];
-
+  const AccounsOptions = allAccountsData.map((field: any) => ({
+    value: field.accountNumber,
+    label: field.accountName,
+  }));
+  
   useEffect(() => {
     //to get user rule for this page
     getRules(userName, PageName).then((value) => {
@@ -143,17 +147,42 @@ export default function App() {
     { label: "User", name: "user", type: "text", rules: [{ required: true }] },
   ];
 
-  const formFields = fields.filter(
-    (field) => field.name !== "user" && field.name !== "accountNumber"
-  );
+  // const formFields = fields.filter(
+  //   (field) => field.name !== "user" && field.name !== "accountNumber"
+  // );
 
   //const filteredFields = fields.filter((field) => field.name !== "accountNumber");
 
   const columns: TableColumnsType<any> = [
-    ...fields.map((field) => ({
-      title: field.label,
-      dataIndex: field.name,
-    })),
+    {
+      title: "Parent Account",
+      dataIndex: "parentAccount",
+    },
+    {
+      title: "Account Name",
+      dataIndex: "accountName",
+    },
+    {
+      title: "Account Number",
+      dataIndex: "accountNumber",
+    },
+    {
+      title: "Account Type",
+      dataIndex: "accountType",
+    },
+    {
+      title: "Balance",
+      dataIndex: "balance",
+    },
+    {
+      title: "Notes",
+      dataIndex: "notes",
+    },
+    {
+      title: "User",
+      dataIndex: "user",
+    },
+
     {
       title: "Actions",
       dataIndex: "Actions",
@@ -209,7 +238,12 @@ export default function App() {
     return (
       // Search relevant fields
       account.accountNumber.toLowerCase().includes(searchTextLower) ||
-      account.accountName.toLowerCase().includes(searchTextLower)
+      account.accountName.toLowerCase().includes(searchTextLower) ||
+      account.accountName.toLowerCase().includes(searchTextLower) ||
+      account.parentAccount.toLowerCase().includes(searchTextLower) ||
+      account.accountType.toLowerCase().includes(searchTextLower) ||
+      account.notes.toLowerCase().includes(searchTextLower) ||
+      account.user.toLowerCase().includes(searchTextLower)
       // Add more fields as needed based on your data structure
     );
   });
@@ -339,7 +373,10 @@ export default function App() {
   );
 
   useEffect(() => {
-    console.log(accountData);
+    //console.log(accountData);
+    console.log(accountData.parentAccount);
+
+    //generateAccountNumber(accountData.parentAccount || 1)
   }, [accountData]);
 
   const validateMessages = {
@@ -484,16 +521,6 @@ export default function App() {
                   })}
                   {createFormItem({ fieldName: "notes", rules: [{ required: false }] })}
                 </Row>
-                {/*
-
-    {
-      label: "Notes",
-      name: "notes",
-      type: "text",
-      rules: [{ required: false }],
-    },
-    { label: "User", name: "user", type: "text", rules: [{ required: true }] },
-  ]; */}
                 <br />
                 <Divider />
                 <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
