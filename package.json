@@ -1,0 +1,40 @@
+{
+  "name": "mostshar_15",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "i18nexus pull && next dev --turbopack",
+    "build": "i18nexus pull && next build",
+    "start": "i18nexus pull && next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "antd": "^5.20.1",
+    "axios": "^1.7.4",
+    "file-saver": "^2.0.5",
+    "i18next": "^23.14.0",
+    "i18next-resources-to-backend": "^1.2.1",
+    "next": "15.1.0",
+    "next-i18n-router": "^5.5.1",
+    "next-i18next": "^15.3.1",
+    "react": "19.0.0",
+    "react-cookie": "^7.2.0",
+    "react-dom": "19.0.0",
+    "react-hot-toast": "^2.4.1",
+    "react-i18next": "^15.0.1",
+    "react-icons": "^5.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.2",
+    "eslint": "^8",
+    "eslint-config-next": "15.1.0",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.2"
+  }
+}
