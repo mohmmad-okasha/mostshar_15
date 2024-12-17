@@ -3,21 +3,35 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import dayjs from "dayjs";
 
-export const generateAccountNumber = (parentAccountNumber) => {
+export const generateAccountNumber = async (parentAccountNumber) => {
+  let newAccountNumber = 0;
 
-  //console.log(parentAccountNumber)
-  console.log(getMaxChildAccountNumber(parentAccountNumber))
-  // Assuming the parent account number is an integer or string that can be converted
-  const parentNumber = parseInt(parentAccountNumber, 10);
+  try {
+    if (parentAccountNumber === 'Main') {
+      // Fetch max main account number
+      const { data: maxAccountNumber } = await Axios.get(
+        `${api}/accounts/maxAccountNumber`
+      );
 
-  if (isNaN(parentNumber)) {
-    throw new Error('Invalid parent account number');
+      newAccountNumber = maxAccountNumber + 1;
+    } else {
+      // Fetch max child account number
+      const { data: maxChildAccountNumber } = await Axios.get(
+        `${api}/accounts/maxChildAccountNumber/${parentAccountNumber}`
+      );
+
+      if (maxChildAccountNumber === 'first') {
+        newAccountNumber = parseInt(parentAccountNumber) * 10 + 1; // First child account number
+      } else {
+        newAccountNumber = maxChildAccountNumber + 1; // Increment existing child account number
+      }
+    }
+
+    return newAccountNumber.toString();
+  } catch (error) {
+    console.error('Error generating account number:', error);
+    throw new Error('Unable to generate account number');
   }
-
-  // Increment the parent number to create a child account
-  const childAccountNumber = parentNumber + 1;
-
-  //return childAccountNumber.toString(); // Return as string to handle leading zeros
 };
 
 export const getMaxChildAccountNumber = async (accountNumber) => {

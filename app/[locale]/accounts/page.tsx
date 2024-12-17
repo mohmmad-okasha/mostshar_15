@@ -374,9 +374,9 @@ export default function App() {
 
   useEffect(() => {
     //console.log(accountData);
-    console.log(accountData.parentAccount);
+    //console.log(accountData.parentAccount);
 
-    //generateAccountNumber(accountData.parentAccount || 1)
+   console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
 
   const validateMessages = {
