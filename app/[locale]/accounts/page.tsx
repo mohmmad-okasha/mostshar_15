@@ -373,11 +373,27 @@ export default function App() {
   );
 
   useEffect(() => {
-    //console.log(accountData);
-    //console.log(accountData.parentAccount);
 
-   console.log(generateAccountNumber(accountData.parentAccount))
+   //console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
+
+  useEffect(() => {
+    const fetchAndGenerateAccountNumber = async () => {
+      const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
+      setAccountData((prevData) => ({
+        ...prevData,
+        accountNumber: newAccountNumber,
+      }));
+    };
+  
+    fetchAndGenerateAccountNumber();
+
+    //console.log('new num :' + accountData.accountNumber)
+  }, [accountData.parentAccount]);
+
+  useEffect(() => {
+    console.log('new num:', accountData.accountNumber);
+  }, [accountData.accountNumber]);
 
   const validateMessages = {
     required: "${label} is required!",
@@ -397,6 +413,7 @@ export default function App() {
 
   interface CreateFormItemProps {
     fieldName: string;
+    value?: any;
     rules: any[];
     type?: "text" | "select" | "number";
     label?: string;
@@ -405,6 +422,7 @@ export default function App() {
 
   const createFormItem = ({
     fieldName,
+    value,
     rules,
     type = "text",
     label,
@@ -424,6 +442,7 @@ export default function App() {
         <Form.Item key={fieldName} label={displayedLabel} name={fieldName} rules={rules}>
           {type === "select" ? (
             <Select
+              value={value}
               onChange={handleInputChange(fieldName)}
               showSearch
               allowClear
@@ -431,7 +450,7 @@ export default function App() {
               style={{ width: "100%" }}
             />
           ) : (
-            <Input onChange={handleInputChange(fieldName)} type={type} />
+            <Input value={value} onChange={handleInputChange(fieldName)} type={type} />
           )}
         </Form.Item>
       </Col>
@@ -500,6 +519,12 @@ export default function App() {
                     type: "select",
                     label: "Parent Account",
                     fieldOptions: AccounsOptions,
+                  })}
+                  {createFormItem({
+                    fieldName: "accountNumber",
+                    value: accountData.accountNumber,
+                    rules: [{ required: true }],
+                    label: "Account Number",
                   })}
                   {createFormItem({
                     fieldName: "accountName",
