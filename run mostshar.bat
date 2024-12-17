@@ -1,0 +1,1 @@
+wt -w 0 nt -p "Command Prompt" cmd /k "cd /d C:\react\mostshar 15\mostshar_15 && npm run dev --turbo" ; nt -p "Command Prompt" cmd /k "cd /d C:\react\mostshar 15\mostshar_15_server && npm run-script dev"
