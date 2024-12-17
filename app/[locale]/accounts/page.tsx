@@ -80,11 +80,14 @@ export default function App() {
     { value: "Expenses", label: "Expenses" },
   ];
 
-  const AccounsOptions = allAccountsData.map((field: any) => ({
-    value: field.accountNumber,
-    label: field.accountName,
-  }));
-  
+  const AccounsOptions = [
+    { value: "Main", lable: "Main" },
+    ...allAccountsData.map((field: any) => ({
+      value: field.accountNumber,
+      label: field.accountName,
+    })),
+  ];
+
   useEffect(() => {
     //to get user rule for this page
     getRules(userName, PageName).then((value) => {
@@ -373,8 +376,7 @@ export default function App() {
   );
 
   useEffect(() => {
-
-   //console.log(generateAccountNumber(accountData.parentAccount))
+    //console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
 
   useEffect(() => {
@@ -385,14 +387,14 @@ export default function App() {
         accountNumber: newAccountNumber,
       }));
     };
-  
+
     fetchAndGenerateAccountNumber();
 
-    //console.log('new num :' + accountData.accountNumber)
+    console.log('new num :' + accountData.accountNumber)
   }, [accountData.parentAccount]);
 
   useEffect(() => {
-    console.log('new num:', accountData.accountNumber);
+    console.log("new num:", accountData.accountNumber);
   }, [accountData.accountNumber]);
 
   const validateMessages = {
@@ -523,7 +525,7 @@ export default function App() {
                   {createFormItem({
                     fieldName: "accountNumber",
                     value: accountData.accountNumber,
-                    rules: [{ required: true }],
+                    rules: [{ required: false }],
                     label: "Account Number",
                   })}
                   {createFormItem({
