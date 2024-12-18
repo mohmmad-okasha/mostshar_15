@@ -19,10 +19,11 @@ export const generateAccountNumber = async (parentAccount) => {
       const { data: maxChildAccountNumber } = await Axios.get(
         `${api}/accounts/maxChildAccountNumber/${parentAccount}`
       );
-      console.log('parentAccount '+parentAccount)
+      //console.log('parentAccount '+parentAccount)
 
       if (maxChildAccountNumber === 'first') {
-        newAccountNumber = parseInt(parentAccount) * 10 + 1; // First child account number
+        console.log( getAccountNumberByName(parentAccount))
+        newAccountNumber = parseInt(await getAccountNumberByName(parentAccount)) * 10 + 1; // First child account number
       } else {
         newAccountNumber = parseInt(maxChildAccountNumber) + 1; // Increment existing child account number
       }
@@ -37,7 +38,11 @@ export const generateAccountNumber = async (parentAccount) => {
 
 export const getMaxChildAccountNumber = async (accountNumber) => {
   const response = await Axios.get(`${api}/accounts/maxChildAccountNumber/${accountNumber}`);
+  return response.data;
+};
 
+export const getAccountNumberByName = async (accountNumber) => {
+  const response = await Axios.get(`${api}/accounts/getAccountNumberByName/${accountNumber}`);
   return response.data;
 };
 
