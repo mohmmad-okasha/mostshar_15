@@ -3,11 +3,11 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import dayjs from "dayjs";
 
-export const generateAccountNumber = async (parentAccountNumber) => {
+export const generateAccountNumber = async (parentAccount) => {
   let newAccountNumber = 0;
 
   try {
-    if (parentAccountNumber === 'Main') {
+    if (parentAccount === 'Main') {
       // Fetch max main account number
       const { data: maxAccountNumber } = await Axios.get(
         `${api}/accounts/maxAccountNumber`
@@ -17,20 +17,21 @@ export const generateAccountNumber = async (parentAccountNumber) => {
     } else {
       // Fetch max child account number
       const { data: maxChildAccountNumber } = await Axios.get(
-        `${api}/accounts/maxChildAccountNumber/${parentAccountNumber}`
+        `${api}/accounts/maxChildAccountNumber/${parentAccount}`
       );
+      console.log('parentAccount '+parentAccount)
 
       if (maxChildAccountNumber === 'first') {
-        newAccountNumber = parseInt(parentAccountNumber) * 10 + 1; // First child account number
+        newAccountNumber = parseInt(parentAccount) * 10 + 1; // First child account number
       } else {
-        newAccountNumber = maxChildAccountNumber + 1; // Increment existing child account number
+        newAccountNumber = parseInt(maxChildAccountNumber) + 1; // Increment existing child account number
       }
     }
 
     return newAccountNumber.toString();
   } catch (error) {
     console.error('Error generating account number:', error);
-    throw new Error('Unable to generate account number');
+    throw new Error('Unable to generate account number ' + error);
   }
 };
 

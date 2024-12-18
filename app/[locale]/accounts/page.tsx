@@ -83,7 +83,7 @@ export default function App() {
   const AccounsOptions = [
     { value: "Main", lable: "Main" },
     ...allAccountsData.map((field: any) => ({
-      value: field.accountNumber,
+      value: field.accountName,
       label: field.accountName,
     })),
   ];
@@ -382,6 +382,11 @@ export default function App() {
     //console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
 
+  function getAccountNumberByAccountName(accountName:string) {
+    const account = allAccountsData.find((acc:any) => acc.accountName === accountName);
+    return account ? account.accountNumber : "Main";
+  }
+
   useEffect(() => {
     const fetchAndGenerateAccountNumber = async () => {
       const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
@@ -392,8 +397,20 @@ export default function App() {
     };
 
     fetchAndGenerateAccountNumber();
+   }, [accountData.parentAccount]);
+   
+  // useEffect(() => {
+  //   const fetchAndGenerateAccountNumber = async () => {
+  //     const newAccountNumber = await generateAccountNumber(await getAccountNumberByAccountName(accountData.parentAccount));
+  //     console.log('getAccountNumberByAccountName ' + await generateAccountNumber(await getAccountNumberByAccountName(accountData.parentAccount)) )
+  //     setAccountData((prevData) => ({
+  //       ...prevData,
+  //       accountNumber: newAccountNumber,
+  //     }));
+  //   };
 
-  }, [accountData.parentAccount]);
+  //   fetchAndGenerateAccountNumber();
+  // }, [accountData.parentAccount]);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -564,7 +581,12 @@ export default function App() {
                   })}
                   {createFormItem({ fieldName: "notes", rules: [{ required: false }] })}
                 </Row>
-                <br />
+                {Errors.saveErrors && (
+                <>
+                  <Form.Item />
+                  <Alert closable description={Errors.saveErrors} type='error' showIcon />
+                </>
+              )}
                 <Divider />
                 <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
                   <Button onClick={handleCancel} icon={<CloseOutlined />} />
@@ -574,9 +596,7 @@ export default function App() {
               </Form>
 
               <br />
-              {Errors.saveErrors && (
-                <Alert description={Errors.saveErrors} type='error' showIcon />
-              )}
+
             </Card>
           </Modal>
           <Card
