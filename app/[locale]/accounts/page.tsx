@@ -382,8 +382,8 @@ export default function App() {
     //console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
 
-  function getAccountNumberByAccountName(accountName:string) {
-    const account = allAccountsData.find((acc:any) => acc.accountName === accountName);
+  function getAccountNumberByAccountName(accountName: string) {
+    const account = allAccountsData.find((acc: any) => acc.accountName === accountName);
     return account ? account.accountNumber : "Main";
   }
 
@@ -397,8 +397,8 @@ export default function App() {
     };
 
     fetchAndGenerateAccountNumber();
-   }, [accountData.parentAccount]);
-   
+  }, [accountData.parentAccount]);
+
   // useEffect(() => {
   //   const fetchAndGenerateAccountNumber = async () => {
   //     const newAccountNumber = await generateAccountNumber(await getAccountNumberByAccountName(accountData.parentAccount));
@@ -438,7 +438,7 @@ export default function App() {
     fieldName: string;
     value?: any;
     rules: any[];
-    type?: "text" | "select" | "number";
+    type?: "text" | "select" | "number" | "text area";
     label?: string;
     fieldOptions?: { label: string; value: any }[];
     readOnly?: boolean;
@@ -465,7 +465,7 @@ export default function App() {
         lg={{ flex: "50%" }}
         style={{ padding: 5 }}>
         <Form.Item key={fieldName} label={displayedLabel} name={fieldName} rules={rules}>
-          {type === "select" ? (
+          {type === "select" && (
             <Select
               value={value}
               onChange={handleInputChange(fieldName)}
@@ -475,11 +475,21 @@ export default function App() {
               style={{ width: "100%" }}
               disabled={readOnly}
             />
-          ) : (
+          )}
+
+          {(type === "text" || type === "number") && (
             <Input
               value={value}
               onChange={handleInputChange(fieldName)}
               type={type}
+              disabled={readOnly}
+            />
+          )}
+
+          {type === "text area" && (
+            <Input.TextArea
+              value={value}
+              onChange={handleInputChange(fieldName)}
               disabled={readOnly}
             />
           )}
@@ -545,12 +555,25 @@ export default function App() {
                     </Col>
                   ))} */}
 
+                  {/* <Col
+                    key={accountData.accountNumber}
+                    xs={{ flex: "100%" }}
+                    style={{ padding: 5 }}>
+                    Account Number: {accountData.accountNumber}
+                  </Col> */}
+
                   {createFormItem({
-                    fieldName: "accountNumber",
-                    value: accountData.accountNumber,
-                    rules: [{ required: false }],
-                    label: "Account Number",
-                    readOnly: true,
+                    fieldName: "accountName",
+                    rules: [{ required: true }],
+                    label: "Account Name",
+                  })}
+
+                  {createFormItem({
+                    fieldName: "accountType",
+                    rules: [{ required: true }],
+                    type: "select",
+                    label: "Account Type",
+                    fieldOptions: accountTypeOptions,
                   })}
 
                   {createFormItem({
@@ -562,31 +585,37 @@ export default function App() {
                   })}
 
                   {createFormItem({
-                    fieldName: "accountName",
-                    rules: [{ required: true }],
-                    label: "Account Name",
-                  })}
-                  {createFormItem({
-                    fieldName: "accountType",
-                    rules: [{ required: true }],
-                    type: "select",
-                    label: "Account Type",
+                    fieldName: "accountNumber",
+                    rules: [{ required: false }],
+                    type: "number",
+                    readOnly:true,
                     fieldOptions: accountTypeOptions,
                   })}
+
                   {createFormItem({
                     fieldName: "balance",
                     rules: [{ required: false }],
                     type: "number",
                     fieldOptions: accountTypeOptions,
                   })}
-                  {createFormItem({ fieldName: "notes", rules: [{ required: false }] })}
+
+                  {createFormItem({
+                    fieldName: "notes",
+                    type: "text area",
+                    rules: [{ required: false }],
+                  })}
                 </Row>
                 {Errors.saveErrors && (
-                <>
-                  <Form.Item />
-                  <Alert closable description={Errors.saveErrors} type='error' showIcon />
-                </>
-              )}
+                  <>
+                    <Form.Item />
+                    <Alert
+                      closable
+                      description={Errors.saveErrors}
+                      type='error'
+                      showIcon
+                    />
+                  </>
+                )}
                 <Divider />
                 <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
                   <Button onClick={handleCancel} icon={<CloseOutlined />} />
@@ -596,7 +625,6 @@ export default function App() {
               </Form>
 
               <br />
-
             </Card>
           </Modal>
           <Card
