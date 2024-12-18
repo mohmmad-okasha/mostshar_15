@@ -7,12 +7,12 @@
   }
   
   @font-face {
-    font-family: "Nunito";
-    src: local("Nunito"), url(./fonts/Nunito-Regular.ttf) format("truetype");
+    font-family: "NotoSansArabic";
+    src: local("NotoSansArabic"), url(./fonts/NotoSansArabic-Regular.ttf) format("truetype");
   }
   
   * {
-    font-family: "Nunito" !important;
+    font-family: "NotoSansArabic" !important;
   }
   
   .cardStyle {

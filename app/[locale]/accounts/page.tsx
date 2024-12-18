@@ -222,9 +222,12 @@ export default function App() {
             onClick={() => {
               setAccountData(record);
               form.setFieldsValue({
-                name: record.name,
-                email: record.email,
-                rules: record.rules,
+                accountName: record.accountName,
+                accountNumber: record.accountNumber,
+                accountParent: record.accountParent,
+                accountType: record.accountType,
+                balance: record.balance,
+                notes: record.notes,
               });
               setEdit(true);
               showModal();
@@ -390,11 +393,12 @@ export default function App() {
 
     fetchAndGenerateAccountNumber();
 
-    console.log('new num :' + accountData.accountNumber)
   }, [accountData.parentAccount]);
 
   useEffect(() => {
-    console.log("new num:", accountData.accountNumber);
+    form.setFieldsValue({
+      accountNumber: accountData.accountNumber,
+    });
   }, [accountData.accountNumber]);
 
   const validateMessages = {
@@ -420,6 +424,7 @@ export default function App() {
     type?: "text" | "select" | "number";
     label?: string;
     fieldOptions?: { label: string; value: any }[];
+    readOnly?: boolean;
   }
 
   const createFormItem = ({
@@ -429,6 +434,7 @@ export default function App() {
     type = "text",
     label,
     fieldOptions = [],
+    readOnly = false,
   }: CreateFormItemProps) => {
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
@@ -450,9 +456,15 @@ export default function App() {
               allowClear
               options={fieldOptions}
               style={{ width: "100%" }}
+              disabled={readOnly}
             />
           ) : (
-            <Input value={value} onChange={handleInputChange(fieldName)} type={type} />
+            <Input
+              value={value}
+              onChange={handleInputChange(fieldName)}
+              type={type}
+              disabled={readOnly}
+            />
           )}
         </Form.Item>
       </Col>
@@ -515,6 +527,15 @@ export default function App() {
                       </Form.Item>
                     </Col>
                   ))} */}
+
+                  {createFormItem({
+                    fieldName: "accountNumber",
+                    value: accountData.accountNumber,
+                    rules: [{ required: false }],
+                    label: "Account Number",
+                    readOnly: true,
+                  })}
+
                   {createFormItem({
                     fieldName: "parentAccount",
                     rules: [{ required: true }],
@@ -522,12 +543,7 @@ export default function App() {
                     label: "Parent Account",
                     fieldOptions: AccounsOptions,
                   })}
-                  {createFormItem({
-                    fieldName: "accountNumber",
-                    value: accountData.accountNumber,
-                    rules: [{ required: false }],
-                    label: "Account Number",
-                  })}
+
                   {createFormItem({
                     fieldName: "accountName",
                     rules: [{ required: true }],
