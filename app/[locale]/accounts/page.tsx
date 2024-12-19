@@ -33,6 +33,7 @@ import {
   Select,
   Table,
   TableColumnsType,
+  Tree,
   message,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
@@ -158,16 +159,16 @@ export default function App() {
 
   const columns: TableColumnsType<any> = [
     {
-      title: "Parent Account",
-      dataIndex: "parentAccount",
+      title: "Account Number",
+      dataIndex: "accountNumber",
     },
     {
       title: "Account Name",
       dataIndex: "accountName",
     },
     {
-      title: "Account Number",
-      dataIndex: "accountNumber",
+      title: "Parent Account",
+      dataIndex: "parentAccount",
     },
     {
       title: "Account Type",
@@ -224,7 +225,7 @@ export default function App() {
               form.setFieldsValue({
                 accountName: record.accountName,
                 accountNumber: record.accountNumber,
-                accountParent: record.accountParent,
+                parentAccount: record.parentAccount,
                 accountType: record.accountType,
                 balance: record.balance,
                 notes: record.notes,
@@ -294,36 +295,52 @@ export default function App() {
   }
 
   async function update() {
-    // setErrors({ ...Errors, saveErrors: "" });
-    // const response = await Axios.put(`${api}/accounts`, {
-    //   _id: accountData._id,
-    //   name: form.getFieldValue("name"),
-    //   email: form.getFieldValue("email"),
-    //   password: form.getFieldValue("password"),
-    // });
-    // if (response.data.message === "Updated!") {
-    //   getData();
-    //   toast.remove();
-    //   toast.success(response.data.message, {
-    //     position: "top-center",
-    //   });
-    //   saveLog("update account: " + accountData.name);
-    //   setEdit(false);
-    //   return true; // to close modal form
-    // } else {
-    //   setErrors({ ...Errors, saveErrors: response.data.message });
-    //   return false; // to keep modal form open
-    // }
+    setErrors({ ...Errors, saveErrors: "" });
+    const response = await Axios.put(`${api}/accounts`, {
+      _id: accountData._id,
+      accountName: form.getFieldValue("accountName"),
+      //accountNumber: form.getFieldValue("accountNumber"),
+      parentAccount: form.getFieldValue("parentAccount"),
+      accountType: form.getFieldValue("accountType"),
+      balance: form.getFieldValue("balance"),
+      notes: form.getFieldValue("notes"),
+    });
+    if (response.data.message === "Updated!") {
+      getData();
+      toast.remove();
+      toast.success(response.data.message, {
+        position: "top-center",
+      });
+      saveLog("update account: " + accountData.accountName);
+      setEdit(false);
+      return true; // to close modal form
+    } else {
+      setErrors({ ...Errors, saveErrors: response.data.message });
+      return false; // to keep modal form open
+    }
   }
 
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`).then((res) => {
+    Axios.delete(`${api}/accounts/${id}`)
+    .then((res) => {
+      // إذا تم الحذف بنجاح
       saveLog("remove account: " + accountData.accountName);
+      toast.success("Account removed successfully.");
       getData();
-      message.success("Removed");
+    })
+    .catch((error) => {
+      // إذا حدث خطأ
+      console.log(error);  // لتسجيل الخطأ ومعرفة ما هو السبب
+      if (error.response) {
+        // إذا كانت هناك استجابة من الخادم تحتوي على رسالة
+        toast.error(`Error: ${error.response.data.message}`);
+      } else {
+        // في حال عدم وجود استجابة من الخادم
+        toast.error("An error occurred. Please try again.");
+      }
     });
   }
-
+  
   async function showModal() {
     setErrors({ ...Errors, saveErrors: "" });
     setErrors({ ...Errors, confirmPasswordError: "" });
@@ -331,17 +348,17 @@ export default function App() {
   }
 
   async function handleOk() {
-    if (await save()) {
-      setIsModalOpen(false);
-      form.resetFields();
-    }
     if (!edit) {
-    } //else {
-    //   if (await update()) {
-    //     setIsModalOpen(false);
-    //     form.resetFields();
-    //   }
-    // }
+      if (await save()) {
+        setIsModalOpen(false);
+        form.resetFields();
+      }
+    } else {
+      if (await update()) {
+        setIsModalOpen(false);
+        form.resetFields();
+      }
+    }
   }
 
   function handleCancel() {
@@ -498,6 +515,41 @@ export default function App() {
     );
   };
 
+  function buildTreeData(data: any) {
+    // ترتيب البيانات حسب accountNumber
+    const sortedData = data.sort((a: any, b: any) =>
+      a.accountNumber.localeCompare(b.accountNumber)
+    );
+
+    // تحويل البيانات إلى هيكل شجري
+    const map = {};
+    const treeData: any[] = [];
+
+    sortedData.forEach((item: any) => {
+      map[item.accountName] = {
+        key: item._id,
+        title: `${item.accountNumber} - ${item.accountName}`,
+        children: [],
+      };
+    });
+
+    sortedData.forEach((item: any) => {
+      if (item.parentAccount === "Main") {
+        treeData.push(map[item.accountName]);
+      } else if (map[item.parentAccount]) {
+        map[item.parentAccount].children.push(map[item.accountName]);
+      }
+    });
+
+    return treeData;
+  }
+
+  const handleSelect = (selectedKeys, { node }) => {
+    setSearchText(`${node.title.split(" - ")[1]}`);
+  };
+
+  const treeData = buildTreeData(allAccountsData);
+
   return (
     <>
       <div>
@@ -588,7 +640,7 @@ export default function App() {
                     fieldName: "accountNumber",
                     rules: [{ required: false }],
                     type: "number",
-                    readOnly:true,
+                    readOnly: true,
                     fieldOptions: accountTypeOptions,
                   })}
 
@@ -648,12 +700,18 @@ export default function App() {
             }>
             {!Errors.connectionError && (
               <>
+                <Card>
+                  <Tree onSelect={handleSelect} treeData={treeData} />
+                </Card>
+                <Divider />
+
                 <Input.Search
                   placeholder='Search...'
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ paddingBottom: 5 }}
                   allowClear
                 />
+
                 <div ref={tableRef}>
                   <Table
                     id='print-table'
