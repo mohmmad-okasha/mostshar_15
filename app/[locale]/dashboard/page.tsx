@@ -24,7 +24,7 @@ export default function App() {
   const [Errors, setErrors] = useState<any>({});
 
   //دمج  الايقونات معا
-  const Icons = {
+  const Icons:any = {
     ...ant, 
     ...fa6,  
   };
@@ -61,7 +61,7 @@ export default function App() {
     { title: "Logs", icon: <FaRegEye />, url: "/logs", color: "" },
   ];
   //const [allBtn, setAllBtn] = useState([]);
-  const getDynamicIcon = (iconName:String) => {
+  const getDynamicIcon = (iconName:any) => {
     const IconComponent = Icons[iconName]; // محاولة العثور على الأيقونة
     return IconComponent ? <IconComponent /> : null; // عرض الأيقونة إذا وجدت
   };

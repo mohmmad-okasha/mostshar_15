@@ -1,5 +1,5 @@
 "use client";
-const PageName = "Accounts";
+const PageName = "Receipts";
 
 const api = getApiUrl();
 import { useRef } from "react";
@@ -13,7 +13,6 @@ import {
   capitalize,
   handlePrint,
   cardStyle,
-  generateAccountNumber,
 } from "@/app/shared";
 
 //Styling
@@ -53,8 +52,7 @@ export default function App() {
   const userName = window.localStorage.getItem("userName");
   const [rulesMatch, setRulesMatch] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allAccountsData, setAllAccountsData] = useState<any>([]);
-  const [accountsList, setAccountsList] = useState();
+  const [allReceiptsData, setAllReceiptsData] = useState<any>([]);
   const [Loading, setLoading] = useState(true); // to show loading before get data form db
   const [edit, setEdit] = useState(false); // if true update else save new
   const [searchText, setSearchText] = useState(""); // to search on table
@@ -63,31 +61,23 @@ export default function App() {
     saveErrors: "",
     confirmPasswordError: "",
   });
-  const [accountData, setAccountData] = useState({
+  const [receiptData, setReceiptData] = useState({
     _id: "",
-    accountNumber: "",
-    accountName: "",
-    accountType: "",
+    receiptNumber: "",
+    receiptName: "",
+    receiptType: "",
     balance: "",
-    parentAccount: "",
+    parentReceipt: "",
     notes: "",
   });
 
-  const accountTypeOptions = [
-    { value: "Assets", label: "Assets" },
-    { value: "Liabilities", label: "Liabilities" },
-    { value: "Equity", label: "Equity" },
-    { value: "Revenue", label: "Revenue" },
-    { value: "Expenses", label: "Expenses" },
+  const payOptions = [
+    { value: "Cash", label: "Cash" },
+    { value: "Visa", label: "Visa" },
+    { value: "Master", label: "Master" }
   ];
 
-  const AccounsOptions = [
-    { value: "Main", lable: "Main" },
-    ...allAccountsData.map((field: any) => ({
-      value: field.accountName,
-      label: field.accountName,
-    })),
-  ];
+
 
   useEffect(() => {
     //to get user rule for this page
@@ -109,31 +99,30 @@ export default function App() {
   };
 
   const fields: Field[] = [
+    // {
+    //   label: "Parent Receipt",
+    //   name: "parentReceipt",
+    //   type: "select",
+    //   rules: [{ required: true }],
+    //   options: AccounsOptions,
+    // },
     {
-      label: "Parent Account",
-      name: "parentAccount",
-      type: "select",
-      rules: [{ required: true }],
-      options: AccounsOptions,
-      //options: accountsList,
-    },
-    {
-      label: "Account Number",
-      name: "accountNumber",
+      label: "Receipt Number",
+      name: "receiptNumber",
       type: "text",
       rules: [{ required: true }],
     },
     {
-      label: "Account Name",
-      name: "accountName",
+      label: "Receipt Name",
+      name: "receiptName",
       type: "text",
       rules: [{ required: true }],
     },
     {
-      label: "Account Type",
-      name: "accountType",
+      label: "Receipt Type",
+      name: "receiptType",
       type: "select",
-      options: accountTypeOptions,
+      options: payOptions,
       rules: [{ required: true }],
     },
     {
@@ -152,27 +141,27 @@ export default function App() {
   ];
 
   // const formFields = fields.filter(
-  //   (field) => field.name !== "user" && field.name !== "accountNumber"
+  //   (field) => field.name !== "user" && field.name !== "receiptNumber"
   // );
 
-  //const filteredFields = fields.filter((field) => field.name !== "accountNumber");
+  //const filteredFields = fields.filter((field) => field.name !== "receiptNumber");
 
   const columns: TableColumnsType<any> = [
     {
-      title: "Account Number",
-      dataIndex: "accountNumber",
+      title: "Receipt Number",
+      dataIndex: "receiptNumber",
     },
     {
-      title: "Account Name",
-      dataIndex: "accountName",
+      title: "Receipt Name",
+      dataIndex: "receiptName",
     },
     {
-      title: "Parent Account",
-      dataIndex: "parentAccount",
+      title: "Parent Receipt",
+      dataIndex: "parentReceipt",
     },
     {
-      title: "Account Type",
-      dataIndex: "accountType",
+      title: "Receipt Type",
+      dataIndex: "receiptType",
     },
     {
       title: "Balance",
@@ -208,7 +197,7 @@ export default function App() {
               type='primary'
               danger
               onClick={() => {
-                setAccountData(record);
+                setReceiptData(record);
               }}
               shape='circle'
               size='small'
@@ -221,12 +210,12 @@ export default function App() {
             size='small'
             icon={<EditOutlined />}
             onClick={() => {
-              setAccountData(record);
+              setReceiptData(record);
               form.setFieldsValue({
-                accountName: record.accountName,
-                accountNumber: record.accountNumber,
-                parentAccount: record.parentAccount,
-                accountType: record.accountType,
+                receiptName: record.receiptName,
+                receiptNumber: record.receiptNumber,
+                parentReceipt: record.parentReceipt,
+                receiptType: record.receiptType,
                 balance: record.balance,
                 notes: record.notes,
               });
@@ -239,18 +228,18 @@ export default function App() {
     },
   ];
 
-  const filteredData = allAccountsData.filter((account: any) => {
+  const filteredData = allReceiptsData.filter((receipt: any) => {
     // Implement your search logic here
     const searchTextLower = searchText.toLowerCase(); // Case-insensitive search
     return (
       // Search relevant fields
-      account.accountNumber.toLowerCase().includes(searchTextLower) ||
-      account.accountName.toLowerCase().includes(searchTextLower) ||
-      account.accountName.toLowerCase().includes(searchTextLower) ||
-      account.parentAccount.toLowerCase().includes(searchTextLower) ||
-      account.accountType.toLowerCase().includes(searchTextLower) ||
-      account.notes.toLowerCase().includes(searchTextLower) ||
-      account.user.toLowerCase().includes(searchTextLower)
+      receipt.receiptNumber.toLowerCase().includes(searchTextLower) ||
+      receipt.receiptName.toLowerCase().includes(searchTextLower) ||
+      receipt.receiptName.toLowerCase().includes(searchTextLower) ||
+      receipt.parentReceipt.toLowerCase().includes(searchTextLower) ||
+      receipt.receiptType.toLowerCase().includes(searchTextLower) ||
+      receipt.notes.toLowerCase().includes(searchTextLower) ||
+      receipt.user.toLowerCase().includes(searchTextLower)
       // Add more fields as needed based on your data structure
     );
   });
@@ -258,11 +247,11 @@ export default function App() {
   async function getData() {
     setLoading(true);
     try {
-      const response = await Axios.get(`${api}/accounts`);
-      setAllAccountsData(response.data);
+      const response = await Axios.get(`${api}/receipts`);
+      setAllReceiptsData(response.data);
     } catch (error) {
       setErrors({ ...Errors, connectionError: error });
-      console.error("Error fetching accounts:", error);
+      console.error("Error fetching receipts:", error);
     } finally {
       setLoading(false);
       setCookies("loading", false);
@@ -271,18 +260,18 @@ export default function App() {
 
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const response = await Axios.post(`${api}/accounts`, {
-      accountNumber: accountData.accountNumber,
-      accountName: accountData.accountName,
-      accountType: accountData.accountType,
-      balance: accountData.balance,
-      parentAccount: accountData.parentAccount,
-      notes: accountData.notes,
+    const response = await Axios.post(`${api}/receipts`, {
+      receiptNumber: receiptData.receiptNumber,
+      receiptName: receiptData.receiptName,
+      receiptType: receiptData.receiptType,
+      balance: receiptData.balance,
+      parentReceipt: receiptData.parentReceipt,
+      notes: receiptData.notes,
       user: userName,
     });
     if (response.data.message === "Saved!") {
       getData();
-      saveLog("save new account: " + accountData.accountName);
+      saveLog("save new receipt: " + receiptData.receiptName);
       toast.remove(); // remove any message on screen
       toast.success(response.data.message, {
         position: "top-center",
@@ -296,12 +285,12 @@ export default function App() {
 
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
-    const response = await Axios.put(`${api}/accounts`, {
-      _id: accountData._id,
-      accountName: form.getFieldValue("accountName"),
-      //accountNumber: form.getFieldValue("accountNumber"),
-      parentAccount: form.getFieldValue("parentAccount"),
-      accountType: form.getFieldValue("accountType"),
+    const response = await Axios.put(`${api}/receipts`, {
+      _id: receiptData._id,
+      receiptName: form.getFieldValue("receiptName"),
+      //receiptNumber: form.getFieldValue("receiptNumber"),
+      parentReceipt: form.getFieldValue("parentReceipt"),
+      receiptType: form.getFieldValue("receiptType"),
       balance: form.getFieldValue("balance"),
       notes: form.getFieldValue("notes"),
     });
@@ -311,7 +300,7 @@ export default function App() {
       toast.success(response.data.message, {
         position: "top-center",
       });
-      saveLog("update account: " + accountData.accountName);
+      saveLog("update receipt: " + receiptData.receiptName);
       setEdit(false);
       return true; // to close modal form
     } else {
@@ -321,11 +310,11 @@ export default function App() {
   }
 
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`)
+    Axios.delete(`${api}/receipts/${id}`)
     .then((res) => {
       // إذا تم الحذف بنجاح
-      saveLog("remove account: " + accountData.accountName);
-      toast.success("Account removed successfully.");
+      saveLog("remove receipt: " + receiptData.receiptName);
+      toast.success("Receipt removed successfully.");
       getData();
     })
     .catch((error) => {
@@ -385,7 +374,7 @@ export default function App() {
         value = e;
       }
 
-      setAccountData((prevData) => ({
+      setReceiptData((prevData) => ({
         ...prevData,
         [field]: value,
       }));
@@ -396,27 +385,27 @@ export default function App() {
   );
 
   useEffect(() => {
-    //console.log(generateAccountNumber(accountData.parentAccount))
-  }, [accountData]);
+    //console.log(generateReceiptNumber(receiptData.parentReceipt))
+  }, [receiptData]);
 
   useEffect(() => {
     getData()
-    const fetchAndGenerateAccountNumber = async () => {
-      const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-      setAccountData((prevData) => ({
+    const fetchAndGenerateReceiptNumber = async () => {
+      const newReceiptNumber = await generateReceiptNumber(receiptData.parentReceipt);
+      setReceiptData((prevData) => ({
         ...prevData,
-        accountNumber: newAccountNumber,
+        receiptNumber: newReceiptNumber,
       }));
     };
 
-    fetchAndGenerateAccountNumber();
-  }, [accountData.parentAccount]);
+    fetchAndGenerateReceiptNumber();
+  }, [receiptData.parentReceipt]);
 
   useEffect(() => {
     form.setFieldsValue({
-      accountNumber: accountData.accountNumber,
+      receiptNumber: receiptData.receiptNumber,
     });
-  }, [accountData.accountNumber]);
+  }, [receiptData.receiptNumber]);
 
   const validateMessages = {
     required: "${label} is required!",
@@ -499,9 +488,9 @@ export default function App() {
   };
 
   function buildTreeData(data: any) {
-    // ترتيب البيانات حسب accountNumber
+    // ترتيب البيانات حسب receiptNumber
     const sortedData = data.sort((a: any, b: any) =>
-      a.accountNumber.localeCompare(b.accountNumber)
+      a.receiptNumber.localeCompare(b.receiptNumber)
     );
 
     // تحويل البيانات إلى هيكل شجري
@@ -509,18 +498,18 @@ export default function App() {
     const treeData: any[] = [];
 
     sortedData.forEach((item: any) => {
-      map[item.accountName] = {
+      map[item.receiptName] = {
         key: item._id,
-        title: `${item.accountNumber} - ${item.accountName}`,
+        title: `${item.receiptNumber} - ${item.receiptName}`,
         children: [],
       };
     });
 
     sortedData.forEach((item: any) => {
-      if (item.parentAccount === "Main") {
-        treeData.push(map[item.accountName]);
-      } else if (map[item.parentAccount]) {
-        map[item.parentAccount].children.push(map[item.accountName]);
+      if (item.parentReceipt === "Main") {
+        treeData.push(map[item.receiptName]);
+      } else if (map[item.parentReceipt]) {
+        map[item.parentReceipt].children.push(map[item.receiptName]);
       }
     });
 
@@ -531,7 +520,7 @@ export default function App() {
     setSearchText(`${node.title.split(" - ")[1]}`);
   };
 
-  const treeData = buildTreeData(allAccountsData);
+  const treeData = buildTreeData(allReceiptsData);
 
   return (
     <>
@@ -591,47 +580,47 @@ export default function App() {
                   ))} */}
 
                   {/* <Col
-                    key={accountData.accountNumber}
+                    key={receiptData.receiptNumber}
                     xs={{ flex: "100%" }}
                     style={{ padding: 5 }}>
-                    Account Number: {accountData.accountNumber}
+                    Receipt Number: {receiptData.receiptNumber}
                   </Col> */}
 
                   {createFormItem({
-                    fieldName: "accountName",
+                    fieldName: "receiptName",
                     rules: [{ required: true }],
-                    label: "Account Name",
+                    label: "Receipt Name",
                   })}
 
                   {createFormItem({
-                    fieldName: "accountType",
+                    fieldName: "receiptType",
                     rules: [{ required: true }],
                     type: "select",
-                    label: "Account Type",
-                    fieldOptions: accountTypeOptions,
+                    label: "Receipt Type",
+                    fieldOptions: payOptions,
                   })}
 
-                  {createFormItem({
-                    fieldName: "parentAccount",
+                  {/* {createFormItem({
+                    fieldName: "parentReceipt",
                     rules: [{ required: true }],
                     type: "select",
-                    label: "Parent Account",
+                    label: "Parent Receipt",
                     fieldOptions: AccounsOptions,
-                  })}
+                  })} */}
 
                   {createFormItem({
-                    fieldName: "accountNumber",
+                    fieldName: "receiptNumber",
                     rules: [{ required: false }],
                     type: "number",
                     readOnly: true,
-                    fieldOptions: accountTypeOptions,
+                    fieldOptions: payOptions,
                   })}
 
                   {createFormItem({
                     fieldName: "balance",
                     rules: [{ required: false }],
                     type: "number",
-                    fieldOptions: accountTypeOptions,
+                    fieldOptions: payOptions,
                   })}
 
                   {createFormItem({
