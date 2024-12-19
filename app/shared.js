@@ -7,17 +7,25 @@ export const generateAccountNumber = async (parentAccount) => {
   let newAccountNumber = 0;
 
   try {
+    const config = {//to stop caching
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache', // For HTTP/1.0 compatibility
+        'Expires': '0', // Ensures the content is considered expired
+      },
+    };
+
     if (parentAccount === 'Main') {
       // Fetch max main account number
       const { data: maxAccountNumber } = await Axios.get(
-        `${api}/accounts/maxAccountNumber`
+        `${api}/accounts/maxAccountNumber`,config
       );
 
       newAccountNumber = maxAccountNumber + 1;
     } else {
       // Fetch max child account number
       const { data: maxChildAccountNumber } = await Axios.get(
-        `${api}/accounts/maxChildAccountNumber/${parentAccount}`
+        `${api}/accounts/maxChildAccountNumber/${parentAccount}`,config
       );
       //console.log('parentAccount '+parentAccount)
 

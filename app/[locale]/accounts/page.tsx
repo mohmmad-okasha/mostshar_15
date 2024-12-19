@@ -333,7 +333,7 @@ export default function App() {
       console.log(error);  // لتسجيل الخطأ ومعرفة ما هو السبب
       if (error.response) {
         // إذا كانت هناك استجابة من الخادم تحتوي على رسالة
-        toast.error(`Error: ${error.response.data.message}`);
+        toast.error(`${error.response.data.message}`);
       } else {
         // في حال عدم وجود استجابة من الخادم
         toast.error("An error occurred. Please try again.");
@@ -399,12 +399,8 @@ export default function App() {
     //console.log(generateAccountNumber(accountData.parentAccount))
   }, [accountData]);
 
-  function getAccountNumberByAccountName(accountName: string) {
-    const account = allAccountsData.find((acc: any) => acc.accountName === accountName);
-    return account ? account.accountNumber : "Main";
-  }
-
   useEffect(() => {
+    getData()
     const fetchAndGenerateAccountNumber = async () => {
       const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
       setAccountData((prevData) => ({
@@ -415,19 +411,6 @@ export default function App() {
 
     fetchAndGenerateAccountNumber();
   }, [accountData.parentAccount]);
-
-  // useEffect(() => {
-  //   const fetchAndGenerateAccountNumber = async () => {
-  //     const newAccountNumber = await generateAccountNumber(await getAccountNumberByAccountName(accountData.parentAccount));
-  //     console.log('getAccountNumberByAccountName ' + await generateAccountNumber(await getAccountNumberByAccountName(accountData.parentAccount)) )
-  //     setAccountData((prevData) => ({
-  //       ...prevData,
-  //       accountNumber: newAccountNumber,
-  //     }));
-  //   };
-
-  //   fetchAndGenerateAccountNumber();
-  // }, [accountData.parentAccount]);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -544,7 +527,7 @@ export default function App() {
     return treeData;
   }
 
-  const handleSelect = (selectedKeys, { node }) => {
+  const handleSelect = (selectedKeys:any, { node }) => {
     setSearchText(`${node.title.split(" - ")[1]}`);
   };
 
