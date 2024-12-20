@@ -56,10 +56,7 @@ export default function App() {
     }
   }
 
-  const btns = [
-    { title: "Users", icon: <UserOutlined />, url: "/users", color: "green" },
-    { title: "Logs", icon: <FaRegEye />, url: "/logs", color: "" },
-  ];
+
   //const [allBtn, setAllBtn] = useState([]);
   const getDynamicIcon = (iconName:any) => {
     const IconComponent = Icons[iconName]; // محاولة العثور على الأيقونة

@@ -383,19 +383,7 @@ export default function App() {
                 style={{ maxWidth: 600, textAlign: "center" }}
                 validateMessages={validateMessages}
                 onFinish={handleOk}>
-                {/* {fields.map((field) => (
-                  <Form.Item
-                    key={field.name}
-                    label={field.label}
-                    name={field.name}
-                    rules={field.rules}>
-                    {field.type ? (
-                      <Input onChange={handleInputChange(field.name)} type={field.type} />
-                    ) : (
-                      <Input onChange={handleInputChange(field.name)} />
-                    )}
-                  </Form.Item>
-                ))} */}
+
                 {createFormItem({ fieldName: "name", rules: [{ required: true }] })}
                 {createFormItem({
                   fieldName: "email",

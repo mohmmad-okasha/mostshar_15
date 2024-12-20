@@ -98,78 +98,30 @@ export default function App() {
     options?: any[];
   };
 
-  const fields: Field[] = [
-    // {
-    //   label: "Parent Receipt",
-    //   name: "parentReceipt",
-    //   type: "select",
-    //   rules: [{ required: true }],
-    //   options: AccounsOptions,
-    // },
-    {
-      label: "Receipt Number",
-      name: "receiptNumber",
-      type: "text",
-      rules: [{ required: true }],
-    },
-    {
-      label: "Receipt Name",
-      name: "receiptName",
-      type: "text",
-      rules: [{ required: true }],
-    },
-    {
-      label: "Receipt Type",
-      name: "receiptType",
-      type: "select",
-      options: payOptions,
-      rules: [{ required: true }],
-    },
-    {
-      label: "Balance",
-      name: "balance",
-      type: "number",
-      rules: [{ required: false }],
-    },
-    {
-      label: "Notes",
-      name: "notes",
-      type: "text",
-      rules: [{ required: false }],
-    },
-    { label: "User", name: "user", type: "text", rules: [{ required: true }] },
-  ];
-
-  // const formFields = fields.filter(
-  //   (field) => field.name !== "user" && field.name !== "receiptNumber"
-  // );
-
-  //const filteredFields = fields.filter((field) => field.name !== "receiptNumber");
-
   const columns: TableColumnsType<any> = [
     {
       title: "Receipt Number",
       dataIndex: "receiptNumber",
     },
     {
-      title: "Receipt Name",
-      dataIndex: "receiptName",
+      title: "Date",
+      dataIndex: "date",
     },
     {
-      title: "Parent Receipt",
-      dataIndex: "parentReceipt",
+      title: "Payer Name",
+      dataIndex: "payerName",
     },
     {
-      title: "Receipt Type",
-      dataIndex: "receiptType",
+      title: "Amount",
+      dataIndex: "amount",
     },
     {
-      title: "Balance",
-      dataIndex: "balance",
+      title: "Description",
+      dataIndex: "description",
     },
     {
-      title: "Notes",
-      dataIndex: "notes",
+      title: "Payment Method",
+      dataIndex: "paymentMethod",
     },
     {
       title: "User",
@@ -229,16 +181,15 @@ export default function App() {
   ];
 
   const filteredData = allReceiptsData.filter((receipt: any) => {
-    // Implement your search logic here
     const searchTextLower = searchText.toLowerCase(); // Case-insensitive search
     return (
       // Search relevant fields
       receipt.receiptNumber.toLowerCase().includes(searchTextLower) ||
-      receipt.receiptName.toLowerCase().includes(searchTextLower) ||
-      receipt.receiptName.toLowerCase().includes(searchTextLower) ||
-      receipt.parentReceipt.toLowerCase().includes(searchTextLower) ||
-      receipt.receiptType.toLowerCase().includes(searchTextLower) ||
-      receipt.notes.toLowerCase().includes(searchTextLower) ||
+      receipt.date.toLowerCase().includes(searchTextLower) ||
+      receipt.payerName.toLowerCase().includes(searchTextLower) ||
+      receipt.amount.toLowerCase().includes(searchTextLower) ||
+      receipt.description.toLowerCase().includes(searchTextLower) ||
+      receipt.paymentMethod.toLowerCase().includes(searchTextLower) ||
       receipt.user.toLowerCase().includes(searchTextLower)
       // Add more fields as needed based on your data structure
     );
@@ -385,21 +336,8 @@ export default function App() {
   );
 
   useEffect(() => {
-    //console.log(generateReceiptNumber(receiptData.parentReceipt))
+    console.log(receiptData)
   }, [receiptData]);
-
-  useEffect(() => {
-    getData()
-    const fetchAndGenerateReceiptNumber = async () => {
-      const newReceiptNumber = await generateReceiptNumber(receiptData.parentReceipt);
-      setReceiptData((prevData) => ({
-        ...prevData,
-        receiptNumber: newReceiptNumber,
-      }));
-    };
-
-    fetchAndGenerateReceiptNumber();
-  }, [receiptData.parentReceipt]);
 
   useEffect(() => {
     form.setFieldsValue({
