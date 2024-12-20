@@ -10,7 +10,6 @@ import {
   saveLog,
   handlePrint,
   cardStyle,
-  generateAccountNumber,
 } from "@/app/shared";
 import {
   Alert,
@@ -40,7 +39,7 @@ import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 
 // --- Constants ---
-const PageName = "Accounts";
+const PageName = "Payments";
 const api = getApiUrl();
 
 // --- Main Component ---
@@ -54,7 +53,7 @@ export default function App() {
   // --- State Variables ---
   const [rulesMatch, setRulesMatch] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allAccountsData, setAllAccountsData] = useState<any>([]);
+  const [allPaymentsData, setAllPaymentsData] = useState<any>([]);
   const [Loading, setLoading] = useState(true);
   const [edit, setEdit] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -67,37 +66,34 @@ export default function App() {
   const fieldsConfig = useMemo(
     () => [
       {
-        fieldName: "accountNumber",
-        label: "Account Number",
+        fieldName: "paymentNumber",
+        label: "Payment Number",
         type: "number",
         rules: [{ required: false }],
         readOnly: true,
-        show:false
       },
       {
-        fieldName: "accountName",
-        label: "Account Name",
+        fieldName: "paymentName",
+        label: "Payment Name",
         rules: [{ required: true }],
         type: "text",
-        show:true
       },
       {
-        fieldName: "parentAccount",
-        label: "Parent Account",
+        fieldName: "parentPayment",
+        label: "Parent Payment",
         type: "select",
         rules: [{ required: true }],
         options: [
           { value: "Main", label: "Main" },
-          ...allAccountsData.map((field: any) => ({
-            value: field.accountName,
-            label: field.accountName,
+          ...allPaymentsData.map((field: any) => ({
+            value: field.paymentName,
+            label: field.paymentName,
           })),
         ],
-        show:true
       },
       {
-        fieldName: "accountType",
-        label: "Account Type",
+        fieldName: "paymentType",
+        label: "Payment Type",
         type: "select",
         rules: [{ required: true }],
         options: [
@@ -107,28 +103,25 @@ export default function App() {
           { value: "Revenue", label: "Revenue" },
           { value: "Expenses", label: "Expenses" },
         ],
-        show:true
       },
       {
         fieldName: "balance",
         label: "Balance",
         type: "number",
         rules: [{ required: false }],
-        show:true
       },
       {
         fieldName: "notes",
         label: "Notes",
         type: "text area",
         rules: [{ required: false }],
-        show:true
       },
     ],
-    [allAccountsData]
+    [allPaymentsData]
   );
 
-  // --- Initial Account Data State ---
-  const [accountData, setAccountData] = useState(() => {
+  // --- Initial Payment Data State ---
+  const [paymentData, setPaymentData] = useState(() => {
     const initialData: any = {};
     fieldsConfig.forEach((field) => {
       initialData[field.fieldName] = "";
@@ -179,7 +172,7 @@ export default function App() {
                 type='primary'
                 danger
                 onClick={() => {
-                  setAccountData(record);
+                  setPaymentData(record);
                 }}
                 shape='circle'
                 size='small'
@@ -192,7 +185,7 @@ export default function App() {
               size='small'
               icon={<EditOutlined />}
               onClick={() => {
-                setAccountData(record);
+                setPaymentData(record);
                 form.setFieldsValue(
                   fieldsConfig.reduce((acc: any, field) => {
                     acc[field.fieldName] = record[field.fieldName];
@@ -207,49 +200,49 @@ export default function App() {
         ),
       },
     ],
-    [fieldsConfig, remove, setAccountData, showModal]
+    [fieldsConfig, remove, setPaymentData, showModal]
   );
 
   // --- Filtered Data (useMemo) ---
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
-    return allAccountsData.filter((account: any) => {
+    return allPaymentsData.filter((payment: any) => {
       return (
         fieldsConfig.some((field) =>
-          String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
-        ) || account.user.toLowerCase().includes(searchTextLower)
+          String(payment[field.fieldName]).toLowerCase().includes(searchTextLower)
+        ) || payment.user.toLowerCase().includes(searchTextLower)
       );
     });
-  }, [allAccountsData, fieldsConfig, searchText]);
+  }, [allPaymentsData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
   async function getData() {
     setLoading(true);
     try {
-      const response = await Axios.get(`${api}/accounts`);
-      setAllAccountsData(response.data);
+      const response = await Axios.get(`${api}/payments`);
+      setAllPaymentsData(response.data);
     } catch (error) {
       setErrors({ ...Errors, connectionError: error });
-      console.error("Error fetching accounts:", error);
+      console.error("Error fetching payments:", error);
     } finally {
       setLoading(false);
       setCookies("loading", false);
     }
   }
 
-  // --- Save Account Function ---
+  // --- Save Payment Function ---
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const { _id, ...rest } = accountData;//to  send data without _id
+    const { _id, ...rest } = paymentData;
 
-    const response = await Axios.post(`${api}/accounts`, {
+    const response = await Axios.post(`${api}/payments`, {
       ...rest,
       user: userName,
     });
 
     if (response.data.message === "Saved!") {
       getData();
-      saveLog(`save new ${PageName.slice(0, -1)}: ` + accountData.accountName);
+      saveLog(`save new ${PageName.slice(0, -1)}: ` + paymentData.paymentName);
       toast.remove();
       toast.success(response.data.message, {
         position: "top-center",
@@ -261,7 +254,7 @@ export default function App() {
     }
   }
 
-  // --- Update Account Function ---
+  // --- Update Payment Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
@@ -270,8 +263,8 @@ export default function App() {
       return acc;
     }, {});
 
-    const response = await Axios.put(`${api}/accounts`, {
-      _id: accountData._id,
+    const response = await Axios.put(`${api}/payments`, {
+      _id: paymentData._id,
       ...updateData,
     });
 
@@ -281,7 +274,7 @@ export default function App() {
       toast.success(response.data.message, {
         position: "top-center",
       });
-      saveLog("update account: " + accountData.accountName);
+      saveLog("update payment: " + paymentData.paymentName);
       setEdit(false);
       return true;
     } else {
@@ -290,12 +283,12 @@ export default function App() {
     }
   }
 
-  // --- Remove Account Function ---
+  // --- Remove Payment Function ---
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`)
+    Axios.delete(`${api}/payments/${id}`)
       .then((res) => {
-        saveLog("remove account: " + accountData.accountName);
-        toast.success("Account removed successfully.");
+        saveLog("remove payment: " + paymentData.paymentName);
+        toast.success("Payment removed successfully.");
         getData();
       })
       .catch((error) => {
@@ -352,7 +345,7 @@ export default function App() {
         value = e;
       }
 
-      setAccountData((prevData: any) => ({
+      setPaymentData((prevData: any) => ({
         ...prevData,
         [field]: value,
       }));
@@ -360,26 +353,13 @@ export default function App() {
     []
   );
 
-  // --- Generate Account Number Effect Hook ---
-  useEffect(() => {
-    getData();
-    const fetchAndGenerateAccountNumber = async () => {
-      const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-      setAccountData((prevData: any) => ({
-        ...prevData,
-        accountNumber: newAccountNumber,
-      }));
-    };
-
-    fetchAndGenerateAccountNumber();
-  }, [accountData.parentAccount]);
 
   // --- Set Form Field Value Effect Hook ---
   useEffect(() => {
     form.setFieldsValue({
-      accountNumber: accountData.accountNumber,
+      paymentNumber: paymentData.paymentNumber,
     });
-  }, [accountData.accountNumber]);
+  }, [paymentData.paymentNumber]);
 
   // --- Validation Messages ---
   const validateMessages = {
@@ -408,7 +388,6 @@ export default function App() {
     label?: string;
     fieldOptions?: { label: string; value: any }[];
     readOnly?: boolean;
-    show?: boolean
   }
 
   const createFormItem = ({
@@ -418,15 +397,14 @@ export default function App() {
     type = "text",
     label,
     fieldOptions = [],
-    readOnly,
-    show
+    readOnly = false,
   }: CreateFormItemProps) => {
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
     return (
       <Col key={fieldName} xs={{ flex: "100%" }} style={{ padding: 5 }}>
-        {show && <Form.Item key={fieldName} label={displayedLabel} name={fieldName} rules={rules}>
+        <Form.Item key={fieldName} label={displayedLabel} name={fieldName} rules={rules}>
           {type === "select" && (
             <Select
               value={value}
@@ -453,7 +431,7 @@ export default function App() {
               disabled={readOnly}
             />
           )}
-        </Form.Item>}
+        </Form.Item>
       </Col>
     );
   };
@@ -461,25 +439,25 @@ export default function App() {
   // --- Build Tree Data Function ---
   function buildTreeData(data: any) {
     const sortedData = data.sort((a: any, b: any) =>
-      a.accountNumber.localeCompare(b.accountNumber)
+      a.paymentNumber.localeCompare(b.paymentNumber)
     );
 
     const map: any = {};
     const treeData: any[] = [];
 
     sortedData.forEach((item: any) => {
-      map[item.accountName] = {
+      map[item.paymentName] = {
         key: item._id,
-        title: `${item.accountNumber} - ${item.accountName}`,
+        title: `${item.paymentNumber} - ${item.paymentName}`,
         children: [],
       };
     });
 
     sortedData.forEach((item: any) => {
-      if (item.parentAccount === "Main") {
-        treeData.push(map[item.accountName]);
-      } else if (map[item.parentAccount]) {
-        map[item.parentAccount].children.push(map[item.accountName]);
+      if (item.parentPayment === "Main") {
+        treeData.push(map[item.paymentName]);
+      } else if (map[item.parentPayment]) {
+        map[item.parentPayment].children.push(map[item.paymentName]);
       }
     });
 
@@ -492,7 +470,7 @@ export default function App() {
   };
 
   // --- Tree Data (useMemo) ---
-  const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
+  const treeData = useMemo(() => buildTreeData(allPaymentsData), [allPaymentsData]);
 
   // --- Render ---
   return (
@@ -520,7 +498,7 @@ export default function App() {
                   {fieldsConfig.map((field) =>
                     createFormItem({
                       ...field,
-                      value: accountData[field.fieldName],
+                      value: paymentData[field.fieldName],
                       fieldOptions: field.options,
                     })
                   )}
