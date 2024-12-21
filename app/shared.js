@@ -21,13 +21,9 @@ export const generateAccountNumber = async (parentAccount) => {
       const { data: maxAccountNumber } = await Axios.get(
         `${api}/accounts/maxAccountNumber`,config
       );
-      console.log(maxAccountNumber + ' ----- maxAccountNumber **********************')
-      //return
 
       newAccountNumber = maxAccountNumber + 1;
     } else {
-      console.log(parentAccount + ' ----- parentAccount **********************')
-
       // Fetch max child account number
       const { data: maxChildAccountNumber } = await Axios.get(
         `${api}/accounts/maxChildAccountNumber/${parentAccount}`,config
