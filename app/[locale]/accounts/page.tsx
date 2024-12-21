@@ -55,6 +55,7 @@ export default function App() {
   const [rulesMatch, setRulesMatch] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
+  const [oldData, setOldData] = useState<any>([]);
   const [Loading, setLoading] = useState(true);
   const [edit, setEdit] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -74,6 +75,7 @@ export default function App() {
         readOnly: true,
         showTable: true,
         showInput: false,
+        fieldWidth: "100%",
       },
       {
         fieldName: "accountName",
@@ -82,6 +84,8 @@ export default function App() {
         type: "text",
         showTable: true,
         showInput: true,
+        fieldWidth: "100%",
+        editable: true,
       },
       {
         fieldName: "parentAccount",
@@ -97,6 +101,8 @@ export default function App() {
         ],
         showTable: true,
         showInput: true,
+        fieldWidth: "100%",
+        editable: false,
       },
       {
         fieldName: "accountType",
@@ -112,6 +118,8 @@ export default function App() {
         ],
         showTable: true,
         showInput: true,
+        fieldWidth: "50%",
+        editable: true,
       },
       {
         fieldName: "balance",
@@ -120,6 +128,8 @@ export default function App() {
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
+        fieldWidth: "50%",
+        editable: true,
       },
       {
         fieldName: "notes",
@@ -128,6 +138,8 @@ export default function App() {
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
+        fieldWidth: "100%",
+        editable: true,
       },
     ],
     [allAccountsData]
@@ -157,12 +169,13 @@ export default function App() {
   const columns: any = useMemo(
     () => [
       ...fieldsConfig
-        .map(
-          (field) =>
-            field.showTable ? {
-              title: field.label,
-              dataIndex: field.fieldName,
-            } : null
+        .map((field) =>
+          field.showTable
+            ? {
+                title: field.label,
+                dataIndex: field.fieldName,
+              }
+            : null
         )
         .filter(Boolean),
       {
@@ -176,7 +189,7 @@ export default function App() {
         align: "center",
         className: "no_print",
         fixed: "right",
-        render: (_:any, record:any) => (
+        render: (_: any, record: any) => (
           <>
             <Popconfirm
               title={"Delete the " + PageName.slice(0, -1)}
@@ -204,6 +217,7 @@ export default function App() {
               icon={<EditOutlined />}
               onClick={() => {
                 setAccountData(record);
+                setOldData(record);
                 form.setFieldsValue(
                   fieldsConfig.reduce((acc: any, field) => {
                     acc[field.fieldName] = record[field.fieldName];
@@ -280,6 +294,20 @@ export default function App() {
       acc[field.fieldName] = form.getFieldValue(field.fieldName);
       return acc;
     }, {});
+
+    //if no data changed
+    const noChanges = Object.keys(updateData).every(
+      (key) => updateData[key] === oldData[key]
+    );
+
+    if (noChanges) {
+      toast.remove();
+      toast.error("No Data Update", {
+        position: "top-center",
+      });
+      return;
+    }
+    //
 
     const response = await Axios.put(`${api}/accounts`, {
       _id: accountData._id,
@@ -420,6 +448,8 @@ export default function App() {
     fieldOptions?: { label: string; value: any }[];
     readOnly?: boolean;
     showInput?: boolean;
+    fieldWidth?: string;
+    editable?: boolean;
   }
 
   const createFormItem = ({
@@ -431,12 +461,14 @@ export default function App() {
     fieldOptions = [],
     readOnly,
     showInput,
+    fieldWidth,
+    editable,
   }: CreateFormItemProps) => {
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
     return (
-      <Col key={fieldName} xs={{ flex: "100%" }} style={{ padding: 5 }}>
+      <Col key={fieldName} xs={{ flex: fieldWidth }} style={{ padding: 5 }}>
         {showInput && (
           <Form.Item
             key={fieldName}
@@ -451,7 +483,7 @@ export default function App() {
                 allowClear
                 options={fieldOptions}
                 style={{ width: "100%" }}
-                disabled={readOnly}
+                disabled={edit ? !editable : readOnly}
               />
             )}
             {(type === "text" || type === "number") && (
@@ -459,14 +491,14 @@ export default function App() {
                 value={value}
                 onChange={handleInputChange(fieldName)}
                 type={type}
-                disabled={readOnly}
+                disabled={edit ? !editable : readOnly}
               />
             )}
             {type === "text area" && (
               <Input.TextArea
                 value={value}
                 onChange={handleInputChange(fieldName)}
-                disabled={readOnly}
+                disabled={edit ? !editable : readOnly}
               />
             )}
           </Form.Item>
@@ -557,6 +589,7 @@ export default function App() {
                 <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
                   <Button onClick={handleCancel} icon={<CloseOutlined />} />
                   <> </>
+
                   <Button type='primary' htmlType='submit' icon={<SaveOutlined />} />
                 </Form.Item>
               </Form>
