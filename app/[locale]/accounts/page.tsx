@@ -302,7 +302,7 @@ export default function App() {
 
     if (noChanges) {
       toast.remove();
-      toast.error("No Data Update", {
+      toast.error("No New Data!", {
         position: "top-center",
       });
       return;
@@ -352,6 +352,13 @@ export default function App() {
     setErrors({ ...Errors, saveErrors: "" });
     setErrors("");
     setIsModalOpen(true);
+
+    if (!edit) {// clear last parentAccount to fix account Number generat
+      setAccountData((prevData: any) => ({
+        ...prevData,
+        parentAccount: "",
+      }));
+    }
   }
 
   async function handleOk() {
@@ -403,11 +410,13 @@ export default function App() {
   useEffect(() => {
     getData();
     const fetchAndGenerateAccountNumber = async () => {
-      const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-      setAccountData((prevData: any) => ({
-        ...prevData,
-        accountNumber: newAccountNumber,
-      }));
+      if (accountData.parentAccount != "") {
+        const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
+        setAccountData((prevData: any) => ({
+          ...prevData,
+          accountNumber: newAccountNumber,
+        }));
+      }
     };
 
     fetchAndGenerateAccountNumber();

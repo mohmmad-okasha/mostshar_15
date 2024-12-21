@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import dayjs from "dayjs";
 
 export const generateAccountNumber = async (parentAccount) => {
+
   let newAccountNumber = 0;
 
   try {
@@ -20,9 +21,13 @@ export const generateAccountNumber = async (parentAccount) => {
       const { data: maxAccountNumber } = await Axios.get(
         `${api}/accounts/maxAccountNumber`,config
       );
+      console.log(maxAccountNumber + ' ----- maxAccountNumber **********************')
+      //return
 
       newAccountNumber = maxAccountNumber + 1;
     } else {
+      console.log(parentAccount + ' ----- parentAccount **********************')
+
       // Fetch max child account number
       const { data: maxChildAccountNumber } = await Axios.get(
         `${api}/accounts/maxChildAccountNumber/${parentAccount}`,config
