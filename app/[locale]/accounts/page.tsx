@@ -72,14 +72,16 @@ export default function App() {
         type: "number",
         rules: [{ required: false }],
         readOnly: true,
-        show:false
+        showTable: true,
+        showInput: false,
       },
       {
         fieldName: "accountName",
         label: "Account Name",
         rules: [{ required: true }],
         type: "text",
-        show:true
+        showTable: true,
+        showInput: true,
       },
       {
         fieldName: "parentAccount",
@@ -93,7 +95,8 @@ export default function App() {
             label: field.accountName,
           })),
         ],
-        show:true
+        showTable: true,
+        showInput: true,
       },
       {
         fieldName: "accountType",
@@ -107,21 +110,24 @@ export default function App() {
           { value: "Revenue", label: "Revenue" },
           { value: "Expenses", label: "Expenses" },
         ],
-        show:true
+        showTable: true,
+        showInput: true,
       },
       {
         fieldName: "balance",
         label: "Balance",
         type: "number",
         rules: [{ required: false }],
-        show:true
+        showTable: true,
+        showInput: true,
       },
       {
         fieldName: "notes",
         label: "Notes",
         type: "text area",
         rules: [{ required: false }],
-        show:true
+        showTable: true,
+        showInput: true,
       },
     ],
     [allAccountsData]
@@ -148,12 +154,17 @@ export default function App() {
   }, []);
 
   // --- Table Columns (useMemo) ---
-  const columns: TableColumnsType<any> = useMemo(
+  const columns: any = useMemo(
     () => [
-      ...fieldsConfig.map((field) => ({
-        title: field.label,
-        dataIndex: field.fieldName,
-      })),
+      ...fieldsConfig
+        .map(
+          (field) =>
+            field.showTable ? {
+              title: field.label,
+              dataIndex: field.fieldName,
+            } : null
+        )
+        .filter(Boolean),
       {
         title: "User",
         dataIndex: "user",
@@ -165,7 +176,7 @@ export default function App() {
         align: "center",
         className: "no_print",
         fixed: "right",
-        render: (_, record) => (
+        render: (_:any, record:any) => (
           <>
             <Popconfirm
               title={"Delete the " + PageName.slice(0, -1)}
@@ -240,7 +251,7 @@ export default function App() {
   // --- Save Account Function ---
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const { _id, ...rest } = accountData;//to  send data without _id
+    const { _id, ...rest } = accountData; //to  send data without _id
 
     const response = await Axios.post(`${api}/accounts`, {
       ...rest,
@@ -408,7 +419,7 @@ export default function App() {
     label?: string;
     fieldOptions?: { label: string; value: any }[];
     readOnly?: boolean;
-    show?: boolean
+    showInput?: boolean;
   }
 
   const createFormItem = ({
@@ -419,41 +430,47 @@ export default function App() {
     label,
     fieldOptions = [],
     readOnly,
-    show
+    showInput,
   }: CreateFormItemProps) => {
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
     return (
       <Col key={fieldName} xs={{ flex: "100%" }} style={{ padding: 5 }}>
-        {show && <Form.Item key={fieldName} label={displayedLabel} name={fieldName} rules={rules}>
-          {type === "select" && (
-            <Select
-              value={value}
-              onChange={handleInputChange(fieldName)}
-              showSearch
-              allowClear
-              options={fieldOptions}
-              style={{ width: "100%" }}
-              disabled={readOnly}
-            />
-          )}
-          {(type === "text" || type === "number") && (
-            <Input
-              value={value}
-              onChange={handleInputChange(fieldName)}
-              type={type}
-              disabled={readOnly}
-            />
-          )}
-          {type === "text area" && (
-            <Input.TextArea
-              value={value}
-              onChange={handleInputChange(fieldName)}
-              disabled={readOnly}
-            />
-          )}
-        </Form.Item>}
+        {showInput && (
+          <Form.Item
+            key={fieldName}
+            label={displayedLabel}
+            name={fieldName}
+            rules={rules}>
+            {type === "select" && (
+              <Select
+                value={value}
+                onChange={handleInputChange(fieldName)}
+                showSearch
+                allowClear
+                options={fieldOptions}
+                style={{ width: "100%" }}
+                disabled={readOnly}
+              />
+            )}
+            {(type === "text" || type === "number") && (
+              <Input
+                value={value}
+                onChange={handleInputChange(fieldName)}
+                type={type}
+                disabled={readOnly}
+              />
+            )}
+            {type === "text area" && (
+              <Input.TextArea
+                value={value}
+                onChange={handleInputChange(fieldName)}
+                disabled={readOnly}
+              />
+            )}
+          </Form.Item>
+        )}
       </Col>
     );
   };
