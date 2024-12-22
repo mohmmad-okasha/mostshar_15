@@ -18,6 +18,7 @@ import {
   Card,
   Col,
   Divider,
+  Dropdown,
   Form,
   Input,
   Modal,
@@ -25,6 +26,7 @@ import {
   Result,
   Row,
   Select,
+  Space,
   Table,
   TableColumnsType,
   Tree,
@@ -35,9 +37,12 @@ import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
-import { FaPrint } from "react-icons/fa6";
+import { FaFileExport, FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
+import { FiDownloadCloud } from "react-icons/fi";
+import * as XLSX from "xlsx";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -63,6 +68,59 @@ export default function App() {
     connectionError: "",
     saveErrors: "",
   });
+
+  // --- Export Date ---
+  const exportToJson = (data: any) => {
+    const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = PageName + ".json"; // اسم الملف
+    link.click();
+  };
+
+  const exportToExcel = (data: any) => {
+    const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
+    const wb = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
+
+    // Write the workbook to Excel file and trigger download
+    XLSX.writeFile(wb, PageName + ".xlsx");
+  };
+
+  const exportToSQL = () => {
+    const tableName = "accounts"; // Change this to your actual table name
+    
+    // Filter out columns that you don't want to include
+    const filteredColumns = columns.filter((col:any) => !["Actions"].includes(col.dataIndex)); // Example: Exclude 'age'
+  
+    // Generate the column names part of the SQL
+    const columnNames = filteredColumns.map((col:any) => col.dataIndex).join(", ");
+  
+    // Generate SQL values for each row
+    const values = filteredData
+      .map((row:any) => {
+        // Generate SQL-friendly values, escaping single quotes
+        const rowValues = filteredColumns
+          .map((col:any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
+          .join(", ");
+        
+        return `(${rowValues})`;
+      })
+      .join(",\n");
+  
+    // Combine the final SQL insert statement
+    const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
+  
+    // Create a Blob object containing the SQL statement
+    const blob = new Blob([sql], { type: "text/plain" });
+  
+    // Create a link element to trigger the download
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "table-data.sql"; // The name of the downloaded file
+    link.click(); // Trigger the download
+  };
 
   // --- Field Configuration (useMemo) ---
   const fieldsConfig = useMemo(
@@ -353,7 +411,8 @@ export default function App() {
     setErrors("");
     setIsModalOpen(true);
 
-    if (!edit) {// clear last parentAccount to fix account Number generat
+    if (!edit) {
+      // clear last parentAccount to fix account Number generat
       setAccountData((prevData: any) => ({
         ...prevData,
         parentAccount: "",
@@ -552,6 +611,33 @@ export default function App() {
   // --- Tree Data (useMemo) ---
   const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
 
+  function handleExport(e: any) {
+    console.log("Selected:", e.key);
+    if (e.key == 1) {
+      exportToJson(filteredData);
+    } else if (e.key == 2) {
+      exportToExcel(filteredData);
+    } else if (e.key == 3) {
+      exportToSQL();
+    }
+  }
+
+  // Define menu items
+  const items = [
+    {
+      key: "1",
+      label: "JSON",
+    },
+    {
+      key: "2",
+      label: "EXCEL",
+    },
+    {
+      key: "3",
+      label: "SQL",
+    },
+  ];
+
   // --- Render ---
   return (
     <>
@@ -596,10 +682,22 @@ export default function App() {
                 )}
                 <Divider />
                 <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
-                  <Button onClick={handleCancel} icon={<CloseOutlined />} />
-                  <> </>
+                  <Button
+                    shape='round'
+                    icon={<CloseOutlined />}
+                    onClick={handleCancel}
+                    style={{ margin: 5 }}>
+                    Cancel
+                  </Button>
 
-                  <Button type='primary' htmlType='submit' icon={<SaveOutlined />} />
+                  <Button
+                    type='primary'
+                    shape='round'
+                    htmlType='submit'
+                    icon={<SaveOutlined />}
+                    style={{ margin: 5 }}>
+                    Save
+                  </Button>
                 </Form.Item>
               </Form>
               <br />
@@ -610,18 +708,32 @@ export default function App() {
             style={cardStyle}
             extra={
               <>
+                <Dropdown
+                  menu={{
+                    items,
+                    onClick: (e) => handleExport(e),
+                  }}>
+                  <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
+                    Export
+                  </Button>
+                </Dropdown>
+
                 <Button
-                  type='text'
-                  title='Print'
-                  onClick={() => {
-                    handlePrint(tableRef, PageName, 12);
-                  }}
-                  icon={<FaPrint size={"1em"} />}></Button>
+                  shape='round'
+                  icon={<FaPrint />}
+                  onClick={() => handlePrint(tableRef, PageName, 12)}
+                  style={{ margin: 5 }}>
+                  Print
+                </Button>
+
                 <Button
-                  type='text'
-                  title='Add'
+                  type='primary'
+                  shape='round'
+                  icon={<BsPlusLg />}
                   onClick={showModal}
-                  icon={<BsPlusLg size={"1em"} />}></Button>
+                  style={{ margin: 5 }}>
+                  New
+                </Button>
               </>
             }>
             {!Errors.connectionError && (

@@ -78,7 +78,6 @@ export default function App() {
   ];
 
 
-
   useEffect(() => {
     //to get user rule for this page
     getRules(userName, PageName).then((value) => {
