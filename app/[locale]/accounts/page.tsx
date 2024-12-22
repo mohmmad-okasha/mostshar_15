@@ -69,7 +69,7 @@ export default function App() {
     saveErrors: "",
   });
 
-  // --- Export Date ---
+  // --- Export Data ---
   const exportToJson = (data: any) => {
     const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
     const blob = new Blob([json], { type: "application/json" });
@@ -89,36 +89,38 @@ export default function App() {
   };
 
   const exportToSQL = () => {
-    const tableName = "accounts"; // Change this to your actual table name
-    
+    const tableName = "accounts"; //table name
+
     // Filter out columns that you don't want to include
-    const filteredColumns = columns.filter((col:any) => !["Actions"].includes(col.dataIndex)); // Example: Exclude 'age'
-  
+    const filteredColumns = columns.filter(
+      (col: any) => !["Actions"].includes(col.dataIndex)
+    ); // Example: Exclude 'age'
+
     // Generate the column names part of the SQL
-    const columnNames = filteredColumns.map((col:any) => col.dataIndex).join(", ");
-  
+    const columnNames = filteredColumns.map((col: any) => col.dataIndex).join(", ");
+
     // Generate SQL values for each row
     const values = filteredData
-      .map((row:any) => {
+      .map((row: any) => {
         // Generate SQL-friendly values, escaping single quotes
         const rowValues = filteredColumns
-          .map((col:any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
+          .map((col: any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
           .join(", ");
-        
+
         return `(${rowValues})`;
       })
       .join(",\n");
-  
+
     // Combine the final SQL insert statement
     const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
-  
+
     // Create a Blob object containing the SQL statement
     const blob = new Blob([sql], { type: "text/plain" });
-  
+
     // Create a link element to trigger the download
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "table-data.sql"; // The name of the downloaded file
+    link.download = PageName + ".sql"; // The name of the downloaded file
     link.click(); // Trigger the download
   };
 
@@ -611,6 +613,7 @@ export default function App() {
   // --- Tree Data (useMemo) ---
   const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
 
+  // --- Export to
   function handleExport(e: any) {
     console.log("Selected:", e.key);
     if (e.key == 1) {

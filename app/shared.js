@@ -109,13 +109,13 @@ export const handlePrint = (tableRef, title, fontSize) => {
       printWindow.document.write(`
         <style>
             @font-face {
-              font-family: 'Nunito-Regular'; 
-              src: local('Nunito-Regular'), url('/reports/Nunito-Regular.ttf') format('truetype'); 
+              font-family: 'NotoSansArabic'; 
+              src: local('NotoSansArabic'), url('/reports/NotoSansArabic-Regular.ttf') format('truetype'); 
               font-weight: normal;
               font-style: normal;
             }
             body {
-              font-family: 'Nunito-Regular', Arial, sans-serif;
+              font-family: 'NotoSansArabic', Arial, sans-serif;
             }
             .top{
               border-top: 12px solid #098290 !important;
@@ -231,13 +231,13 @@ export const cardPrint = (cardRef, title) => {
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">        <style>
            
             @font-face {
-              font-family: 'Nunito-Regular'; 
-              src: local('Nunito-Regular'), url('/reports/Nunito-Regular.ttf') format('truetype'); 
+              font-family: 'NotoSansArabic'; 
+              src: local('NotoSansArabic'), url('/reports/NotoSansArabic-Regular.ttf') format('truetype'); 
               font-weight: normal;
               font-style: normal;
             }
             body {
-              font-family: 'Nunito-Regular', Arial, sans-serif;
+              font-family: 'NotoSansArabic', Arial, sans-serif;
             }
             .top{
               border-top: 12px solid #098290 !important;
