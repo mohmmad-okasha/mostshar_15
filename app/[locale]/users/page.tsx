@@ -56,7 +56,14 @@ export default function App() {
   const userName = window.localStorage.getItem("userName");
 
   // --- State Variables ---
-  const [rulesMatch, setRulesMatch] = useState(0);
+  const [rulesMatch, setRulesMatch] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allUsersData, setAllUsersData] = useState<any>([]);
   const [treeData, setTreeData] = useState<any>([]);
@@ -68,6 +75,14 @@ export default function App() {
     connectionError: "",
     saveErrors: "",
   });
+  const [userPermissions, setUserPermissions] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  }); // حفظ الصلاحيات في state
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -200,8 +215,8 @@ export default function App() {
 
   // --- Effects Hooks ---
   useEffect(() => {
-    getRules(userName, PageName).then((value) => {
-      setRulesMatch(value);
+    getRules(userName, PageName.toLowerCase()).then((value) => {
+      setUserPermissions(value);
     });
   }, [userName, PageName]);
 
@@ -235,26 +250,30 @@ export default function App() {
         fixed: "right",
         render: (_: any, record: any) => (
           <>
-            <Popconfirm
-              title={"Delete the " + PageName.slice(0, -1)}
-              description={"Are you sure to delete  " + record.name + "?"}
-              onConfirm={() => {
-                remove(record._id);
-              }}
-              okText='Yes, Remove'
-              cancelText='No'>
-              <Button
-                type='primary'
-                danger
-                onClick={() => {
-                  setUserData(record);
+            {userPermissions.Remove == 1 && (
+              <Popconfirm
+                title={"Delete the " + PageName.slice(0, -1)}
+                description={"Are you sure to delete  " + record.name + "?"}
+                onConfirm={() => {
+                  remove(record._id);
                 }}
-                shape='circle'
-                size='small'
-                icon={<DeleteOutlined />}
-              />
-            </Popconfirm>{" "}
-            <Button
+                okText='Yes, Remove'
+                cancelText='No'>
+                <Button
+                  type='primary'
+                  danger
+                  onClick={() => {
+                    setUserData(record);
+                  }}
+                  shape='circle'
+                  size='small'
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+            )}
+
+            {userPermissions.Edit == 1 &&(
+              <Button
               type='primary'
               shape='circle'
               size='small'
@@ -268,13 +287,16 @@ export default function App() {
                     return acc;
                   }, {})
                 );
+                form.setFieldValue("password", "");
+                form.setFieldValue("password2", "");
+
                 setEdit(true);
                 setUserRules(record.rules);
                 // تجهيز checkedKeys بناءً على صلاحيات المستخدم
                 const initialCheckedKeys: any[] = [];
                 Object.keys(record.rules).forEach((table) => {
                   const actions = record.rules[table];
-                  Object.keys(actions).forEach((action:any) => {
+                  Object.keys(actions).forEach((action: any) => {
                     if (actions[action] === 1) {
                       initialCheckedKeys.push(`${table}_${action}`);
                     }
@@ -284,7 +306,8 @@ export default function App() {
                 setCheckedKeys(initialCheckedKeys);
                 showModal();
               }}
-            />
+            />)}
+
           </>
         ),
       },
@@ -620,8 +643,8 @@ export default function App() {
     },
   ];
 
-  const [checkedKeys, setCheckedKeys] = useState<any>([]);//الصلاحيات المحددة على الشجرة
-  const [rolsFilteredData, setRolsFilteredData] = useState<any>([]);//للبحث في الصلاحيات
+  const [checkedKeys, setCheckedKeys] = useState<any>([]); //الصلاحيات المحددة على الشجرة
+  const [rolsFilteredData, setRolsFilteredData] = useState<any>([]); //للبحث في الصلاحيات
 
   // جلب أسماء الجداول من API
   useEffect(() => {
@@ -670,7 +693,6 @@ export default function App() {
 
   // البحث في الصلاحيات
   const onSearch = (value: any) => {
-
     if (!value) {
       // إذا كان البحث فارغًا، إعادة البيانات الأصلية
       setRolsFilteredData(treeData);
@@ -688,7 +710,7 @@ export default function App() {
           }
           return null;
         })
-        .filter((node) => node !== null); // تصفية القيم الفارغة
+        .filter((node: any) => node !== null); // تصفية القيم الفارغة
 
       setRolsFilteredData(filtered);
     }
@@ -700,7 +722,7 @@ export default function App() {
       <div>
         <Toaster />
       </div>
-      {rulesMatch == 1 && (
+      {userPermissions.View == 1 && (
         <>
           <Modal
             title={modalTitle}
@@ -780,32 +802,38 @@ export default function App() {
             style={cardStyle}
             extra={
               <>
-                <Dropdown
-                  menu={{
-                    items,
-                    onClick: (e) => handleExport(e),
-                  }}>
-                  <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
-                    Export
+                {userPermissions.Export == 1 && (
+                  <Dropdown
+                    menu={{
+                      items,
+                      onClick: (e) => handleExport(e),
+                    }}>
+                    <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
+                      Export
+                    </Button>
+                  </Dropdown>
+                )}
+
+                {userPermissions.Print == 1 && (
+                  <Button
+                    shape='round'
+                    icon={<FaPrint />}
+                    onClick={() => handlePrint(tableRef, PageName, 12)}
+                    style={{ margin: 5 }}>
+                    Print
                   </Button>
-                </Dropdown>
+                )}
 
-                <Button
-                  shape='round'
-                  icon={<FaPrint />}
-                  onClick={() => handlePrint(tableRef, PageName, 12)}
-                  style={{ margin: 5 }}>
-                  Print
-                </Button>
-
-                <Button
-                  type='primary'
-                  shape='round'
-                  icon={<BsPlusLg />}
-                  onClick={showModal}
-                  style={{ margin: 5 }}>
-                  New
-                </Button>
+                {userPermissions.Add == 1 && (
+                  <Button
+                    type='primary'
+                    shape='round'
+                    icon={<BsPlusLg />}
+                    onClick={showModal}
+                    style={{ margin: 5 }}>
+                    New
+                  </Button>
+                )}
               </>
             }>
             {!Errors.connectionError && (
