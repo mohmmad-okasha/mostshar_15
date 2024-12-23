@@ -96,8 +96,6 @@ export const getRules = async (userName, PageName) => {
   if (PageName) {
     rules = rules[PageName]
   }
-  console.log('rules:')
-  console.log(rules)
   return rules
 };
 

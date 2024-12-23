@@ -27,8 +27,28 @@ export default function App() {
 
   const router = useRouter();
   const [rules, setRules] = useState<any>([]);
-  //const [_, setCookies] = useCookies(["loading"]); //for loading page
+  const [userPermissions, setUserPermissions] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  });
   const userName = window.localStorage.getItem("userName");
+
+  useEffect(() => {
+    getRules(userName).then((value) => {
+      setUserPermissions(value);
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log('userPermissions')
+    console.log(userPermissions)
+  }, [userPermissions]);
+
+
 
   const items: MenuItem[] = [
     {
@@ -47,7 +67,7 @@ export default function App() {
         setCookies("loading", true);
         router.push("/users");
       },
-      disabled: rules["Users"] != 1,
+      disabled: userPermissions.users.View != 1,
     },
     {
       key: "4",
@@ -57,7 +77,7 @@ export default function App() {
         router.push("/logs");
         setCookies("loading", true);
       },
-      disabled: rules["Logs"] != 1,
+      disabled: userPermissions.logs.View != 1,
     },
     {
       key: "sub1",
@@ -72,7 +92,7 @@ export default function App() {
             router.push("/accounts");
             setCookies("loading", true);
           },
-          disabled: rules["Accounts"] != 1,
+          disabled: userPermissions.accounts.View != 1,
         },
         {
           key: "sub3",
@@ -87,7 +107,7 @@ export default function App() {
                 router.push("/receipt");
                 setCookies("loading", true);
               },
-              disabled: rules["Receipt"] != 1,
+              disabled: userPermissions.receipt.View != 1,
             },
             {
               key: "16",
@@ -97,7 +117,7 @@ export default function App() {
                 router.push("/payment");
                 setCookies("loading", true);
               },
-              disabled: rules["Payment"] != 1,
+              disabled: userPermissions.payment.View != 1,
             },
           ],
         },
@@ -111,12 +131,6 @@ export default function App() {
     setCollaps(!collaps);
   };
 
-  useEffect(() => {
-    //to get user rules
-    getRules(userName).then((value) => {
-      setRules(value);
-    });
-  }, []);
 
   return (
     <>

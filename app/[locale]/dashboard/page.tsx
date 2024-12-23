@@ -16,7 +16,14 @@ import * as fa6 from "react-icons/fa6";
 
 export default function App() {
   const api = getApiUrl();
-  const [rules, setRules] = useState<any>([]);
+  const [userPermissions, setUserPermissions] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  });
   const [allBtns, setAllBtns] = useState<any>([]);
   const router = useRouter();
   const [_, setCookies] = useCookies(["loading"]); //for loading page
@@ -24,21 +31,15 @@ export default function App() {
   const [Errors, setErrors] = useState<any>({});
 
   //دمج  الايقونات معا
-  const Icons:any = {
-    ...ant, 
-    ...fa6,  
+  const Icons: any = {
+    ...ant,
+    ...fa6,
   };
 
   useEffect(() => {
-    //to get user rules
+    getData();
     getRules(userName).then((value) => {
-      // const lastPath = pathname.split("/").pop();
-      // if(lastPath == 'dashboard'){
-      //   setCookies('loading',false)
-      // }
-
-      setRules(value);
-      getData();
+      setUserPermissions(value);
     });
   }, []);
 
@@ -51,14 +52,13 @@ export default function App() {
       setErrors({ ...Errors, connectionError: error });
       console.error("Error fetching users:", error);
     } finally {
-     // setLoading(false);
+      // setLoading(false);
       //setCookies("loading", false);
     }
   }
 
-
   //const [allBtn, setAllBtn] = useState([]);
-  const getDynamicIcon = (iconName:any) => {
+  const getDynamicIcon = (iconName: any) => {
     const IconComponent = Icons[iconName]; // محاولة العثور على الأيقونة
     return IconComponent ? <IconComponent /> : null; // عرض الأيقونة إذا وجدت
   };
@@ -67,7 +67,7 @@ export default function App() {
       <Row gutter={12}>
         {Object.keys(allBtns).map(
           (key: any) =>
-            rules[allBtns[key].title] > 0 && (
+            userPermissions[allBtns[key].title.toLowerCase()].View == 1 && (
               <Col
                 style={{ padding: 5 }}
                 key={key}
