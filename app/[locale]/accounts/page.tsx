@@ -57,7 +57,14 @@ export default function App() {
   const userName = window.localStorage.getItem("userName");
 
   // --- State Variables ---
-  const [rulesMatch, setRulesMatch] = useState(0);
+  const [userPermissions, setUserPermissions] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
@@ -216,8 +223,8 @@ export default function App() {
 
   // --- Effects Hooks ---
   useEffect(() => {
-    getRules(userName, PageName).then((value) => {
-      setRulesMatch(value);
+    getRules(userName, PageName.toLowerCase()).then((value) => {
+      setUserPermissions(value);
     });
   }, [userName, PageName]);
 
@@ -242,6 +249,7 @@ export default function App() {
         title: "User",
         dataIndex: "user",
       },
+      userPermissions.Remove == 1 || userPermissions.Edit ==1 ? 
       {
         title: "Actions",
         dataIndex: "Actions",
@@ -251,46 +259,50 @@ export default function App() {
         fixed: "right",
         render: (_: any, record: any) => (
           <>
-            <Popconfirm
-              title={"Delete the " + PageName.slice(0, -1)}
-              description={"Are you sure to delete  " + record.name + "?"}
-              onConfirm={() => {
-                remove(record._id);
-              }}
-              okText='Yes, Remove'
-              cancelText='No'>
+            {userPermissions.Remove == 1 && (
+              <Popconfirm
+                title={"Delete the " + PageName.slice(0, -1)}
+                description={"Are you sure to delete  " + record.name + "?"}
+                onConfirm={() => {
+                  remove(record._id);
+                }}
+                okText='Yes, Remove'
+                cancelText='No'>
+                <Button
+                  type='primary'
+                  danger
+                  onClick={() => {
+                    setAccountData(record);
+                  }}
+                  shape='circle'
+                  size='small'
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+            )}
+            {userPermissions.Edit == 1 && (
               <Button
                 type='primary'
-                danger
-                onClick={() => {
-                  setAccountData(record);
-                }}
                 shape='circle'
                 size='small'
-                icon={<DeleteOutlined />}
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setAccountData(record);
+                  setOldData(record);
+                  form.setFieldsValue(
+                    fieldsConfig.reduce((acc: any, field) => {
+                      acc[field.fieldName] = record[field.fieldName];
+                      return acc;
+                    }, {})
+                  );
+                  setEdit(true);
+                  showModal();
+                }}
               />
-            </Popconfirm>{" "}
-            <Button
-              type='primary'
-              shape='circle'
-              size='small'
-              icon={<EditOutlined />}
-              onClick={() => {
-                setAccountData(record);
-                setOldData(record);
-                form.setFieldsValue(
-                  fieldsConfig.reduce((acc: any, field) => {
-                    acc[field.fieldName] = record[field.fieldName];
-                    return acc;
-                  }, {})
-                );
-                setEdit(true);
-                showModal();
-              }}
-            />
+            )}
           </>
         ),
-      },
+      } : {}
     ],
     [fieldsConfig, remove, setAccountData, showModal]
   );
@@ -647,7 +659,7 @@ export default function App() {
       <div>
         <Toaster />
       </div>
-      {rulesMatch == 1 && (
+      {userPermissions.View == 1 && (
         <>
           <Modal
             title={modalTitle}
@@ -711,32 +723,40 @@ export default function App() {
             style={cardStyle}
             extra={
               <>
-                <Dropdown
-                  menu={{
-                    items,
-                    onClick: (e) => handleExport(e),
-                  }}>
-                  <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
-                    Export
+                {userPermissions.Export == 1 && (
+                  <Dropdown
+                    menu={{
+                      items,
+                      onClick: (e) => handleExport(e),
+                    }}>
+                    <Button
+                      style={{ margin: 5 }}
+                      title='Export Data'
+                      icon={<FiDownloadCloud />}
+                      shape='round'>
+                      Export
+                    </Button>
+                  </Dropdown>
+                )}
+                {userPermissions.Print == 1 && (
+                  <Button
+                    shape='round'
+                    icon={<FaPrint />}
+                    onClick={() => handlePrint(tableRef, PageName, 12)}
+                    style={{ margin: 5 }}>
+                    Print
                   </Button>
-                </Dropdown>
-
-                <Button
-                  shape='round'
-                  icon={<FaPrint />}
-                  onClick={() => handlePrint(tableRef, PageName, 12)}
-                  style={{ margin: 5 }}>
-                  Print
-                </Button>
-
-                <Button
-                  type='primary'
-                  shape='round'
-                  icon={<BsPlusLg />}
-                  onClick={showModal}
-                  style={{ margin: 5 }}>
-                  New
-                </Button>
+                )}
+                {userPermissions.Add == 1 && (
+                  <Button
+                    type='primary'
+                    shape='round'
+                    icon={<BsPlusLg />}
+                    onClick={showModal}
+                    style={{ margin: 5 }}>
+                    New
+                  </Button>
+                )}
               </>
             }>
             {!Errors.connectionError && (

@@ -56,14 +56,6 @@ export default function App() {
   const userName = window.localStorage.getItem("userName");
 
   // --- State Variables ---
-  const [rulesMatch, setRulesMatch] = useState<any>({
-    View: 0,
-    Add: 0,
-    Remove: 0,
-    Edit: 0,
-    Print: 0,
-    Export: 0,
-  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allUsersData, setAllUsersData] = useState<any>([]);
   const [treeData, setTreeData] = useState<any>([]);
@@ -82,7 +74,7 @@ export default function App() {
     Edit: 0,
     Print: 0,
     Export: 0,
-  }); // حفظ الصلاحيات في state
+  });
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -241,6 +233,7 @@ export default function App() {
         title: "User",
         dataIndex: "user",
       },
+      userPermissions.Remove == 1 || userPermissions.Edit ==1 ? 
       {
         title: "Actions",
         dataIndex: "Actions",
@@ -291,7 +284,7 @@ export default function App() {
                 form.setFieldValue("password2", "");
 
                 setEdit(true);
-                setUserRules(record.rules);
+                
                 // تجهيز checkedKeys بناءً على صلاحيات المستخدم
                 const initialCheckedKeys: any[] = [];
                 Object.keys(record.rules).forEach((table) => {
@@ -310,7 +303,7 @@ export default function App() {
 
           </>
         ),
-      },
+      } : {}
     ],
     [fieldsConfig, remove, setUserData, showModal]
   );
