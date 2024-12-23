@@ -249,60 +249,63 @@ export default function App() {
         title: "User",
         dataIndex: "user",
       },
-      userPermissions.Remove == 1 || userPermissions.Edit ==1 ? 
-      {
-        title: "Actions",
-        dataIndex: "Actions",
-        key: "Actions",
-        align: "center",
-        className: "no_print",
-        fixed: "right",
-        render: (_: any, record: any) => (
-          <>
-            {userPermissions.Remove == 1 && (
-              <Popconfirm
-                title={"Delete the " + PageName.slice(0, -1)}
-                description={"Are you sure to delete  " + record.name + "?"}
-                onConfirm={() => {
-                  remove(record._id);
-                }}
-                okText='Yes, Remove'
-                cancelText='No'>
-                <Button
-                  type='primary'
-                  danger
-                  onClick={() => {
-                    setAccountData(record);
-                  }}
-                  shape='circle'
-                  size='small'
-                  icon={<DeleteOutlined />}
-                />
-              </Popconfirm>
-            )}
-            {userPermissions.Edit == 1 && (
-              <Button
-                type='primary'
-                shape='circle'
-                size='small'
-                icon={<EditOutlined />}
-                onClick={() => {
-                  setAccountData(record);
-                  setOldData(record);
-                  form.setFieldsValue(
-                    fieldsConfig.reduce((acc: any, field) => {
-                      acc[field.fieldName] = record[field.fieldName];
-                      return acc;
-                    }, {})
-                  );
-                  setEdit(true);
-                  showModal();
-                }}
-              />
-            )}
-          </>
-        ),
-      } : {}
+      userPermissions.Remove == 1 || userPermissions.Edit == 1
+        ? {
+            title: "Actions",
+            dataIndex: "Actions",
+            key: "Actions",
+            align: "center",
+            className: "no_print",
+            fixed: "right",
+            render: (_: any, record: any) => (
+              <>
+                {userPermissions.Remove == 1 && (
+                  <Popconfirm
+                    title={"Delete the " + PageName.slice(0, -1)}
+                    description={"Are you sure to delete  " + record.name + "?"}
+                    onConfirm={() => {
+                      remove(record._id);
+                    }}
+                    okText='Yes, Remove'
+                    cancelText='No'>
+                    <Button
+                      style={{ marginLeft: 5 }}
+                      type='primary'
+                      danger
+                      onClick={() => {
+                        setAccountData(record);
+                      }}
+                      shape='circle'
+                      size='small'
+                      icon={<DeleteOutlined />}
+                    />
+                  </Popconfirm>
+                )}
+                {userPermissions.Edit == 1 && (
+                  <Button
+                    type='primary'
+                    shape='circle'
+                    size='small'
+                    style={{marginLeft:5}}
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      setAccountData(record);
+                      setOldData(record);
+                      form.setFieldsValue(
+                        fieldsConfig.reduce((acc: any, field) => {
+                          acc[field.fieldName] = record[field.fieldName];
+                          return acc;
+                        }, {})
+                      );
+                      setEdit(true);
+                      showModal();
+                    }}
+                  />
+                )}
+              </>
+            ),
+          }
+        : {},
     ],
     [fieldsConfig, remove, setAccountData, showModal]
   );

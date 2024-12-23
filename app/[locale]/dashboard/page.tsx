@@ -67,7 +67,7 @@ export default function App() {
       <Row gutter={12}>
         {Object.keys(allBtns).map(
           (key: any) =>
-            userPermissions[allBtns[key].title.toLowerCase()].View == 1 && (
+            userPermissions[allBtns[key].title.toLowerCase()]?.View == 1 && (
               <Col
                 style={{ padding: 5 }}
                 key={key}

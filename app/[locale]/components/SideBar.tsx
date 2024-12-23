@@ -44,11 +44,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    console.log('userPermissions')
-    console.log(userPermissions)
+    console.log("userPermissions *****************");
+    console.log(userPermissions);
+    console.log(userPermissions?.users?.View);
   }, [userPermissions]);
-
-
 
   const items: MenuItem[] = [
     {
@@ -67,7 +66,7 @@ export default function App() {
         setCookies("loading", true);
         router.push("/users");
       },
-      disabled: userPermissions.users.View != 1,
+      disabled: userPermissions?.users?.View != 1,
     },
     {
       key: "4",
@@ -77,7 +76,7 @@ export default function App() {
         router.push("/logs");
         setCookies("loading", true);
       },
-      disabled: userPermissions.logs.View != 1,
+      disabled: userPermissions?.logs?.View != 1,
     },
     {
       key: "sub1",
@@ -92,7 +91,7 @@ export default function App() {
             router.push("/accounts");
             setCookies("loading", true);
           },
-          disabled: userPermissions.accounts.View != 1,
+          disabled: userPermissions?.accounts?.View != 1,
         },
         {
           key: "sub3",
@@ -107,7 +106,7 @@ export default function App() {
                 router.push("/receipt");
                 setCookies("loading", true);
               },
-              disabled: userPermissions.receipt.View != 1,
+              disabled: userPermissions?.receipts?.View != 1,
             },
             {
               key: "16",
@@ -117,7 +116,7 @@ export default function App() {
                 router.push("/payment");
                 setCookies("loading", true);
               },
-              disabled: userPermissions.payment.View != 1,
+              disabled: userPermissions?.payments?.View != 1,
             },
           ],
         },
@@ -131,15 +130,23 @@ export default function App() {
     setCollaps(!collaps);
   };
 
-
   return (
     <>
       <Sider
+      collapsible
         breakpoint='lg'
         collapsedWidth='0'
         collapsed={collaps}
         onCollapse={changeCollaps}
         style={{ position: "sticky", top: 0, zIndex: 1, width: "80vh" }}>
+        {/* <Sider
+        collapsible
+        collapsed={collaps}
+        onCollapse={changeCollaps}
+        theme="dark"
+        style={{ position: "sticky", top: 0 }}
+      > */}
+        
         <div style={{ padding: 20, textAlign: "center" }}>
           <Image src={logo} alt='' width={100} height={20} />
         </div>

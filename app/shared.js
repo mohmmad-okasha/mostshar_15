@@ -93,9 +93,11 @@ const api = getApiUrl();
 export const getRules = async (userName, PageName) => {
   const response = await Axios.get(`${api}/users/${userName}`);
   let rules = response.data.rules;
+ 
   if (PageName) {
     rules = rules[PageName]
   }
+  
   return rules
 };
 

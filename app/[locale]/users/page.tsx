@@ -255,6 +255,7 @@ export default function App() {
                 <Button
                   type='primary'
                   danger
+                  style={{marginLeft:5}}
                   onClick={() => {
                     setUserData(record);
                   }}
@@ -270,6 +271,7 @@ export default function App() {
               type='primary'
               shape='circle'
               size='small'
+              style={{marginLeft:5}}
               icon={<EditOutlined />}
               onClick={() => {
                 setUserData(record);
