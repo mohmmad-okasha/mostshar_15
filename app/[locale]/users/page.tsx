@@ -4,7 +4,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
-import { getRules, getApiUrl, saveLog, handlePrint, cardStyle,capitalize } from "@/app/shared";
+import {
+  getRules,
+  getApiUrl,
+  saveLog,
+  handlePrint,
+  cardStyle,
+  capitalize,
+} from "@/app/shared";
 import {
   Alert,
   Button,
@@ -34,6 +41,7 @@ import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud } from "react-icons/fi";
 import * as XLSX from "xlsx";
+import Search from "antd/es/input/Search";
 
 // --- Constants ---
 const PageName = "Users";
@@ -51,6 +59,7 @@ export default function App() {
   const [rulesMatch, setRulesMatch] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allUsersData, setAllUsersData] = useState<any>([]);
+  const [treeData, setTreeData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [Loading, setLoading] = useState(true);
   const [edit, setEdit] = useState(false);
@@ -261,6 +270,18 @@ export default function App() {
                 );
                 setEdit(true);
                 setUserRules(record.rules);
+                // تجهيز checkedKeys بناءً على صلاحيات المستخدم
+                const initialCheckedKeys: any[] = [];
+                Object.keys(record.rules).forEach((table) => {
+                  const actions = record.rules[table];
+                  Object.keys(actions).forEach((action:any) => {
+                    if (actions[action] === 1) {
+                      initialCheckedKeys.push(`${table}_${action}`);
+                    }
+                  });
+                });
+
+                setCheckedKeys(initialCheckedKeys);
                 showModal();
               }}
             />
@@ -303,8 +324,21 @@ export default function App() {
     setErrors({ ...Errors, saveErrors: "" });
     const { _id, ...rest } = userData; //to  send data without _id
 
+    // save rules
+    const formattedPermissions: any = {};
+    checkedKeys.forEach((key: any) => {
+      const [table, action] = key.split("_");
+      if (action) {
+        if (!formattedPermissions[table]) {
+          formattedPermissions[table] = {};
+        }
+        formattedPermissions[table][action] = 1;
+      }
+    }); /////////
+
     const response = await Axios.post(`${api}/users`, {
       ...rest,
+      rules: formattedPermissions,
       user: userName,
     });
 
@@ -345,8 +379,21 @@ export default function App() {
     }
     //
 
+    // save rules
+    const formattedPermissions: any = {};
+    checkedKeys.forEach((key: any) => {
+      const [table, action] = key.split("_");
+      if (action) {
+        if (!formattedPermissions[table]) {
+          formattedPermissions[table] = {};
+        }
+        formattedPermissions[table][action] = 1;
+      }
+    }); /////////
+
     const response = await Axios.put(`${api}/users`, {
       _id: userData._id,
+      rules: formattedPermissions,
       ...updateData,
     });
 
@@ -573,6 +620,80 @@ export default function App() {
     },
   ];
 
+  const [checkedKeys, setCheckedKeys] = useState<any>([]);//الصلاحيات المحددة على الشجرة
+  const [rolsFilteredData, setRolsFilteredData] = useState<any>([]);//للبحث في الصلاحيات
+
+  // جلب أسماء الجداول من API
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const res = await Axios.get(`${api}/tables`); // يعيد أسماء الجداول
+        const tables = res.data;
+
+        // تجهيز بيانات الـ TreeView
+        const formattedData = Object.keys(tables).map((table) => ({
+          title: table,
+          key: table,
+          children: Object.keys(tables[table]).map((action) => ({
+            title: action,
+            key: `${table}_${action}`,
+          })),
+        }));
+
+        setTreeData(formattedData);
+        setRolsFilteredData(formattedData);
+      } catch (error) {
+        console.log("Failed to fetch table data");
+      }
+    };
+
+    fetchTables();
+  }, []);
+
+  // عند تحديد أو إلغاء تحديد أي عنصر
+  const onCheck = (checkedKeys: any) => {
+    setCheckedKeys(checkedKeys);
+  };
+
+  //test
+  useEffect(() => {
+    const formattedPermissions: any = {};
+    checkedKeys.forEach((key: any) => {
+      const [table, action] = key.split("_");
+      if (!formattedPermissions[table]) {
+        formattedPermissions[table] = {};
+      }
+      formattedPermissions[table][action] = 1;
+    });
+    console.log(formattedPermissions);
+  }, [checkedKeys]);
+
+  // البحث في الصلاحيات
+  const onSearch = (value: any) => {
+
+    if (!value) {
+      // إذا كان البحث فارغًا، إعادة البيانات الأصلية
+      setRolsFilteredData(treeData);
+    } else {
+      // تصفية البيانات بناءً على النص المدخل في أسماء الجداول فقط
+      const filtered = treeData
+        .map((node: any) => {
+          // تصفية الجداول بناءً على اسم الجدول فقط
+          if (node.title.toLowerCase().includes(value.toLowerCase())) {
+            // إذا كانت الجداول تحتوي على النص المدخل في اسمها، نقوم بإظهارها مع الأحداث
+            return {
+              ...node,
+              children: node.children, // نعرض جميع الأحداث كما هي
+            };
+          }
+          return null;
+        })
+        .filter((node) => node !== null); // تصفية القيم الفارغة
+
+      setRolsFilteredData(filtered);
+    }
+  };
+
   // --- Render ---
   return (
     <>
@@ -603,16 +724,22 @@ export default function App() {
                     })
                   )}
                 </Row>
-                <Card title='Rules'>
-                  {Object.keys(userRules).map((key) => (
-                    <div style={{ padding: 3 }} key={key}>
-                      <Checkbox
-                        checked={userRules[key] === 1}
-                        onChange={() => handleCheckboxChange(key)}>
-                        {" " + capitalize(key)}
-                      </Checkbox>
-                    </div>
-                  ))}
+
+                <Card title='Permissions'>
+                  <Search
+                    placeholder='Search'
+                    allowClear
+                    onSearch={onSearch}
+                    onChange={(e) => onSearch(e.target.value)}
+                    style={{ marginBottom: "16px" }}
+                  />
+                  <Tree
+                    checkable
+                    //defaultExpandAll
+                    onCheck={onCheck}
+                    checkedKeys={checkedKeys}
+                    treeData={rolsFilteredData}
+                  />
                 </Card>
                 {Errors.saveErrors && (
                   <>
