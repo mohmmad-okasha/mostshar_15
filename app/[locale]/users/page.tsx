@@ -412,6 +412,7 @@ export default function App() {
     const response = await Axios.put(`${api}/users`, {
       _id: userData._id,
       rules: formattedPermissions,
+      user: userName,
       ...updateData,
     });
 

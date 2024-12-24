@@ -7,6 +7,8 @@ import Login from "./login/page";
 import { Card, ConfigProvider, Flex, Layout, Spin, theme } from "antd";
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import Axios from "axios";
+import { getApiUrl } from "../shared";
 
 const { Content, Footer } = Layout;
 
@@ -15,10 +17,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const [Authed, setAuthed] = useState("");
+  const [settings, setSettings] = useState({
+    lang: "",
+    theme: "",
+  });
   const [loading, setLoading] = useState(false);
   const [cookies, setCookies] = useCookies(["token", "loading"]);
+  const api = getApiUrl();
+  const userName = window.localStorage.getItem("userName");
+
 
   useEffect(() => {
     if (cookies.token) setAuthed("true");
@@ -30,9 +38,25 @@ export default function RootLayout({
     else setLoading(false);
   }, [cookies.loading]);
 
-  
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  async function getUserData() {
+    setLoading(true);
+    try {
+      const response = await Axios.get(`${api}/users/${userName}`);
+      setSettings(response.data.settings);
+    } catch (error) {
+      alert({ connectionError: error });
+      console.error("Error fetching logs:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <html lang='en'>
+    <html lang={settings.lang}>
       <body style={{ margin: 0 }}>
         <ConfigProvider
           theme={{
@@ -49,7 +73,9 @@ export default function RootLayout({
               colorPrimary: "#098290",
               borderRadius: 5,
             },
-          }}>
+          }}
+          direction={settings.lang === "ar" ? "rtl" : "ltr"} // Ant Design RTL support
+        >
           {Authed === "false" && <Login />}
           {Authed === "true" && (
             <Layout hasSider style={{ minHeight: "100vh" }}>

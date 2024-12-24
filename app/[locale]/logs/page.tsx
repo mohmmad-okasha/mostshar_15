@@ -37,6 +37,14 @@ interface DataType {
 export default function App() {
   const userName = window.localStorage.getItem("userName");
   const [rulesMatch, setRulesMatch] = useState(0);
+  const [userPermissions, setUserPermissions] = useState<any>({
+    View: 0,
+    Add: 0,
+    Remove: 0,
+    Edit: 0,
+    Print: 0,
+    Export: 0,
+  });
   const [allLogsData, setAllLogsData] = useState<any>([]);
   const [Users, setUsers] = useState([]);
   const [Loading, setLoading] = useState(true); // to show loading before get data form db
@@ -56,7 +64,7 @@ export default function App() {
     userName: "",
     time: "",
   });
-  
+
   const [form] = Form.useForm(); // to reset form after save or close
   const { RangePicker } = DatePicker;
   const tableRef = useRef<HTMLDivElement>(null);
@@ -85,9 +93,8 @@ export default function App() {
   ];
 
   useEffect(() => {
-    //to get user rule for this page
-    getRules(userName, PageName).then((value) => {
-      setRulesMatch(value);
+    getRules(userName, PageName.toLowerCase()).then((value) => {
+      setUserPermissions(value);
     });
   }, [userName, PageName]);
 
@@ -160,13 +167,14 @@ export default function App() {
       <div>
         <Toaster />
       </div>
-      {rulesMatch == 1 && (
+      {userPermissions.View == 1 && (
         <>
           <Card
             title={PageName}
             style={cardStyle}
-            extra={
+            extra={userPermissions.Print == 1 && (
               <>
+              
                 <Button
                   type='text'
                   title='Print'
@@ -174,7 +182,7 @@ export default function App() {
                     handlePrint(tableRef, PageName, 12);
                   }}
                   icon={<FaPrint size={"1em"} />}></Button>
-              </>
+              </>)
             }>
             {!Errors.connectionError && (
               <>

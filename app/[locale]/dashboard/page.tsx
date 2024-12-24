@@ -1,20 +1,31 @@
 "use client";
 import { Row, Col, Card } from "antd";
 import Link from "next/link";
-import { UserOutlined } from "@ant-design/icons";
 import { useCookies } from "react-cookie";
-import { useEffect, useState } from "react";
-import { FaRegEye } from "react-icons/fa6";
+import { use, useEffect, useState } from "react";
 import "../globals.css";
 import { useRouter } from "next/navigation";
 import { getRules, getApiUrl } from "@/app/shared";
 import Axios from "axios";
 import * as ant from "@ant-design/icons";
 import * as fa6 from "react-icons/fa6";
+import initTranslations from "../../i18n.js";
 
 //import { usePathname } from "next/navigation";
 
-export default function App() {
+export default function App(props:any) {
+  const params: any = use(props.params);
+
+  const { locale } = params;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+    }
+    loadTranslations();
+  }, [locale]);
+
   const api = getApiUrl();
   const [userPermissions, setUserPermissions] = useState<any>({
     View: 0,
@@ -85,7 +96,7 @@ export default function App() {
                       fontSize: "1.9vh",
                       color: "white",
                     }}>
-                    {getDynamicIcon(allBtns[key].icon)} {allBtns[key].title}
+                    {getDynamicIcon(allBtns[key].icon)} {t(allBtns[key].title)}
                   </Card>
                 </Link>
               </Col>
