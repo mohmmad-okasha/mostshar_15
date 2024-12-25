@@ -48,7 +48,7 @@ export default function RootLayout({
       const response = await Axios.get(`${api}/users/${userName}`);
       setSettings(response.data.settings);
     } catch (error) {
-      alert({ connectionError: error });
+      //alert({ connectionError: error });
       console.error("Error fetching logs:", error);
     } finally {
       setLoading(false);

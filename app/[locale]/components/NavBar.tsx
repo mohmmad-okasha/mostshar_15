@@ -127,19 +127,23 @@ const { Text } = Typography;
 export default function App() {
   const [cookies, setCookies] = useCookies(["token", "username", "loginTime"]);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [username, setUsername] = useState("Guest");
+  const [language, setLanguage] = useState('');
+  //const [username, setUsername] = useState("Guest");
   const [loginTime, setLoginTime] = useState("");
+  const userName = window.localStorage.getItem("userName");
 
   useEffect(() => {
-    setUsername(cookies.username || "Guest");
+    
+   //setUsername(cookies.username || "Guest");
     setLoginTime(cookies.loginTime || new Date().toLocaleString());
   }, [cookies]);
 
-  const toggleTheme = () => {
+  const changeTheme = () => {
     setIsDarkMode((prev) => !prev);
     // Apply theme changes globally if needed
     document.body.className = isDarkMode ? "light-theme" : "dark-theme";
   };
+
 
   const logout = () => {
     setCookies("token", "");
@@ -155,7 +159,7 @@ export default function App() {
           label: (
             <Space>
               <UserOutlined />
-              <Text>{username}</Text>
+              <Text>{userName}</Text>
             </Space>
           ),
           disabled: true, // Non-interactive
@@ -187,7 +191,7 @@ export default function App() {
               <Switch
                 style={{ marginLeft: 10 }}
                 checked={isDarkMode}
-                onChange={toggleTheme}
+                onChange={changeTheme}
               />
             </Space>
           ),
