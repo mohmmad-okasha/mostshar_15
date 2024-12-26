@@ -1,14 +1,15 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { Button } from "antd";
 import initTranslations from "../i18n.js";
 import { useEffect, useState, use } from "react";
-import LanguageChanger from './components/LanguageChanger';
+import LanguageChanger from "./components/LanguageChanger";
 
-export default function Home(props:any) {
-  const params:any = use(props.params);
+export default function Home(props: any) {
+  const params: any = use(props.params);
 
-  const {locale} = params;
-
+  const router = useRouter();
+  const { locale } = params;
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
     async function loadTranslations() {
@@ -18,12 +19,17 @@ export default function Home(props:any) {
     loadTranslations();
   }, [locale]);
 
+  // Redirect to /dashboard on app load
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
   return (
     <>
-      <p>Mostshar app</p>
+      {/* <p>Mostshar app</p>
       <p>{t("ok")}</p>
 
-      <LanguageChanger />
+      <LanguageChanger /> */}
     </>
   );
 }

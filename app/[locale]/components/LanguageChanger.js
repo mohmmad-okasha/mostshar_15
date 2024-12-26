@@ -16,11 +16,11 @@ function LanguageChanger() {
     const [asPath, setAsPath] = useState('');
     const [userLang, setUserLang] = useState(''); // Store user's language preference
     const [isArabicLocale, setIsArabicLocale] = useState(false);
-    const userName = window.localStorage.getItem("userName");
+    const userName = window?.localStorage?.getItem("userName") ;
 
     // Fetch user's preferred language from database on mount
     useEffect(() => {
-        setAsPath(window.location.pathname);
+        setAsPath(window?.location.pathname);
 
         // Fetch language preference from backend
         const fetchUserLang = async () => {
@@ -47,8 +47,8 @@ function LanguageChanger() {
             // Update language preference in backend
             const user = await axios.get(`${api}/users/${userName}`); // API endpoint
             const settings = {
+                ...user.data?.settings,
                 lang: locale,
-                theme: user?.settings?.theme 
             }
 
             await axios.post(`${api}/users/changeLang`, { userName: userName, settings: settings }); // API endpoint

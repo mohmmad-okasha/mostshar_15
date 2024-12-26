@@ -1,1 +1,26 @@
-{"Dashboard":"الشاشة الرئيسية","Finance":"المالية","Logs":"السجلات","ok":"نعم","Owners":"المالكين","Users":"المستخدمين"}
+{
+    "Dashboard": "الشاشة الرئيسية",
+    "Finance": "المالية",
+    "Balance": "الرصيد",
+    "Account Type": "نوع الحساب",
+    "Parent Account": "الحساب الاب",
+    "Account Name": "إسم الحساب",
+    "Add Account": "إضافة حساب",
+    "Add User": "إضافة مستخدم",
+    "Logs": "السجلات",
+    "Notes": "ملاحظات",
+    "ok": "نعم",
+    "Save": "حفظ",
+    "Cancel": "إلغاء",
+    "Assets": "اصول",
+    "Owners": "المالكين",
+    "Liabilities": "المطلوبات",
+    "Equity": "حقوق الملكية",
+    "Revenue": "الإيرادات",
+    "Expenses": "المصروفات",
+    "Main": "أساسي",
+    "Accounts": "الحسابات",
+    "Account Number": "رقم الحساب",
+    "Search...": "بحث...",
+    "Users": "المستخدمين"
+}

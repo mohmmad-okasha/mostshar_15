@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, use } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -43,13 +43,26 @@ import { FaFileExport, FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud } from "react-icons/fi";
 import * as XLSX from "xlsx";
+import initTranslations from "../../i18n.js";
 
 // --- Constants ---
 const PageName = "Accounts";
 const api = getApiUrl();
 
 // --- Main Component ---
-export default function App() {
+export default function App(props: any) {
+  const params: any = use(props.params);
+
+  const { locale } = params;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+    }
+    loadTranslations();
+  }, [locale]);
+
   // --- Refs and Hooks ---
   const tableRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
@@ -136,7 +149,7 @@ export default function App() {
     () => [
       {
         fieldName: "accountNumber",
-        label: "Account Number",
+        label: t("Account Number"),
         type: "number",
         rules: [{ required: false }],
         readOnly: true,
@@ -146,7 +159,7 @@ export default function App() {
       },
       {
         fieldName: "accountName",
-        label: "Account Name",
+        label: t("Account Name"),
         rules: [{ required: true }],
         type: "text",
         showTable: true,
@@ -156,11 +169,11 @@ export default function App() {
       },
       {
         fieldName: "parentAccount",
-        label: "Parent Account",
+        label: t("Parent Account"),
         type: "select",
         rules: [{ required: true }],
         options: [
-          { value: "Main", label: "Main" },
+          { value: "Main", label: t("Main") },
           ...allAccountsData.map((field: any) => ({
             value: field.accountName,
             label: field.accountName,
@@ -173,15 +186,15 @@ export default function App() {
       },
       {
         fieldName: "accountType",
-        label: "Account Type",
+        label: t("Account Type"),
         type: "select",
         rules: [{ required: true }],
         options: [
-          { value: "Assets", label: "Assets" },
-          { value: "Liabilities", label: "Liabilities" },
-          { value: "Equity", label: "Equity" },
-          { value: "Revenue", label: "Revenue" },
-          { value: "Expenses", label: "Expenses" },
+          { value: "Assets", label: t("Assets") },
+          { value: "Liabilities", label: t("Liabilities") },
+          { value: "Equity", label: t("Equity") },
+          { value: "Revenue", label:  t("Revenue") },
+          { value: "Expenses", label: t("Expenses") },
         ],
         showTable: true,
         showInput: true,
@@ -190,7 +203,7 @@ export default function App() {
       },
       {
         fieldName: "balance",
-        label: "Balance",
+        label: t("Balance"),
         type: "number",
         rules: [{ required: false }],
         showTable: true,
@@ -200,7 +213,7 @@ export default function App() {
       },
       {
         fieldName: "notes",
-        label: "Notes",
+        label: t("Notes"),
         type: "text area",
         rules: [{ required: false }],
         showTable: true,
@@ -286,7 +299,7 @@ export default function App() {
                     type='primary'
                     shape='circle'
                     size='small'
-                    style={{marginLeft:5}}
+                    style={{ marginLeft: 5 }}
                     icon={<EditOutlined />}
                     onClick={() => {
                       setAccountData(record);
@@ -557,7 +570,7 @@ export default function App() {
         {showInput && (
           <Form.Item
             key={fieldName}
-            label={displayedLabel}
+            label={t(displayedLabel)}
             name={fieldName}
             rules={rules}>
             {type === "select" && (
@@ -665,7 +678,7 @@ export default function App() {
       {userPermissions.View == 1 && (
         <>
           <Modal
-            title={modalTitle}
+            title={t(modalTitle)}
             open={isModalOpen}
             onCancel={handleCancel}
             width={500}
@@ -705,7 +718,7 @@ export default function App() {
                     icon={<CloseOutlined />}
                     onClick={handleCancel}
                     style={{ margin: 5 }}>
-                    Cancel
+                    {t('Cancel')}
                   </Button>
 
                   <Button
@@ -714,7 +727,7 @@ export default function App() {
                     htmlType='submit'
                     icon={<SaveOutlined />}
                     style={{ margin: 5 }}>
-                    Save
+                    {t('Save')}
                   </Button>
                 </Form.Item>
               </Form>
@@ -722,7 +735,7 @@ export default function App() {
             </Card>
           </Modal>
           <Card
-            title={PageName}
+            title={t(PageName)}
             style={cardStyle}
             extra={
               <>
@@ -769,7 +782,7 @@ export default function App() {
                 </Card>
                 <Divider />
                 <Input.Search
-                  placeholder='Search...'
+                  placeholder={t('Search...')}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ paddingBottom: 5 }}
                   allowClear
