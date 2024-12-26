@@ -1,10 +1,11 @@
 "use client";
 const PageName = "Logs";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import { getRules, getApiUrl, cardStyle, formatDate, handlePrint } from "@/app/shared";
+import initTranslations from "../../i18n.js";
 
 //Styling
 import {
@@ -34,7 +35,19 @@ interface DataType {
   time: Date;
 }
 
-export default function App() {
+export default function App(props: any) {
+  const params: any = use(props.params);
+
+  const { locale } = params;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+    }
+    loadTranslations();
+  }, [locale]);
+  
   const userName = window.localStorage.getItem("userName");
   const [rulesMatch, setRulesMatch] = useState(0);
   const [userPermissions, setUserPermissions] = useState<any>({
@@ -71,20 +84,20 @@ export default function App() {
 
   const columns: TableColumnsType<DataType> = [
     {
-      title: "ID",
+      title: t("ID"),
       dataIndex: "_id",
       hidden: true,
     },
     {
-      title: "Log",
+      title: t("Log"),
       dataIndex: "log",
     },
     {
-      title: "User Name",
+      title: t("User Name"),
       dataIndex: "userName",
     },
     {
-      title: "Time",
+      title: t("Time"),
       dataIndex: "time",
       render: (_, record) => {
         return formatDate(new Date(record.time));
@@ -170,7 +183,7 @@ export default function App() {
       {userPermissions.View == 1 && (
         <>
           <Card
-            title={PageName}
+            title={t(PageName)}
             style={cardStyle}
             extra={userPermissions.Print == 1 && (
               <>
@@ -191,7 +204,7 @@ export default function App() {
                   items={[
                     {
                       key: "1",
-                      label: "Search",
+                      label: t("Search"),
                       children: (
                         <Row>
                           <Col

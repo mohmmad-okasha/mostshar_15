@@ -95,7 +95,7 @@ export default function App(props: any) {
     const blob = new Blob([json], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = PageName + ".json"; // اسم الملف
+    link.download = t(PageName) + ".json"; // اسم الملف
     link.click();
   };
 
@@ -105,7 +105,7 @@ export default function App(props: any) {
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
 
     // Write the workbook to Excel file and trigger download
-    XLSX.writeFile(wb, PageName + ".xlsx");
+    XLSX.writeFile(wb, t(PageName) + ".xlsx");
   };
 
   const exportToSQL = () => {
@@ -140,7 +140,7 @@ export default function App(props: any) {
     // Create a link element to trigger the download
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = PageName + ".sql"; // The name of the downloaded file
+    link.download = t(PageName) + ".sql"; // The name of the downloaded file
     link.click(); // Trigger the download
   };
 
@@ -259,12 +259,12 @@ export default function App(props: any) {
         )
         .filter(Boolean),
       {
-        title: "User",
+        title: t("User"),
         dataIndex: "user",
       },
       userPermissions.Remove == 1 || userPermissions.Edit == 1
         ? {
-            title: "Actions",
+            title: t("Actions"),
             dataIndex: "Actions",
             key: "Actions",
             align: "center",
@@ -274,13 +274,13 @@ export default function App(props: any) {
               <>
                 {userPermissions.Remove == 1 && (
                   <Popconfirm
-                    title={"Delete the " + PageName.slice(0, -1)}
-                    description={"Are you sure to delete  " + record.name + "?"}
+                    title={t("Delete the") + " " + t(PageName.slice(0, -1))}
+                    description={t("Are you sure to delete")+ " " + record.accountName}
                     onConfirm={() => {
                       remove(record._id);
                     }}
-                    okText='Yes, Remove'
-                    cancelText='No'>
+                    okText={t('Yes, Remove')}
+                    cancelText={t('No')}>
                     <Button
                       style={{ marginLeft: 5 }}
                       type='primary'
@@ -364,7 +364,7 @@ export default function App(props: any) {
       getData();
       saveLog(`save new ${PageName.slice(0, -1)}: ` + accountData.accountName);
       toast.remove();
-      toast.success(response.data.message, {
+      toast.success(t(response.data.message), {
         position: "top-center",
       });
       return true;
@@ -390,7 +390,7 @@ export default function App(props: any) {
 
     if (noChanges) {
       toast.remove();
-      toast.error("No New Data!", {
+      toast.error(t("No New Data!"), {
         position: "top-center",
       });
       return;
@@ -421,16 +421,16 @@ export default function App(props: any) {
   async function remove(id: string) {
     Axios.delete(`${api}/accounts/${id}`)
       .then((res) => {
-        saveLog("remove account: " + accountData.accountName);
-        toast.success("Account removed successfully.");
+        saveLog(t("remove") +" "+ t("account") +": " + accountData.accountName);
+        toast.success(t("Account") +" "+ t("removed successfully."));
         getData();
       })
       .catch((error) => {
         console.log(error);
         if (error.response) {
-          toast.error(`${error.response.data.message}`);
+          toast.error(t(`${error.response.data.message}`));
         } else {
-          toast.error("An error occurred. Please try again.");
+          toast.error(t("An error occurred. Please try again."));
         }
       });
   }
