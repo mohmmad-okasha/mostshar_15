@@ -101,7 +101,7 @@ export const getRules = async (userName, PageName) => {
   return rules
 };
 
-export const handlePrint = (tableRef, title, fontSize) => {
+export const handlePrint = (tableRef, title, fontSize, lang) => {
   if (tableRef.current) {
     const printContents = tableRef.current.innerHTML;
     const printWindow = window.open("", "", "height=2000,width=2000");
@@ -118,8 +118,9 @@ export const handlePrint = (tableRef, title, fontSize) => {
             }
             body {
               font-family: 'NotoSansArabic', Arial, sans-serif;
+              direction: ${lang === 'ar' ? 'rtl' : 'ltr'};
             }
-            .top{
+            .top {
               border-top: 12px solid #098290 !important;
               top: -20px !important;
             }
@@ -135,7 +136,8 @@ export const handlePrint = (tableRef, title, fontSize) => {
               padding: 0.75rem;
               vertical-align: top;
               border-top: 1px solid #dee2e6;
-              text-align: center;
+              text-align: ${lang === 'ar' ? 'right' : 'center'};
+               text-align: center !important;
             }
             thead th {
               vertical-align: bottom;
@@ -154,19 +156,18 @@ export const handlePrint = (tableRef, title, fontSize) => {
             .table-striped tbody tr:nth-of-type(odd) {
               background-color: rgba(0, 0, 0, 0.05);
             }
-            .no_print{
-              display:none
+            .no_print {
+              display: none;
             }
             @media print {
               @page {
                 size: auto;
                 margin: 3mm;
-                
               }
-              .no_print{
-                display:none
+              .no_print {
+                display: none;
               }
-              #center{
+              #center {
                 text-align: center !important;
               }
               body {
@@ -183,14 +184,13 @@ export const handlePrint = (tableRef, title, fontSize) => {
                 font-size: ${fontSize}px;
               }
               th, td {
-              padding: 0.75rem;
-              vertical-align: top;
-              border-top: 1px solid #dee2e6;
-              text-align: left;
+                padding: 0.75rem;
+                vertical-align: top;
+                border-top: 1px solid #dee2e6;
+                text-align: ${lang === 'ar' ? 'right' : 'left'};
               }
             }
           </style>
-       
       `);
       printWindow.document.write("</head><body>");
       printWindow.document.write(`
@@ -216,7 +216,7 @@ export const handlePrint = (tableRef, title, fontSize) => {
       printWindow.print();
       setTimeout(function () {
         printWindow.close();
-      }, 2000); // Close after 1 second
+      }, 2000); // Close after 2 seconds
     }
   }
 };

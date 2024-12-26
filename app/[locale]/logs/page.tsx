@@ -213,7 +213,7 @@ export default function App(props: any) {
                             lg={{ flex: "30%" }}
                             style={{ padding: 5 }}>
                             <Input.Search
-                              placeholder='Search...'
+                              placeholder={t('Search...')}
                               onChange={(e) => setSearchText(e.target.value)}
                               allowClear
                             />
@@ -225,7 +225,7 @@ export default function App(props: any) {
                             style={{ padding: 5 }}>
                             <Select
                               onChange={(newValue) => setSearchUserName(newValue)}
-                              placeholder='User'
+                              placeholder={t('User')}
                               showSearch
                               filterOption={filterOption}
                               options={Users}
@@ -238,9 +238,9 @@ export default function App(props: any) {
                             lg={{ flex: "50%" }}
                             style={{ padding: 5 }}>
                             <RangePicker
+                            placeholder={[t('From date'), t('To date')]}
                               style={{ width: "100%" }}
                               onChange={(value, dateString) => {
-                                console.log("Selected Time: ", value);
                                 setSearchTime({ from: dateString[0], to: dateString[1] });
                               }}
                               //showTime

@@ -38,5 +38,16 @@
     "Account Number": "رقم الحساب",
     "Search...": "بحث...",
     "Search": "بحث",
+    "is required!": "مطلوب",
+    "not valid email!": "ليس ايميل" ,
+    "not a valid number!": "ليس رقم",
+    "Add": "إضافة",
+    "Export": "تصدير",
+    "Print": "طباعة",
+    "New": "إضافة",
+    "Saved!": "تم الحفظ",
+    "Updated!": "تم التعديل",
+    "To date": "الى تاريخ",
+    "From date": "من تاريخ",
     "Users": "المستخدمين"
 }

@@ -193,7 +193,7 @@ export default function App(props: any) {
           { value: "Assets", label: t("Assets") },
           { value: "Liabilities", label: t("Liabilities") },
           { value: "Equity", label: t("Equity") },
-          { value: "Revenue", label:  t("Revenue") },
+          { value: "Revenue", label: t("Revenue") },
           { value: "Expenses", label: t("Expenses") },
         ],
         showTable: true,
@@ -275,12 +275,12 @@ export default function App(props: any) {
                 {userPermissions.Remove == 1 && (
                   <Popconfirm
                     title={t("Delete the") + " " + t(PageName.slice(0, -1))}
-                    description={t("Are you sure to delete")+ " " + record.accountName}
+                    description={t("Are you sure to delete") + " " + record.accountName}
                     onConfirm={() => {
                       remove(record._id);
                     }}
-                    okText={t('Yes, Remove')}
-                    cancelText={t('No')}>
+                    okText={t("Yes, Remove")}
+                    cancelText={t("No")}>
                     <Button
                       style={{ marginLeft: 5 }}
                       type='primary'
@@ -362,14 +362,14 @@ export default function App(props: any) {
 
     if (response.data.message === "Saved!") {
       getData();
-      saveLog(`save new ${PageName.slice(0, -1)}: ` + accountData.accountName);
+      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + accountData.accountName);
       toast.remove();
       toast.success(t(response.data.message), {
         position: "top-center",
       });
       return true;
     } else {
-      setErrors({ ...Errors, saveErrors: response.data.message });
+      setErrors({ ...Errors, saveErrors: t(response.data.message) });
       return false;
     }
   }
@@ -405,14 +405,14 @@ export default function App(props: any) {
     if (response.data.message === "Updated!") {
       getData();
       toast.remove();
-      toast.success(response.data.message, {
+      toast.success(t(response.data.message), {
         position: "top-center",
       });
-      saveLog("update account: " + accountData.accountName);
+      saveLog(t("update") + " " + t("account") + ": " + accountData.accountName);
       setEdit(false);
       return true;
     } else {
-      setErrors({ ...Errors, saveErrors: response.data.message });
+      setErrors({ ...Errors, saveErrors: t(response.data.message) });
       return false;
     }
   }
@@ -421,8 +421,8 @@ export default function App(props: any) {
   async function remove(id: string) {
     Axios.delete(`${api}/accounts/${id}`)
       .then((res) => {
-        saveLog(t("remove") +" "+ t("account") +": " + accountData.accountName);
-        toast.success(t("Account") +" "+ t("removed successfully."));
+        saveLog(t("remove") + " " + t("account") + ": " + accountData.accountName);
+        toast.success(t("Account") + " " + t("removed successfully."));
         getData();
       })
       .catch((error) => {
@@ -520,10 +520,10 @@ export default function App(props: any) {
 
   // --- Validation Messages ---
   const validateMessages = {
-    required: "${label} is required!",
+    required: t("${label}") + " " + t("is required!"),
     types: {
-      email: "not valid email!",
-      number: "not a valid number!",
+      email: t("not valid email!"),
+      number: t("not a valid number!"),
     },
     number: {
       range: "${label} must be between ${min} and ${max}",
@@ -718,7 +718,7 @@ export default function App(props: any) {
                     icon={<CloseOutlined />}
                     onClick={handleCancel}
                     style={{ margin: 5 }}>
-                    {t('Cancel')}
+                    {t("Cancel")}
                   </Button>
 
                   <Button
@@ -727,7 +727,7 @@ export default function App(props: any) {
                     htmlType='submit'
                     icon={<SaveOutlined />}
                     style={{ margin: 5 }}>
-                    {t('Save')}
+                    {t("Save")}
                   </Button>
                 </Form.Item>
               </Form>
@@ -750,7 +750,7 @@ export default function App(props: any) {
                       title='Export Data'
                       icon={<FiDownloadCloud />}
                       shape='round'>
-                      Export
+                      {t("Export")}
                     </Button>
                   </Dropdown>
                 )}
@@ -758,9 +758,9 @@ export default function App(props: any) {
                   <Button
                     shape='round'
                     icon={<FaPrint />}
-                    onClick={() => handlePrint(tableRef, PageName, 12)}
+                    onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
                     style={{ margin: 5 }}>
-                    Print
+                    {t("Print")}
                   </Button>
                 )}
                 {userPermissions.Add == 1 && (
@@ -770,7 +770,7 @@ export default function App(props: any) {
                     icon={<BsPlusLg />}
                     onClick={showModal}
                     style={{ margin: 5 }}>
-                    New
+                    {t("New")}
                   </Button>
                 )}
               </>
@@ -782,7 +782,7 @@ export default function App(props: any) {
                 </Card>
                 <Divider />
                 <Input.Search
-                  placeholder={t('Search...')}
+                  placeholder={t("Search...")}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ paddingBottom: 5 }}
                   allowClear

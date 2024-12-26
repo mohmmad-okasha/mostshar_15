@@ -251,7 +251,7 @@ export default function App() {
             icon={<UserOutlined />}
             style={{
               cursor: "pointer",
-              backgroundColor: "#1d6268",
+              backgroundColor: "#098290",
             }}
           />
         </Dropdown>
