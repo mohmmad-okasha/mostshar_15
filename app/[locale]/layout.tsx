@@ -27,7 +27,6 @@ export default function RootLayout({
   const api = getApiUrl();
   const userName = window.localStorage.getItem("userName");
 
-
   useEffect(() => {
     if (cookies.token) setAuthed("true");
     else setAuthed("false");
@@ -43,7 +42,7 @@ export default function RootLayout({
   }, []);
 
   async function getUserData() {
-    setLoading(true);
+    //setLoading(true);
     try {
       const response = await Axios.get(`${api}/users/${userName}`);
       setSettings(response.data.settings);
@@ -79,8 +78,7 @@ export default function RootLayout({
           {Authed === "false" && <Login />}
           {Authed === "true" && (
             <Layout hasSider style={{ minHeight: "100vh" }}>
-              <SideBar />
-
+              <SideBar locale={settings.lang} />
               <Layout>
                 <NavBar />
 

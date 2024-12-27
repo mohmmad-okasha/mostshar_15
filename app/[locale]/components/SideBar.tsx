@@ -13,10 +13,21 @@ import { useCookies } from "react-cookie";
 import Image from "next/image";
 import logo from "@/public/nextjs-13.svg"; // Adjust the path if needed
 import { getRules } from "@/app/shared";
+import initTranslations from "../../i18n"; // Your i18n utility
 
 type MenuItem = Required<MenuProps>["items"][number];
 
-export default function App() {
+export default function App({ locale }: { locale: string }) {
+  const [t, setT] = useState(() => (key: string) => key);
+
+  useEffect(() => {
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+    }
+    loadTranslations();
+  }, [locale]);
+
   const [loading, setLoading] = useState(true);
   const [cookies, setCookies] = useCookies(["token", "loading"]);
   const router = useRouter();
@@ -60,7 +71,7 @@ export default function App() {
     {
       key: "1",
       icon: <PieChartOutlined />,
-      label: "Dashboard",
+      label: t("Dashboard"),
       onClick: () => {
         router.push("/dashboard");
         if (isMobile) setDrawerVisible(false);
@@ -69,7 +80,7 @@ export default function App() {
     {
       key: "2",
       icon: <UserOutlined />,
-      label: "Users",
+      label: t("Users"),
       onClick: () => {
         setCookies("loading", true);
         router.push("/users");
@@ -80,7 +91,7 @@ export default function App() {
     {
       key: "4",
       icon: <FaRegEye />,
-      label: "Logs",
+      label: t("Logs"),
       onClick: () => {
         router.push("/logs");
         setCookies("loading", true);
@@ -90,12 +101,12 @@ export default function App() {
     },
     {
       key: "sub1",
-      label: "Finance",
+      label: t("Finance"),
       icon: <CiWallet />,
       children: [
         {
           key: "14",
-          label: "Accounts",
+          label: t("Accounts"),
           icon: <LuFolderTree />,
           onClick: () => {
             router.push("/accounts");
@@ -106,12 +117,12 @@ export default function App() {
         },
         {
           key: "sub3",
-          label: "Vouchers",
+          label: t("Vouchers"),
           icon: <TbInvoice />,
           children: [
             {
               key: "15",
-              label: "Receipt",
+              label: t("Receipts"),
               icon: <FaFileArrowDown />,
               onClick: () => {
                 router.push("/receipt");
@@ -122,7 +133,7 @@ export default function App() {
             },
             {
               key: "16",
-              label: "Payment",
+              label: t("Payments"),
               icon: <FaFileArrowUp />,
               onClick: () => {
                 router.push("/payment");
