@@ -1,7 +1,7 @@
-import { Menu, MenuProps } from "antd";
+import { Menu, MenuProps, Drawer, Button } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React, { useEffect, useState } from "react";
-import { PieChartOutlined, UserOutlined } from "@ant-design/icons";
+import { PieChartOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa6";
 import { CiWallet } from "react-icons/ci";
 import { FaFileArrowUp, FaFileArrowDown } from "react-icons/fa6";
@@ -19,12 +19,6 @@ type MenuItem = Required<MenuProps>["items"][number];
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [cookies, setCookies] = useCookies(["token", "loading"]);
-
-  useEffect(() => {
-    if (cookies.loading === true) setLoading(true);
-    else setLoading(false);
-  }, [cookies.loading]);
-
   const router = useRouter();
   const [rules, setRules] = useState<any>([]);
   const [userPermissions, setUserPermissions] = useState<any>({
@@ -37,17 +31,30 @@ export default function App() {
   });
   const userName = window.localStorage.getItem("userName");
 
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
+  useEffect(() => {
+    if (cookies.loading === true) setLoading(true);
+    else setLoading(false);
+  }, [cookies.loading]);
+
   useEffect(() => {
     getRules(userName).then((value) => {
       setUserPermissions(value);
     });
   }, []);
 
+  // Detect screen size for responsive behavior
   useEffect(() => {
-    console.log("userPermissions *****************");
-    console.log(userPermissions);
-    console.log(userPermissions?.users?.View);
-  }, [userPermissions]);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768); // Mobile threshold
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Run on mount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const items: MenuItem[] = [
     {
@@ -56,6 +63,7 @@ export default function App() {
       label: "Dashboard",
       onClick: () => {
         router.push("/dashboard");
+        if (isMobile) setDrawerVisible(false);
       },
     },
     {
@@ -65,8 +73,9 @@ export default function App() {
       onClick: () => {
         setCookies("loading", true);
         router.push("/users");
+        if (isMobile) setDrawerVisible(false);
       },
-      disabled: userPermissions?.users?.View != 1,
+      disabled: userPermissions?.users?.View !== 1,
     },
     {
       key: "4",
@@ -75,8 +84,9 @@ export default function App() {
       onClick: () => {
         router.push("/logs");
         setCookies("loading", true);
+        if (isMobile) setDrawerVisible(false);
       },
-      disabled: userPermissions?.logs?.View != 1,
+      disabled: userPermissions?.logs?.View !== 1,
     },
     {
       key: "sub1",
@@ -90,8 +100,9 @@ export default function App() {
           onClick: () => {
             router.push("/accounts");
             setCookies("loading", true);
+            if (isMobile) setDrawerVisible(false);
           },
-          disabled: userPermissions?.accounts?.View != 1,
+          disabled: userPermissions?.accounts?.View !== 1,
         },
         {
           key: "sub3",
@@ -105,8 +116,9 @@ export default function App() {
               onClick: () => {
                 router.push("/receipt");
                 setCookies("loading", true);
+                if (isMobile) setDrawerVisible(false);
               },
-              disabled: userPermissions?.receipts?.View != 1,
+              disabled: userPermissions?.receipts?.View !== 1,
             },
             {
               key: "16",
@@ -115,8 +127,9 @@ export default function App() {
               onClick: () => {
                 router.push("/payment");
                 setCookies("loading", true);
+                if (isMobile) setDrawerVisible(false);
               },
-              disabled: userPermissions?.payments?.View != 1,
+              disabled: userPermissions?.payments?.View !== 1,
             },
           ],
         },
@@ -124,42 +137,76 @@ export default function App() {
     },
   ];
 
-  //collaps or not on button click
-  const [collaps, setCollaps] = useState(false);
-  const changeCollaps = () => {
-    setCollaps(!collaps);
-  };
-
   return (
     <>
-      <Sider
-      collapsible
-        breakpoint='lg'
-        collapsedWidth='0'
-        collapsed={collaps}
-        onCollapse={changeCollaps}
-        style={{ position: "sticky", top: 0, zIndex: 1, width: "80vh" }}>
-        {/* <Sider
-        collapsible
-        collapsed={collaps}
-        onCollapse={changeCollaps}
-        theme="dark"
-        style={{ position: "sticky", top: 0 }}
-      > */}
-        
-        <div style={{ padding: 20, textAlign: "center" }}>
-          <Image src={logo} alt='' width={100} height={20} />
-        </div>
-
-        <Menu
-          disabled={loading}
+      {isMobile ? (
+        <>
+          <Button
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerVisible(true)}
+            style={{
+              position: "fixed",
+              top: 15,
+              left: 15,
+              zIndex: 1000,
+              //background: "#098290",
+              border: "none",
+            }}
+          />
+          <Drawer
+            title={
+              <div style={{ textAlign: "center" }}>
+                <Image src={logo} alt='Logo' width={80} height={40} />
+              </div>
+            }
+            placement='left'
+            closable
+            onClose={() => setDrawerVisible(false)}
+            open={drawerVisible}
+            width={"100vw"}
+            style={{ background: "linear-gradient(180deg, #0a97a1, #056b7b)" }}>
+            <Menu
+              theme='dark'
+              mode='inline'
+              items={items}
+              defaultSelectedKeys={["1"]}
+              style={{
+                background: "transparent",
+                color: "#fff",
+              }}
+            />
+          </Drawer>
+        </>
+      ) : (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
           theme='dark'
-          style={{ backgroundColor: "#098290" }}
-          defaultSelectedKeys={["1"]}
-          mode='inline'
-          items={items}
-        />
-      </Sider>
+          width={200}
+          style={{
+            background: "linear-gradient(180deg, #0a97a1, #056b7b)",
+            height: "100vh",
+            overflow: "auto",
+            position: "sticky",
+            top: 0,
+            zIndex: 101,
+          }}>
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <Image src={logo} alt='Logo' width={collapsed ? 50 : 100} height={50} />
+          </div>
+          <Menu
+            theme='dark'
+            mode='inline'
+            items={items}
+            defaultSelectedKeys={["1"]}
+            style={{
+              background: "transparent",
+              color: "#fff",
+            }}
+          />
+        </Sider>
+      )}
     </>
   );
 }

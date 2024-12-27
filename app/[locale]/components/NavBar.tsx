@@ -223,7 +223,7 @@ export default function App() {
       style={{
         position: "sticky",
         top: 0,
-        zIndex: 1000,
+        zIndex: 100,
         background: "#ffffff",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         padding: "0 24px",
