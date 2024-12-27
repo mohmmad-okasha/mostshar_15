@@ -105,6 +105,7 @@ import {
   Col,
   Dropdown,
   Menu,
+  MenuProps,
   Row,
   Space,
   Switch,
@@ -150,78 +151,72 @@ export default function App() {
     window.localStorage.removeItem("userId");
   };
 
-
-  const dropdownMenu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <Space>
-              <UserOutlined />
-              <Text>{userName}</Text>
-            </Space>
-          ),
-          disabled: true, // Non-interactive
-        },
-        {
-          key: "2",
-          label: (
-            <Space>
-              <ClockCircleOutlined />
-              Login Time: <Text>{loginTime}</Text>
-            </Space>
-          ),
-          disabled: true,
-        },
-        {
-          key: "3",
-          label: (
-            <Space>
-              <GlobalOutlined />
-              <LanguageChanger />
-            </Space>
-          ),
-        },
-        {
-          key: "4",
-          label: (
-            <Space>
-              Dark Mode
-              <Switch
-                style={{ marginLeft: 10 }}
-                checked={isDarkMode}
-                onChange={changeTheme}
-              />
-            </Space>
-          ),
-        },
-        {
-          key: "5",
-          label: (
-            <Space>
-              <SettingOutlined />
-              Settings
-            </Space>
-          ),
-          onClick: () => (window.location.href = "/settings"),
-        },
-        {
-          type: "divider",
-        },
-        {
-          key: "6",
-          label: (
-            <Space>
-              <PoweroffOutlined />
-              Logout
-            </Space>
-          ),
-          onClick: logout,
-        },
-      ]}
-    />
-  );
+  const items:any = [
+    {
+      key: "1",
+      label: (
+        <Space>
+          <UserOutlined />
+          <Text>{userName}</Text>
+        </Space>
+      ),
+      disabled: true,
+    },
+    {
+      key: "2",
+      label: (
+        <Space>
+          <ClockCircleOutlined />
+          Login Time: <Text>{loginTime}</Text>
+        </Space>
+      ),
+      disabled: true,
+    },
+    {
+      key: "3",
+      label: (
+        <Space>
+          <GlobalOutlined />
+          <LanguageChanger />
+        </Space>
+      ),
+    },
+    {
+      key: "4",
+      label: (
+        <Space>
+          Dark Mode
+          <Switch
+            style={{ marginLeft: 10 }}
+            checked={isDarkMode}
+            onChange={changeTheme}
+          />
+        </Space>
+      ),
+    },
+    {
+      key: "5",
+      label: (
+        <Space>
+          <SettingOutlined />
+          Settings
+        </Space>
+      ),
+      onClick: () => (window.location.href = "/settings"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "6",
+      label: (
+        <Space>
+          <PoweroffOutlined />
+          Logout
+        </Space>
+      ),
+      onClick: logout,
+    },]
 
   return (
     <Header
@@ -245,7 +240,7 @@ export default function App() {
       {/* Right Section */}
       <Space size="large" align="center">
         {/* Dropdown Menu */}
-        <Dropdown overlay={dropdownMenu} trigger={["click"]} placement="bottomRight">
+        <Dropdown menu={{items}} trigger={["click"]} placement="bottomRight">
           <Avatar
             size="large"
             icon={<UserOutlined />}

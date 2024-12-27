@@ -14,7 +14,6 @@ import {
   Card,
   Col,
   Collapse,
-  Form,
   Input,
   Result,
   Row,
@@ -78,7 +77,6 @@ export default function App(props: any) {
     time: "",
   });
 
-  const [form] = Form.useForm(); // to reset form after save or close
   const { RangePicker } = DatePicker;
   const tableRef = useRef<HTMLDivElement>(null);
 
