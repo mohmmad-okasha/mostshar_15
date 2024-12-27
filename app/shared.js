@@ -19,19 +19,19 @@ export const generateAccountNumber = async (parentAccount) => {
     if (parentAccount === 'Main') {
       // Fetch max main account number
       const { data: maxAccountNumber } = await Axios.get(
-        `${api}/accounts/maxAccountNumber`,config
+        `${api}/accounts/maxAccountNumber`, config
       );
 
       newAccountNumber = maxAccountNumber + 1;
     } else {
       // Fetch max child account number
       const { data: maxChildAccountNumber } = await Axios.get(
-        `${api}/accounts/maxChildAccountNumber/${parentAccount}`,config
+        `${api}/accounts/maxChildAccountNumber/${parentAccount}`, config
       );
       //console.log('parentAccount '+parentAccount)
 
       if (maxChildAccountNumber === 'first') {
-        console.log( getAccountNumberByName(parentAccount))
+        console.log(getAccountNumberByName(parentAccount))
         newAccountNumber = parseInt(await getAccountNumberByName(parentAccount)) * 10 + 1; // First child account number
       } else {
         newAccountNumber = parseInt(maxChildAccountNumber) + 1; // Increment existing child account number
@@ -93,13 +93,22 @@ const api = getApiUrl();
 export const getRules = async (userName, PageName) => {
   const response = await Axios.get(`${api}/users/${userName}`);
   let rules = response.data.rules;
- 
+
   if (PageName) {
     rules = rules[PageName]
   }
-  
+
   return rules
 };
+
+export async function getSettings(userName) {
+  try {
+    const response = await Axios.get(`${api}/users/${userName}`);
+    return (response.data.settings);
+  } catch (error) {
+    console.error("Error fetching logs:", error);
+  }
+}
 
 export const handlePrint = (tableRef, title, fontSize, lang) => {
   if (tableRef.current) {

@@ -3,28 +3,32 @@ import "../globals.css";
 
 import React, { useEffect, useState } from "react";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import {
-  Alert,
-  Button,
-  Card,
-  ConfigProvider,
-  Flex,
-  Form,
-  Input,
-  Layout,
-} from "antd";
+import { Alert, Button, Card, ConfigProvider, Flex, Form, Input, Layout } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import { LuFingerprint } from "react-icons/lu";
-import {getApiUrl, saveLog} from "@/app/shared";
+import { getApiUrl, saveLog } from "@/app/shared";
+import { usePathname } from "next/navigation";
+import initTranslations from "../../i18n"; // Your i18n utility
+
 const api = getApiUrl();
 
-type FieldType = {
-  username?: string;
-  password?: string;
-};
-
 export default function App() {
+  const pathname = usePathname();
+  const locale = pathname.slice(-2);
+
+  const [t, setT] = useState(() => (key: string) => key);
+
+  useEffect(() => {
+    setLoading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLoading(false);
+    }
+    loadTranslations();
+  }, [locale]);
+
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -95,7 +99,7 @@ export default function App() {
             </Form.Item>
 
             <Button block type='primary' htmlType='submit' className='login-form-button'>
-              Log in
+              {t("Log in")}
             </Button>
           </Form>
           <br />

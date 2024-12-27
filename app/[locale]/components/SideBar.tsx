@@ -1,4 +1,4 @@
-import { Menu, MenuProps, Drawer, Button } from "antd";
+import { Menu, MenuProps, Drawer, Button, Spin } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React, { useEffect, useState } from "react";
 import { PieChartOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
@@ -7,7 +7,6 @@ import { CiWallet } from "react-icons/ci";
 import { FaFileArrowUp, FaFileArrowDown } from "react-icons/fa6";
 import { TbInvoice } from "react-icons/tb";
 import { LuFolderTree } from "react-icons/lu";
-
 import { useRouter } from "next/navigation";
 import { useCookies } from "react-cookie";
 import Image from "next/image";
@@ -21,9 +20,11 @@ export default function App({ locale }: { locale: string }) {
   const [t, setT] = useState(() => (key: string) => key);
 
   useEffect(() => {
+    setLoading(true);
     async function loadTranslations() {
       const { t } = await initTranslations(locale, ["common"]);
       setT(() => t);
+      setLoading(false);
     }
     loadTranslations();
   }, [locale]);
@@ -206,16 +207,22 @@ export default function App({ locale }: { locale: string }) {
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <Image src={logo} alt='Logo' width={collapsed ? 50 : 100} height={50} />
           </div>
-          <Menu
-            theme='dark'
-            mode='inline'
-            items={items}
-            defaultSelectedKeys={["1"]}
-            style={{
-              background: "transparent",
-              color: "#fff",
-            }}
-          />
+          {!loading ? (
+            <Menu
+              theme='dark'
+              mode='inline'
+              items={items}
+              defaultSelectedKeys={["1"]}
+              style={{
+                background: "transparent",
+                color: "#fff",
+              }}
+            />
+          ) : (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <Spin size='large' />
+            </div>
+          )}
         </Sider>
       )}
     </>
