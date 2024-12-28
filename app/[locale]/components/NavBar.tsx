@@ -1,108 +1,10 @@
-// "use client";
-
-// import {
-//   Avatar,
-//   Button,
-//   Col,
-//   Dropdown,
-//   Input,
-//   MenuProps,
-//   Row,
-//   Select,
-//   Space,
-//   Switch,
-//   theme,
-// } from "antd";
-// import { Header } from "antd/es/layout/layout";
-// import React, { useState } from "react";
-// import { PoweroffOutlined } from "@ant-design/icons";
-// import { useCookies } from "react-cookie";
-// import { UserOutlined } from "@ant-design/icons";
-// import LanguageChanger from "./LanguageChanger";
-
-// export default function App() {
-//   const {
-//     token: { colorBgContainer },
-//   } = theme.useToken();
-
-//   const [_, setCookies] = useCookies(["token"]);
-//   const [isDarkMode, setIsDarkMode] = useState();
-//   const logout = () => {
-//     setCookies("token", "");
-//     window.localStorage.removeItem("userId");
-//   };
-
-//   const items: MenuProps["items"] = [
-//     {
-//       key: "1",
-//       label: (
-//         <>
-//           Dark Mode <Switch style={{ marginLeft: 10 }} checked={isDarkMode} />
-//         </>
-//       ),
-//     },
-//     {
-//       key: "4",
-//       label: <hr />
-//     },
-//     {
-//       key: "2",
-//       label: (
-//         <>
-//           <LanguageChanger />
-//         </>
-//       ),
-//     },
-//     {
-//       key: "5",
-//       label: <hr />
-//     },
-//     {
-//       key: "3",
-//       label: "Logout",
-//       onClick: logout,
-//     },
-
-//   ];
-
-//   return (
-//     <>
-//       <Header
-//         style={{
-//           position: "sticky",
-//           top: 0,
-//           zIndex: 1,
-//           textAlign: "right",
-//           background: colorBgContainer,
-//           boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.05)",
-//         }}>
-//         <Row>
-//           {/* <Col span={8} style={{ padding: 15 }}>
-//             <Input.Search placeholder='Search...'  allowClear />
-//           </Col> */}
-
-//           <Col span={8} offset={16}>
-//             {/* <Button onClick={logout} icon={<PoweroffOutlined />} /> */}
-
-//             <Dropdown trigger={["click"]} menu={{ items }} placement='bottomLeft'>
-//               <Space wrap size={16}>
-//                 <Avatar size='large' icon={<UserOutlined />} />
-//               </Space>
-//             </Dropdown>
-//           </Col>
-//         </Row>
-//       </Header>
-//     </>
-//   );
-// }
-
-
 "use client";
 
 import {
   Avatar,
   Button,
   Col,
+  Divider,
   Dropdown,
   Menu,
   MenuProps,
@@ -122,20 +24,34 @@ import {
 } from "@ant-design/icons";
 import { useCookies } from "react-cookie";
 import LanguageChanger from "./LanguageChanger";
+import initTranslations from "../../i18n"; // Your i18n utility
+import { CiDark } from "react-icons/ci";
 
 const { Text } = Typography;
 
-export default function App() {
+export default function App({ locale }: { locale: string }) {
+  const [t, setT] = useState(() => (key: string) => key);
+
+  useEffect(() => {
+    setLoading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLoading(false);
+    }
+    loadTranslations();
+  }, [locale]);
+
   const [cookies, setCookies] = useCookies(["token", "username", "loginTime"]);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [language, setLanguage] = useState('');
+  const [language, setLanguage] = useState("");
+  const [loading, setLoading] = useState(true);
+
   //const [username, setUsername] = useState("Guest");
   const [loginTime, setLoginTime] = useState("");
   const userName = window.localStorage.getItem("userName");
 
   useEffect(() => {
-    
-   //setUsername(cookies.username || "Guest");
     setLoginTime(cookies.loginTime || new Date().toLocaleString());
   }, [cookies]);
 
@@ -145,32 +61,30 @@ export default function App() {
     document.body.className = isDarkMode ? "light-theme" : "dark-theme";
   };
 
-
   const logout = () => {
     setCookies("token", "");
     window.localStorage.removeItem("userId");
   };
 
-  const items:any = [
+  const items: any = [
     {
       key: "1",
       label: (
         <Space>
           <UserOutlined />
-          <Text>{userName}</Text>
+          <Text>{t("User") + " :" + userName}</Text>
         </Space>
       ),
-      disabled: true,
     },
     {
       key: "2",
       label: (
         <Space>
           <ClockCircleOutlined />
-          Login Time: <Text>{loginTime}</Text>
+          {t("Login Time")}: <Text>{loginTime}</Text>
+          <Divider />
         </Space>
       ),
-      disabled: true,
     },
     {
       key: "3",
@@ -178,6 +92,7 @@ export default function App() {
         <Space>
           <GlobalOutlined />
           <LanguageChanger />
+          <Divider />
         </Space>
       ),
     },
@@ -185,12 +100,15 @@ export default function App() {
       key: "4",
       label: (
         <Space>
-          Dark Mode
+          <CiDark />
+          {t("Dark Mode")}
           <Switch
             style={{ marginLeft: 10 }}
             checked={isDarkMode}
             onChange={changeTheme}
           />
+                    <Divider />
+
         </Space>
       ),
     },
@@ -199,7 +117,9 @@ export default function App() {
       label: (
         <Space>
           <SettingOutlined />
-          Settings
+          {t("Settings")}
+          <Divider />
+
         </Space>
       ),
       onClick: () => (window.location.href = "/settings"),
@@ -212,11 +132,13 @@ export default function App() {
       label: (
         <Space>
           <PoweroffOutlined />
-          Logout
+          {t("Logout")}
+          
         </Space>
       ),
       onClick: logout,
-    },]
+    },
+  ];
 
   return (
     <Header
@@ -230,19 +152,16 @@ export default function App() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-      }}
-    >
+      }}>
       {/* Left Section */}
-      <Text strong style={{ fontSize: 20 }}>
-        
-      </Text>
+      <Text strong style={{ fontSize: 20 }}></Text>
 
       {/* Right Section */}
-      <Space size="large" align="center">
+      <Space size='large' align='center'>
         {/* Dropdown Menu */}
-        <Dropdown menu={{items}} trigger={["click"]} placement="bottomRight">
+        <Dropdown menu={{ items }} trigger={["click"]} placement='bottomRight'>
           <Avatar
-            size="large"
+            size='large'
             icon={<UserOutlined />}
             style={{
               cursor: "pointer",

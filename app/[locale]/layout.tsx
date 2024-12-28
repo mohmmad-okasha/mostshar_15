@@ -80,7 +80,7 @@ export default function RootLayout({
             <Layout hasSider style={{ minHeight: "100vh" }}>
               <SideBar locale={settings.lang} />
               <Layout>
-                <NavBar />
+                <NavBar locale={settings.lang}/>
 
                 <Content
                   style={{

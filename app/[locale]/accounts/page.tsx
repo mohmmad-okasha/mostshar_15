@@ -705,7 +705,6 @@ export default function App(props: any) {
                 </Row>
                 {Errors.saveErrors && (
                   <>
-                    <Form.Item />
                     <Alert
                       closable
                       description={Errors.saveErrors}
@@ -715,7 +714,10 @@ export default function App(props: any) {
                   </>
                 )}
                 <Divider />
-                <Form.Item style={{ marginBottom: -40, textAlign: "right",direction:'ltr' }}>
+                <Form.Item
+                  name='footer'
+                  key='footer'
+                  style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
                   <Button
                     shape='round'
                     icon={<CloseOutlined />}
