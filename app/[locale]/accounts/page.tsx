@@ -674,7 +674,7 @@ export default function App(props: any) {
 
   // --- Render ---
   return (
-    <Card loading={LangLoading}>
+    <Card style={{border:0}} loading={LangLoading}>
       <div>
         <Toaster />
       </div>
