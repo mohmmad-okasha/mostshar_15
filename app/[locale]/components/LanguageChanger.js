@@ -48,7 +48,7 @@ function LanguageChanger() {
             const user = await axios.get(`${api}/users/${userName}`); // API endpoint
             const settings = {
                 ...user.data?.settings,
-                lang: locale,
+                lang: locale || 'en',
             }
 
             await axios.post(`${api}/users/changeLang`, { userName: userName, settings: settings }); // API endpoint

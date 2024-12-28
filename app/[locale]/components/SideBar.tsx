@@ -20,15 +20,16 @@ export default function App({ locale }: { locale: string }) {
   const [t, setT] = useState(() => (key: string) => key);
 
   useEffect(() => {
-    setLoading(true);
+    setLangloading(true);
     async function loadTranslations() {
       const { t } = await initTranslations(locale, ["common"]);
       setT(() => t);
-      setLoading(false);
+      setLangloading(false);
     }
     loadTranslations();
   }, [locale]);
 
+  const [LangLoading, setLangloading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [cookies, setCookies] = useCookies(["token", "loading"]);
   const router = useRouter();
@@ -207,12 +208,12 @@ export default function App({ locale }: { locale: string }) {
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <Image src={logo} alt='Logo' width={collapsed ? 50 : 100} height={50} />
           </div>
-          {!loading ? (
+          {!LangLoading ? (
             <Menu
               theme='dark'
               mode='inline'
               items={items}
-              defaultSelectedKeys={["1"]}
+              //defaultSelectedKeys={["1"]}
               style={{
                 background: "transparent",
                 color: "#fff",

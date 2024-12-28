@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [Authed, setAuthed] = useState("");
-  const [settings, setSettings] = useState({
+  let [settings, setSettings] = useState({
     lang: "",
     theme: "",
   });
@@ -37,9 +37,15 @@ export default function RootLayout({
     else setLoading(false);
   }, [cookies.loading]);
 
+
   useEffect(() => {
     getUserData();
   }, []);
+
+  useEffect(() => {
+    console.log('settings')
+    console.log(settings)
+  }, [settings]);
 
   async function getUserData() {
     //setLoading(true);
@@ -65,7 +71,7 @@ export default function RootLayout({
                 triggerBg: "#098290",
               },
             },
-            //algorithm: theme.darkAlgorithm,
+            algorithm: settings.theme == 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
             token: {
               //colorBgBase:'#f5f5f5',
               colorText: "#858796",
@@ -75,12 +81,12 @@ export default function RootLayout({
           }}
           direction={settings.lang === "ar" ? "rtl" : "ltr"} // Ant Design RTL support
         >
-          {Authed === "false" && <Login />}
+          {Authed === "false" && <Login settings={settings}/>}
           {Authed === "true" && (
             <Layout hasSider style={{ minHeight: "100vh" }}>
               <SideBar locale={settings.lang} />
               <Layout>
-                <NavBar locale={settings.lang}/>
+                <NavBar settings={settings} setSettings={setSettings}/>
 
                 <Content
                   style={{

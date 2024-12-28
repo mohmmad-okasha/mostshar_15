@@ -13,7 +13,12 @@ import initTranslations from "../../i18n"; // Your i18n utility
 
 const api = getApiUrl();
 
-export default function App() {
+type SettingsType = {
+  lang: string;
+  theme: string;
+};
+
+export default function App({ settings }: { settings: SettingsType }) {
   const pathname = usePathname();
   const locale = pathname.slice(-2);
 
@@ -67,6 +72,7 @@ export default function App() {
         }}>
         <Card
           style={{ width: "30vh", backgroundColor: "#0000", border: 0 }}
+          //style={{ width: "30vh", backgroundColor: settings?.theme == 'dark' ? "black" : '#0000', border: 0 }}
           loading={loading}>
           <Flex justify='center' align='middle'>
             <LuFingerprint size='5em' color='#098290' />

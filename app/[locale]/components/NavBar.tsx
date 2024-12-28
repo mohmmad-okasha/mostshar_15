@@ -26,10 +26,24 @@ import { useCookies } from "react-cookie";
 import LanguageChanger from "./LanguageChanger";
 import initTranslations from "../../i18n"; // Your i18n utility
 import { CiDark } from "react-icons/ci";
+import axios from "axios";
+import { getApiUrl } from "@/app/shared";
+const api = getApiUrl();
 
 const { Text } = Typography;
+type SettingsType = {
+  lang: string;
+  theme: string;
+};
+export default function App({
+  settings,
+  setSettings,
+}: {
+  setSettings: any;
+  settings: SettingsType;
+}) {
+  let locale = settings.lang;
 
-export default function App({ locale }: { locale: string }) {
   const [t, setT] = useState(() => (key: string) => key);
 
   useEffect(() => {
@@ -43,11 +57,10 @@ export default function App({ locale }: { locale: string }) {
   }, [locale]);
 
   const [cookies, setCookies] = useCookies(["token", "username", "loginTime"]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [language, setLanguage] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(settings.theme == "dark" ? true : false);
+  const [themeChanged, setThemeChanged] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  //const [username, setUsername] = useState("Guest");
   const [loginTime, setLoginTime] = useState("");
   const userName = window.localStorage.getItem("userName");
 
@@ -55,10 +68,34 @@ export default function App({ locale }: { locale: string }) {
     setLoginTime(cookies.loginTime || new Date().toLocaleString());
   }, [cookies]);
 
+  useEffect(() => {
+    setThemeChanged(false)
+
+    const handleThemeChange = async () => {
+      try {
+        // Update language preference in backend
+        const user = await axios.get(`${api}/users/${userName}`); // API endpoint
+        const settings = {
+          ...user.data?.settings,
+          theme: isDarkMode ? "dark" : "light",
+        };
+        setSettings({ theme: isDarkMode ? "dark" : "light", ...settings });
+
+        await axios.post(`${api}/users/changeTheme`, {
+          userName: userName,
+          settings: settings,
+        }); // API endpoint
+      } catch (error) {
+        console.error("Error updating theme preference:", error);
+      }
+    };
+    handleThemeChange();
+
+  }, [themeChanged==true]);
+
   const changeTheme = () => {
     setIsDarkMode((prev) => !prev);
-    // Apply theme changes globally if needed
-    document.body.className = isDarkMode ? "light-theme" : "dark-theme";
+    setThemeChanged(true)
   };
 
   const logout = () => {
@@ -107,8 +144,7 @@ export default function App({ locale }: { locale: string }) {
             checked={isDarkMode}
             onChange={changeTheme}
           />
-                    <Divider />
-
+          <Divider />
         </Space>
       ),
     },
@@ -119,7 +155,6 @@ export default function App({ locale }: { locale: string }) {
           <SettingOutlined />
           {t("Settings")}
           <Divider />
-
         </Space>
       ),
       onClick: () => (window.location.href = "/settings"),
@@ -133,7 +168,6 @@ export default function App({ locale }: { locale: string }) {
         <Space>
           <PoweroffOutlined />
           {t("Logout")}
-          
         </Space>
       ),
       onClick: logout,
@@ -146,7 +180,7 @@ export default function App({ locale }: { locale: string }) {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#ffffff",
+        background: settings.theme == "dark" ? "#1d1d1d" : "#ffffff",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         padding: "0 24px",
         display: "flex",
