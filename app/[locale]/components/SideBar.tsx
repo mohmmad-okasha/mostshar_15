@@ -1,4 +1,4 @@
-import { Menu, MenuProps, Drawer, Button, Spin } from "antd";
+import { Menu, MenuProps, Drawer, Button, Spin, Card } from "antd";
 import Sider from "antd/es/layout/Sider";
 import React, { useEffect, useState } from "react";
 import { PieChartOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
@@ -219,8 +219,10 @@ export default function App({ locale }: { locale: string }) {
               }}
             />
           ) : (
-            <div style={{ textAlign: "center", padding: "20px 0" }}>
-              <Spin size='large' />
+            <div>
+              <Card
+                style={{ padding: "0", backgroundColor: "#0000", border: 0 }}
+                loading={true}></Card>
             </div>
           )}
         </Sider>

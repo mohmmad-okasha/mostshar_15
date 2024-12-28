@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, use } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -42,13 +42,28 @@ import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import Search from "antd/es/input/Search";
+import initTranslations from "../../i18n.js";
 
 // --- Constants ---
 const PageName = "Users";
 const api = getApiUrl();
 
 // --- Main Component ---
-export default function App() {
+export default function App(props: any) {
+  const params: any = use(props.params);
+
+  const { locale } = params;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    setLangloading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLangloading(false);
+    }
+    loadTranslations();
+  }, [locale]);
+
   // --- Refs and Hooks ---
   const tableRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
@@ -61,6 +76,7 @@ export default function App() {
   const [treeData, setTreeData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [Loading, setLoading] = useState(true);
+  const [LangLoading, setLangloading] = useState(true);
   const [edit, setEdit] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [Errors, setErrors] = useState<any>({
@@ -223,89 +239,90 @@ export default function App() {
         .map((field) =>
           field.showTable
             ? {
-                title: field.label,
+                title: t(field.label),
                 dataIndex: field.fieldName,
               }
             : null
         )
         .filter(Boolean),
       {
-        title: "User",
+        title: t("User"),
         dataIndex: "user",
       },
-      userPermissions.Remove == 1 || userPermissions.Edit ==1 ? 
-      {
-        title: "Actions",
-        dataIndex: "Actions",
-        key: "Actions",
-        align: "center",
-        className: "no_print",
-        fixed: "right",
-        render: (_: any, record: any) => (
-          <>
-            {userPermissions.Remove == 1 && (
-              <Popconfirm
-                title={"Delete the " + PageName.slice(0, -1)}
-                description={"Are you sure to delete  " + record.name + "?"}
-                onConfirm={() => {
-                  remove(record._id);
-                }}
-                okText='Yes, Remove'
-                cancelText='No'>
-                <Button
-                  type='primary'
-                  danger
-                  style={{marginLeft:5}}
-                  onClick={() => {
-                    setUserData(record);
-                  }}
-                  shape='circle'
-                  size='small'
-                  icon={<DeleteOutlined />}
-                />
-              </Popconfirm>
-            )}
+      userPermissions.Remove == 1 || userPermissions.Edit == 1
+        ? {
+            title: t("Actions"),
+            dataIndex: "Actions",
+            key: "Actions",
+            align: "center",
+            className: "no_print",
+            fixed: "right",
+            render: (_: any, record: any) => (
+              <>
+                {userPermissions.Remove == 1 && (
+                  <Popconfirm
+                    title={t("Delete the") + " " + t(PageName.slice(0, -1))}
+                    description={t("Are you sure to delete") + " " + record.name}
+                    onConfirm={() => {
+                      remove(record._id);
+                    }}
+                    okText={t("Yes, Remove")}
+                    cancelText={t("No")}>
+                    <Button
+                      type='primary'
+                      danger
+                      style={{ marginLeft: 5 }}
+                      onClick={() => {
+                        setUserData(record);
+                      }}
+                      shape='circle'
+                      size='small'
+                      icon={<DeleteOutlined />}
+                    />
+                  </Popconfirm>
+                )}
 
-            {userPermissions.Edit == 1 &&(
-              <Button
-              type='primary'
-              shape='circle'
-              size='small'
-              style={{marginLeft:5}}
-              icon={<EditOutlined />}
-              onClick={() => {
-                setUserData(record);
-                setOldData(record);
-                form.setFieldsValue(
-                  fieldsConfig.reduce((acc: any, field) => {
-                    acc[field.fieldName] = record[field.fieldName];
-                    return acc;
-                  }, {})
-                );
-                form.setFieldValue("password", "");
-                form.setFieldValue("password2", "");
+                {userPermissions.Edit == 1 && (
+                  <Button
+                    type='primary'
+                    shape='circle'
+                    size='small'
+                    style={{ marginLeft: 5 }}
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      setUserData(record);
+                      setOldData(record);
+                      form.setFieldsValue(
+                        fieldsConfig.reduce((acc: any, field) => {
+                          acc[field.fieldName] = record[field.fieldName];
+                          return acc;
+                        }, {})
+                      );
+                      form.setFieldValue("password", "");
+                      form.setFieldValue("password2", "");
 
-                setEdit(true);
-                
-                // تجهيز checkedKeys بناءً على صلاحيات المستخدم
-                const initialCheckedKeys: any[] = [];
-                Object.keys(record.rules).forEach((table) => {
-                  const actions = record.rules[table];
-                  Object.keys(actions).forEach((action: any) => {
-                    if (actions[action] === 1) {
-                      initialCheckedKeys.push(`${table}_${action}`);
-                    }
-                  });
-                });
+                      setEdit(true);
 
-                setCheckedKeys(initialCheckedKeys);
-                showModal();
-              }}
-            />)}
+                      // تجهيز checkedKeys بناءً على صلاحيات المستخدم
+                      const initialCheckedKeys: any[] = [];
+                      Object.keys(record.rules).forEach((table) => {
+                        const actions = record.rules[table];
+                        Object.keys(actions).forEach((action: any) => {
+                          if (actions[action] === 1) {
+                            initialCheckedKeys.push(`${table}_${action}`);
+                          }
+                        });
+                      });
 
-          </>
-        ),
-      } : {}
+                      setCheckedKeys(initialCheckedKeys);
+                      showModal();
+                    }}
+                  />
+                )}
+              </>
+            ),
+          }
+        : {},
     ],
     [fieldsConfig, remove, setUserData, showModal]
   );
@@ -576,7 +593,7 @@ export default function App() {
         {showInput && (
           <Form.Item
             key={fieldName}
-            label={displayedLabel}
+            label={t(displayedLabel)}
             name={fieldName}
             rules={rules}>
             {type === "select" && (
@@ -651,10 +668,10 @@ export default function App() {
 
         // تجهيز بيانات الـ TreeView
         const formattedData = Object.keys(tables).map((table) => ({
-          title: table,
+          title: t(table),
           key: table,
           children: Object.keys(tables[table]).map((action) => ({
-            title: action,
+            title: t(action),
             key: `${table}_${action}`,
           })),
         }));
@@ -714,14 +731,14 @@ export default function App() {
 
   // --- Render ---
   return (
-    <>
+    <Card loading={LangLoading}>
       <div>
         <Toaster />
       </div>
       {userPermissions.View == 1 && (
         <>
           <Modal
-            title={modalTitle}
+            title={t(modalTitle)}
             open={isModalOpen}
             onCancel={handleCancel}
             width={500}
@@ -743,9 +760,9 @@ export default function App() {
                   )}
                 </Row>
 
-                <Card title='Permissions'>
+                <Card title={t("Permissions")}>
                   <Search
-                    placeholder='Search'
+                    placeholder={t("Search")}
                     allowClear
                     onSearch={onSearch}
                     onChange={(e) => onSearch(e.target.value)}
@@ -757,6 +774,7 @@ export default function App() {
                     onCheck={onCheck}
                     checkedKeys={checkedKeys}
                     treeData={rolsFilteredData}
+                    style={{ direction: "ltr" }}
                   />
                 </Card>
                 {Errors.saveErrors && (
@@ -771,13 +789,13 @@ export default function App() {
                   </>
                 )}
                 <Divider />
-                <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
+                <Form.Item style={{ marginBottom: -40, textAlign: "right" , direction:'ltr' }}>
                   <Button
                     shape='round'
                     icon={<CloseOutlined />}
                     onClick={handleCancel}
                     style={{ margin: 5 }}>
-                    Cancel
+                    {t("Cancel")}
                   </Button>
 
                   <Button
@@ -786,7 +804,7 @@ export default function App() {
                     htmlType='submit'
                     icon={<SaveOutlined />}
                     style={{ margin: 5 }}>
-                    Save
+                    {t("Save")}
                   </Button>
                 </Form.Item>
               </Form>
@@ -794,7 +812,7 @@ export default function App() {
             </Card>
           </Modal>
           <Card
-            title={PageName}
+            title={t(PageName)}
             style={cardStyle}
             extra={
               <>
@@ -805,7 +823,7 @@ export default function App() {
                       onClick: (e) => handleExport(e),
                     }}>
                     <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
-                      Export
+                      {t('Export')}
                     </Button>
                   </Dropdown>
                 )}
@@ -814,9 +832,9 @@ export default function App() {
                   <Button
                     shape='round'
                     icon={<FaPrint />}
-                    onClick={() => handlePrint(tableRef, PageName, 12)}
+                    onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
                     style={{ margin: 5 }}>
-                    Print
+                    {t('Print')}
                   </Button>
                 )}
 
@@ -827,7 +845,7 @@ export default function App() {
                     icon={<BsPlusLg />}
                     onClick={showModal}
                     style={{ margin: 5 }}>
-                    New
+                    {t('New')}
                   </Button>
                 )}
               </>
@@ -835,7 +853,7 @@ export default function App() {
             {!Errors.connectionError && (
               <>
                 <Input.Search
-                  placeholder='Search...'
+                  placeholder={t('Search...')}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ paddingBottom: 5 }}
                   allowClear
@@ -863,6 +881,6 @@ export default function App() {
           </Card>
         </>
       )}
-    </>
+    </Card>
   );
 }

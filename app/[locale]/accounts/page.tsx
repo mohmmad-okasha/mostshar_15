@@ -56,9 +56,11 @@ export default function App(props: any) {
   const { locale } = params;
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
+    setLangloading(true);
     async function loadTranslations() {
       const { t } = await initTranslations(locale, ["common"]);
       setT(() => t);
+      setLangloading(false);
     }
     loadTranslations();
   }, [locale]);
@@ -81,6 +83,7 @@ export default function App(props: any) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
+  const [LangLoading, setLangloading] = useState(true);
   const [Loading, setLoading] = useState(true);
   const [edit, setEdit] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -149,7 +152,7 @@ export default function App(props: any) {
     () => [
       {
         fieldName: "accountNumber",
-        label: t("Account Number"),
+        label: "Account Number",
         type: "number",
         rules: [{ required: false }],
         readOnly: true,
@@ -159,7 +162,7 @@ export default function App(props: any) {
       },
       {
         fieldName: "accountName",
-        label: t("Account Name"),
+        label: "Account Name",
         rules: [{ required: true }],
         type: "text",
         showTable: true,
@@ -169,7 +172,7 @@ export default function App(props: any) {
       },
       {
         fieldName: "parentAccount",
-        label: t("Parent Account"),
+        label: "Parent Account",
         type: "select",
         rules: [{ required: true }],
         options: [
@@ -186,7 +189,7 @@ export default function App(props: any) {
       },
       {
         fieldName: "accountType",
-        label: t("Account Type"),
+        label: "Account Type",
         type: "select",
         rules: [{ required: true }],
         options: [
@@ -203,7 +206,7 @@ export default function App(props: any) {
       },
       {
         fieldName: "balance",
-        label: t("Balance"),
+        label: "Balance",
         type: "number",
         rules: [{ required: false }],
         showTable: true,
@@ -213,7 +216,7 @@ export default function App(props: any) {
       },
       {
         fieldName: "notes",
-        label: t("Notes"),
+        label: "Notes",
         type: "text area",
         rules: [{ required: false }],
         showTable: true,
@@ -252,7 +255,7 @@ export default function App(props: any) {
         .map((field) =>
           field.showTable
             ? {
-                title: field.label,
+                title: t(field.label),
                 dataIndex: field.fieldName,
               }
             : null
@@ -671,7 +674,7 @@ export default function App(props: any) {
 
   // --- Render ---
   return (
-    <>
+    <Card loading={LangLoading}>
       <div>
         <Toaster />
       </div>
@@ -712,7 +715,7 @@ export default function App(props: any) {
                   </>
                 )}
                 <Divider />
-                <Form.Item style={{ marginBottom: -40, textAlign: "right" }}>
+                <Form.Item style={{ marginBottom: -40, textAlign: "right",direction:'ltr' }}>
                   <Button
                     shape='round'
                     icon={<CloseOutlined />}
@@ -810,6 +813,6 @@ export default function App(props: any) {
           </Card>
         </>
       )}
-    </>
+    </Card>
   );
 }

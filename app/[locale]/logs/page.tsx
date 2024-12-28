@@ -40,13 +40,15 @@ export default function App(props: any) {
   const { locale } = params;
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
+    setLangloading(true);
     async function loadTranslations() {
       const { t } = await initTranslations(locale, ["common"]);
       setT(() => t);
+      setLangloading(false);
     }
     loadTranslations();
   }, [locale]);
-  
+
   const userName = window.localStorage.getItem("userName");
   const [rulesMatch, setRulesMatch] = useState(0);
   const [userPermissions, setUserPermissions] = useState<any>({
@@ -60,6 +62,7 @@ export default function App(props: any) {
   const [allLogsData, setAllLogsData] = useState<any>([]);
   const [Users, setUsers] = useState([]);
   const [Loading, setLoading] = useState(true); // to show loading before get data form db
+  const [LangLoading, setLangloading] = useState(true); 
   const [searchText, setSearchText] = useState(""); // to search on table
   const [searchUserName, setSearchUserName] = useState(""); // to search by userName
   const [searchTime, setSearchTime] = useState({ from: "", to: "" });
@@ -174,7 +177,7 @@ export default function App(props: any) {
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
-    <>
+    <Card loading={LangLoading}>
       <div>
         <Toaster />
       </div>
@@ -183,17 +186,18 @@ export default function App(props: any) {
           <Card
             title={t(PageName)}
             style={cardStyle}
-            extra={userPermissions.Print == 1 && (
-              <>
-              
-                <Button
-                  type='text'
-                  title='Print'
-                  onClick={() => {
-                    handlePrint(tableRef, PageName, 12);
-                  }}
-                  icon={<FaPrint size={"1em"} />}></Button>
-              </>)
+            extra={
+              userPermissions.Print == 1 && (
+                <>
+                  <Button
+                    type='text'
+                    title='Print'
+                    onClick={() => {
+                      handlePrint(tableRef, t(PageName), 12,locale);
+                    }}
+                    icon={<FaPrint size={"1em"} />}></Button>
+                </>
+              )
             }>
             {!Errors.connectionError && (
               <>
@@ -211,7 +215,7 @@ export default function App(props: any) {
                             lg={{ flex: "30%" }}
                             style={{ padding: 5 }}>
                             <Input.Search
-                              placeholder={t('Search...')}
+                              placeholder={t("Search...")}
                               onChange={(e) => setSearchText(e.target.value)}
                               allowClear
                             />
@@ -223,7 +227,7 @@ export default function App(props: any) {
                             style={{ padding: 5 }}>
                             <Select
                               onChange={(newValue) => setSearchUserName(newValue)}
-                              placeholder={t('User')}
+                              placeholder={t("User")}
                               showSearch
                               filterOption={filterOption}
                               options={Users}
@@ -236,7 +240,7 @@ export default function App(props: any) {
                             lg={{ flex: "50%" }}
                             style={{ padding: 5 }}>
                             <RangePicker
-                            placeholder={[t('From date'), t('To date')]}
+                              placeholder={[t("From date"), t("To date")]}
                               style={{ width: "100%" }}
                               onChange={(value, dateString) => {
                                 setSearchTime({ from: dateString[0], to: dateString[1] });
@@ -274,6 +278,6 @@ export default function App(props: any) {
           </Card>
         </>
       )}
-    </>
+    </Card>
   );
 }
