@@ -83,6 +83,23 @@ export default function App(props: any) {
     saveErrors: "",
   });
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
+    };
+
+    // Initial check
+    checkScreenSize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkScreenSize);
+
+    // Cleanup event listener on component unmount
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, [window.innerWidth]);
+
   //const params: any = use(props.params);
   //const { locale } = params;
   const locale = settings.lang;
@@ -96,8 +113,6 @@ export default function App(props: any) {
     }
     loadTranslations();
   }, [locale]);
-
-
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -247,8 +262,8 @@ export default function App(props: any) {
   // --- Effects Hooks ---
   useEffect(() => {
     getSettings(userName).then((value) => {
-      setSettings(value)
-    })
+      setSettings(value);
+    });
     getRules(userName, PageName.toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
@@ -681,10 +696,11 @@ export default function App(props: any) {
       label: "SQL",
     },
   ];
+  
 
   // --- Render ---
   return (
-    <Card style={{border:0}} loading={LangLoading}>
+    <Card style={{ border: 0 }} loading={LangLoading}>
       <div>
         <Toaster />
       </div>
