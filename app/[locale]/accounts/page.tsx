@@ -354,7 +354,7 @@ export default function App(props: any) {
                 return (
                   <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
                     <Button
-                      type='primary'
+                      type='dashed'
                       shape='circle'
                       size='small'
                       icon={<FiMoreVertical />}
