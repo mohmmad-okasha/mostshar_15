@@ -11,6 +11,7 @@ import {
   handlePrint,
   cardStyle,
   generateAccountNumber,
+  getSettings,
 } from "@/app/shared";
 import {
   Alert,
@@ -51,20 +52,10 @@ const api = getApiUrl();
 
 // --- Main Component ---
 export default function App(props: any) {
-  const params: any = use(props.params);
-
-  const { locale } = params;
-  const [t, setT] = useState(() => (key: any) => key);
-  useEffect(() => {
-    setLangloading(true);
-    async function loadTranslations() {
-      const { t } = await initTranslations(locale, ["common"]);
-      setT(() => t);
-      setLangloading(false);
-    }
-    loadTranslations();
-  }, [locale]);
-
+  let [settings, setSettings] = useState({
+    lang: "",
+    theme: "",
+  });
   // --- Refs and Hooks ---
   const tableRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
@@ -91,6 +82,22 @@ export default function App(props: any) {
     connectionError: "",
     saveErrors: "",
   });
+
+  //const params: any = use(props.params);
+  //const { locale } = params;
+  const locale = settings.lang;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    setLangloading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLangloading(false);
+    }
+    loadTranslations();
+  }, [locale]);
+
+
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -239,6 +246,9 @@ export default function App(props: any) {
 
   // --- Effects Hooks ---
   useEffect(() => {
+    getSettings(userName).then((value) => {
+      setSettings(value)
+    })
     getRules(userName, PageName.toLowerCase()).then((value) => {
       setUserPermissions(value);
     });

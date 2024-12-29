@@ -4,7 +4,7 @@ const PageName = "Logs";
 import React, { use, useEffect, useRef, useState } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
-import { getRules, getApiUrl, cardStyle, formatDate, handlePrint } from "@/app/shared";
+import { getRules, getApiUrl, cardStyle, formatDate, handlePrint, getSettings } from "@/app/shared";
 import initTranslations from "../../i18n.js";
 
 //Styling
@@ -34,21 +34,7 @@ interface DataType {
   time: Date;
 }
 
-export default function App(props: any) {
-  const params: any = use(props.params);
-
-  const { locale } = params;
-  const [t, setT] = useState(() => (key: any) => key);
-  useEffect(() => {
-    setLangloading(true);
-    async function loadTranslations() {
-      const { t } = await initTranslations(locale, ["common"]);
-      setT(() => t);
-      setLangloading(false);
-    }
-    loadTranslations();
-  }, [locale]);
-
+export default function App() {
   const userName = window.localStorage.getItem("userName");
   const [rulesMatch, setRulesMatch] = useState(0);
   const [userPermissions, setUserPermissions] = useState<any>({
@@ -62,7 +48,7 @@ export default function App(props: any) {
   const [allLogsData, setAllLogsData] = useState<any>([]);
   const [Users, setUsers] = useState([]);
   const [Loading, setLoading] = useState(true); // to show loading before get data form db
-  const [LangLoading, setLangloading] = useState(true); 
+  const [LangLoading, setLangloading] = useState(true);
   const [searchText, setSearchText] = useState(""); // to search on table
   const [searchUserName, setSearchUserName] = useState(""); // to search by userName
   const [searchTime, setSearchTime] = useState({ from: "", to: "" });
@@ -79,6 +65,22 @@ export default function App(props: any) {
     userName: "",
     time: "",
   });
+  let [settings, setSettings] = useState({
+    lang: "",
+    theme: "",
+  });
+
+  const locale = settings.lang;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    setLangloading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLangloading(false);
+    }
+    loadTranslations();
+  }, [locale]);
 
   const { RangePicker } = DatePicker;
   const tableRef = useRef<HTMLDivElement>(null);
@@ -107,6 +109,10 @@ export default function App(props: any) {
   ];
 
   useEffect(() => {
+    // to get user settings
+    getSettings(userName).then((value) => {
+      setSettings(value);
+    });
     getRules(userName, PageName.toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
@@ -177,7 +183,7 @@ export default function App(props: any) {
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
-    <Card style={{border:0}} loading={LangLoading}>
+    <Card style={{ border: 0 }} loading={LangLoading}>
       <div>
         <Toaster />
       </div>
@@ -193,7 +199,7 @@ export default function App(props: any) {
                     type='text'
                     title='Print'
                     onClick={() => {
-                      handlePrint(tableRef, t(PageName), 12,locale);
+                      handlePrint(tableRef, t(PageName), 12, locale);
                     }}
                     icon={<FaPrint size={"1em"} />}></Button>
                 </>

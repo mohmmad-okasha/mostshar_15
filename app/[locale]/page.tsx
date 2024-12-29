@@ -7,7 +7,10 @@ import LanguageChanger from "./components/LanguageChanger";
 
 export default function Home(props: any) {
   const params: any = use(props.params);
-
+  let [settings, setSettings] = useState({
+    lang: "",
+    theme: "",
+  });
   const router = useRouter();
   const { locale } = params;
   const [t, setT] = useState(() => (key: any) => key);

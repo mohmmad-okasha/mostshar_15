@@ -104,7 +104,7 @@ export const getRules = async (userName, PageName) => {
 export async function getSettings(userName) {
   try {
     const response = await Axios.get(`${api}/users/${userName}`);
-    return (response.data.settings);
+    return response.data.settings;
   } catch (error) {
     console.error("Error fetching logs:", error);
   }

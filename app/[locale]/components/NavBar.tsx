@@ -3,12 +3,9 @@
 import {
   Avatar,
   Button,
-  Col,
   Divider,
   Dropdown,
-  Menu,
   MenuProps,
-  Row,
   Space,
   Switch,
   Typography,
@@ -27,27 +24,35 @@ import LanguageChanger from "./LanguageChanger";
 import initTranslations from "../../i18n"; // Your i18n utility
 import { CiDark } from "react-icons/ci";
 import axios from "axios";
-import { getApiUrl } from "@/app/shared";
-const api = getApiUrl();
+import { getApiUrl, getSettings } from "@/app/shared";
 
+const api = getApiUrl();
 const { Text } = Typography;
+
 type SettingsType = {
   lang: string;
   theme: string;
 };
+
 export default function App({
   settings,
   setSettings,
 }: {
-  setSettings: any;
+  setSettings: (settings: SettingsType) => void;
   settings: SettingsType;
 }) {
-  let locale = settings.lang;
+  const locale = settings.lang;
 
   const [t, setT] = useState(() => (key: string) => key);
+  const [cookies, setCookies] = useCookies(["token", "username", "loginTime"]);
+  const [isDarkMode, setIsDarkMode] = useState(settings.theme === "dark");
+  const [loading, setLoading] = useState(true);
 
+  const userName = cookies.username || window.localStorage.getItem("userName");
+  const loginTime = cookies.loginTime || new Date().toLocaleString();
+
+  // Load translations dynamically based on locale
   useEffect(() => {
-    setLoading(true);
     async function loadTranslations() {
       const { t } = await initTranslations(locale, ["common"]);
       setT(() => t);
@@ -56,46 +61,35 @@ export default function App({
     loadTranslations();
   }, [locale]);
 
-  const [cookies, setCookies] = useCookies(["token", "username", "loginTime"]);
-  const [isDarkMode, setIsDarkMode] = useState(settings.theme == "dark" ? true : false);
-  const [themeChanged, setThemeChanged] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const [loginTime, setLoginTime] = useState("");
-  const userName = window.localStorage.getItem("userName");
-
+  // Persisted theme load (on initial load only)
   useEffect(() => {
-    setLoginTime(cookies.loginTime || new Date().toLocaleString());
-  }, [cookies]);
+    getSettings(userName).then((userSettings) => {
+      setIsDarkMode(userSettings.theme === "dark");
+    });
+  }, [userName]);
 
-  useEffect(() => {
-    setThemeChanged(false)
+  // Change theme and persist only when user switches it
+  const handleThemeChange = async () => {
+    const newTheme = !isDarkMode ? "dark" : "light";
+    setIsDarkMode(!isDarkMode);
 
-    const handleThemeChange = async () => {
-      try {
-        // Update language preference in backend
-        const user = await axios.get(`${api}/users/${userName}`); // API endpoint
-        const settings = {
-          ...user.data?.settings,
-          theme: isDarkMode ? "dark" : "light",
-        };
-        setSettings({ theme: isDarkMode ? "dark" : "light", ...settings });
-
-        await axios.post(`${api}/users/changeTheme`, {
-          userName: userName,
-          settings: settings,
-        }); // API endpoint
-      } catch (error) {
-        console.error("Error updating theme preference:", error);
-      }
+    const updatedSettings = {
+      ...settings,
+      theme: newTheme,
     };
-    handleThemeChange();
 
-  }, [themeChanged==true]);
+    // Update settings locally
+    setSettings(updatedSettings);
 
-  const changeTheme = () => {
-    setIsDarkMode((prev) => !prev);
-    setThemeChanged(true)
+    try {
+      // Persist updated theme settings
+      await axios.post(`${api}/users/changeTheme`, {
+        userName,
+        settings: updatedSettings,
+      });
+    } catch (error) {
+      console.error(t("Error updating theme preference:"), error);
+    }
   };
 
   const logout = () => {
@@ -103,13 +97,13 @@ export default function App({
     window.localStorage.removeItem("userId");
   };
 
-  const items: any = [
+  const menuItems: MenuProps["items"] = [
     {
       key: "1",
       label: (
         <Space>
           <UserOutlined />
-          <Text>{t("User") + " :" + userName}</Text>
+          <Text>{t("User")}: {userName}</Text>
         </Space>
       ),
     },
@@ -119,7 +113,6 @@ export default function App({
         <Space>
           <ClockCircleOutlined />
           {t("Login Time")}: <Text>{loginTime}</Text>
-          <Divider />
         </Space>
       ),
     },
@@ -129,7 +122,6 @@ export default function App({
         <Space>
           <GlobalOutlined />
           <LanguageChanger />
-          <Divider />
         </Space>
       ),
     },
@@ -142,9 +134,8 @@ export default function App({
           <Switch
             style={{ marginLeft: 10 }}
             checked={isDarkMode}
-            onChange={changeTheme}
+            onChange={handleThemeChange}
           />
-          <Divider />
         </Space>
       ),
     },
@@ -154,7 +145,6 @@ export default function App({
         <Space>
           <SettingOutlined />
           {t("Settings")}
-          <Divider />
         </Space>
       ),
       onClick: () => (window.location.href = "/settings"),
@@ -180,22 +170,20 @@ export default function App({
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: settings.theme == "dark" ? "#1d1d1d" : "#ffffff",
+        background: isDarkMode ? "#1d1d1d" : "#ffffff",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         padding: "0 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-      }}>
-      {/* Left Section */}
+      }}
+    >
       <Text strong style={{ fontSize: 20 }}></Text>
 
-      {/* Right Section */}
-      <Space size='large' align='center'>
-        {/* Dropdown Menu */}
-        <Dropdown menu={{ items }} trigger={["click"]} placement='bottomRight'>
+      <Space size="large" align="center">
+        <Dropdown menu={{ items: menuItems }} trigger={["click"]} placement="bottomRight">
           <Avatar
-            size='large'
+            size="large"
             icon={<UserOutlined />}
             style={{
               cursor: "pointer",

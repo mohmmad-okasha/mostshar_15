@@ -8,7 +8,7 @@ import { Card, ConfigProvider, Flex, Layout, Spin, theme } from "antd";
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import Axios from "axios";
-import { getApiUrl } from "../shared";
+import { getApiUrl, getSettings } from "../shared";
 
 const { Content, Footer } = Layout;
 
@@ -37,15 +37,17 @@ export default function RootLayout({
     else setLoading(false);
   }, [cookies.loading]);
 
+  useEffect(() => {
+    // to get user settings
+    if(userName != null && userName != undefined)
+    getSettings(userName).then((value) => {
+      setSettings(value);
+    });
+  }, [userName]);
 
   useEffect(() => {
-    getUserData();
+    //getUserData();
   }, []);
-
-  useEffect(() => {
-    console.log('settings')
-    console.log(settings)
-  }, [settings]);
 
   async function getUserData() {
     //setLoading(true);
@@ -61,7 +63,7 @@ export default function RootLayout({
   }
 
   return (
-    <html lang={settings.lang}>
+    <html lang={settings?.lang}>
       <body style={{ margin: 0 }}>
         <ConfigProvider
           theme={{
@@ -71,7 +73,8 @@ export default function RootLayout({
                 triggerBg: "#098290",
               },
             },
-            algorithm: settings.theme == 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+            algorithm:
+              settings?.theme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
             token: {
               //colorBgBase:'#f5f5f5',
               colorText: "#858796",
@@ -81,12 +84,12 @@ export default function RootLayout({
           }}
           direction={settings.lang === "ar" ? "rtl" : "ltr"} // Ant Design RTL support
         >
-          {Authed === "false" && <Login settings={settings}/>}
+          {Authed === "false" && <Login settings={settings} />}
           {Authed === "true" && (
             <Layout hasSider style={{ minHeight: "100vh" }}>
-              <SideBar locale={settings.lang} />
+              <SideBar locale={settings?.lang} />
               <Layout>
-                <NavBar settings={settings} setSettings={setSettings}/>
+                <NavBar settings={settings || undefined} setSettings={setSettings} />
 
                 <Content
                   style={{

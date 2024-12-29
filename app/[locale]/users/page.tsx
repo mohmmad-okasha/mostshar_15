@@ -11,6 +11,7 @@ import {
   handlePrint,
   cardStyle,
   capitalize,
+  getSettings,
 } from "@/app/shared";
 import {
   Alert,
@@ -49,21 +50,7 @@ const PageName = "Users";
 const api = getApiUrl();
 
 // --- Main Component ---
-export default function App(props: any) {
-  const params: any = use(props.params);
-
-  const { locale } = params;
-  const [t, setT] = useState(() => (key: any) => key);
-  useEffect(() => {
-    setLangloading(true);
-    async function loadTranslations() {
-      const { t } = await initTranslations(locale, ["common"]);
-      setT(() => t);
-      setLangloading(false);
-    }
-    loadTranslations();
-  }, [locale]);
-
+export default function App() {
   // --- Refs and Hooks ---
   const tableRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
@@ -91,6 +78,22 @@ export default function App(props: any) {
     Print: 0,
     Export: 0,
   });
+  let [settings, setSettings] = useState({
+    lang: "",
+    theme: "",
+  });
+
+  const locale = settings.lang;
+  const [t, setT] = useState(() => (key: any) => key);
+  useEffect(() => {
+    setLangloading(true);
+    async function loadTranslations() {
+      const { t } = await initTranslations(locale, ["common"]);
+      setT(() => t);
+      setLangloading(false);
+    }
+    loadTranslations();
+  }, [locale]);
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -223,6 +226,10 @@ export default function App(props: any) {
 
   // --- Effects Hooks ---
   useEffect(() => {
+    // to get user settings
+    getSettings(userName).then((value) => {
+      setSettings(value);
+    });
     getRules(userName, PageName.toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
@@ -731,7 +738,7 @@ export default function App(props: any) {
 
   // --- Render ---
   return (
-    <Card style={{border:0}} loading={LangLoading}>
+    <Card style={{ border: 0 }} loading={LangLoading}>
       <div>
         <Toaster />
       </div>
@@ -789,7 +796,8 @@ export default function App(props: any) {
                   </>
                 )}
                 <Divider />
-                <Form.Item style={{ marginBottom: -40, textAlign: "right" , direction:'ltr' }}>
+                <Form.Item
+                  style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
                   <Button
                     shape='round'
                     icon={<CloseOutlined />}
@@ -823,7 +831,7 @@ export default function App(props: any) {
                       onClick: (e) => handleExport(e),
                     }}>
                     <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
-                      {t('Export')}
+                      {t("Export")}
                     </Button>
                   </Dropdown>
                 )}
@@ -834,7 +842,7 @@ export default function App(props: any) {
                     icon={<FaPrint />}
                     onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
                     style={{ margin: 5 }}>
-                    {t('Print')}
+                    {t("Print")}
                   </Button>
                 )}
 
@@ -845,7 +853,7 @@ export default function App(props: any) {
                     icon={<BsPlusLg />}
                     onClick={showModal}
                     style={{ margin: 5 }}>
-                    {t('New')}
+                    {t("New")}
                   </Button>
                 )}
               </>
@@ -853,7 +861,7 @@ export default function App(props: any) {
             {!Errors.connectionError && (
               <>
                 <Input.Search
-                  placeholder={t('Search...')}
+                  placeholder={t("Search...")}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ paddingBottom: 5 }}
                   allowClear
