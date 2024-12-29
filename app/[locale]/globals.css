@@ -65,3 +65,23 @@
     border-bottom: 2px solid #eceeef; /* Thicker bottom border for headers */
   }
   
+
+
+
+@media (max-width: 768px) {
+  .responsive-card-wrapper {
+    display: flex;
+    justify-content: center;
+    /*align-items: center;*/
+    min-height: 100vh; /* Full viewport height for vertical centering */
+    padding: 10px; /* Add some padding for better spacing on smaller screens */
+    box-sizing: border-box; /* Ensure padding doesn't affect dimensions */
+  }
+  .responsive-card {
+    width: 85vw !important; /* Set card width to 95% of the viewport width */
+    margin: 0 auto; /* Ensure horizontal centering */
+  }
+}
+
+  
+  

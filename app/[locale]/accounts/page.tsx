@@ -42,7 +42,7 @@ import {
 } from "@ant-design/icons";
 import { FaFileExport, FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
-import { FiDownloadCloud } from "react-icons/fi";
+import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 
@@ -696,151 +696,214 @@ export default function App(props: any) {
       label: "SQL",
     },
   ];
-  
 
   // --- Render ---
   return (
-    <Card style={{ border: 0 }} loading={LangLoading}>
-      <div>
-        <Toaster />
-      </div>
-      {userPermissions.View == 1 && (
-        <>
-          <Modal
-            title={t(modalTitle)}
-            open={isModalOpen}
-            onCancel={handleCancel}
-            width={500}
-            maskClosable={false}
-            footer={[]}>
-            <Card>
-              <Form
-                form={form}
-                layout='vertical'
-                style={{ maxWidth: 500, textAlign: "center" }}
-                validateMessages={validateMessages}
-                onFinish={handleOk}>
-                <Row>
-                  {fieldsConfig.map((field) =>
-                    createFormItem({
-                      ...field,
-                      value: accountData[field.fieldName],
-                      fieldOptions: field.options,
-                    })
+    <div className='responsive-card-wrapper'>
+      <Card style={{ border: 0 }} loading={LangLoading}>
+        <div>
+          <Toaster />
+        </div>
+        {userPermissions.View == 1 && (
+          <>
+            <Modal
+              title={t(modalTitle)}
+              open={isModalOpen}
+              onCancel={handleCancel}
+              width={500}
+              maskClosable={false}
+              footer={[]}>
+              <Card>
+                <Form
+                  form={form}
+                  layout='vertical'
+                  style={{ maxWidth: 500, textAlign: "center" }}
+                  validateMessages={validateMessages}
+                  onFinish={handleOk}>
+                  <Row>
+                    {fieldsConfig.map((field) =>
+                      createFormItem({
+                        ...field,
+                        value: accountData[field.fieldName],
+                        fieldOptions: field.options,
+                      })
+                    )}
+                  </Row>
+                  {Errors.saveErrors && (
+                    <>
+                      <Alert
+                        closable
+                        description={Errors.saveErrors}
+                        type='error'
+                        showIcon
+                      />
+                    </>
                   )}
-                </Row>
-                {Errors.saveErrors && (
-                  <>
-                    <Alert
-                      closable
-                      description={Errors.saveErrors}
-                      type='error'
-                      showIcon
-                    />
-                  </>
-                )}
-                <Divider />
-                <Form.Item
-                  name='footer'
-                  key='footer'
-                  style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
-                  <Button
-                    shape='round'
-                    icon={<CloseOutlined />}
-                    onClick={handleCancel}
-                    style={{ margin: 5 }}>
-                    {t("Cancel")}
-                  </Button>
+                  <Divider />
+                  <Form.Item
+                    name='footer'
+                    key='footer'
+                    style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
+                    <Button
+                      shape='round'
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      style={{ margin: 5 }}>
+                      {t("Cancel")}
+                    </Button>
 
-                  <Button
-                    type='primary'
-                    shape='round'
-                    htmlType='submit'
-                    icon={<SaveOutlined />}
-                    style={{ margin: 5 }}>
-                    {t("Save")}
-                  </Button>
-                </Form.Item>
-              </Form>
-              <br />
-            </Card>
-          </Modal>
-          <Card
-            title={t(PageName)}
-            style={cardStyle}
-            extra={
-              <>
-                {userPermissions.Export == 1 && (
+                    <Button
+                      type='primary'
+                      shape='round'
+                      htmlType='submit'
+                      icon={<SaveOutlined />}
+                      style={{ margin: 5 }}>
+                      {t("Save")}
+                    </Button>
+                  </Form.Item>
+                </Form>
+                <br />
+              </Card>
+            </Modal>
+            <Card
+              title={t(PageName)}
+              style={{
+                ...cardStyle,
+              }}
+              className='responsive-card'
+              extra={
+                isMobile ? (
+                  // Mobile: Single dropdown with all actions
                   <Dropdown
                     menu={{
-                      items,
-                      onClick: (e) => handleExport(e),
+                      items: [
+                        ...(userPermissions.Add == 1
+                          ? [
+                              {
+                                key: "new",
+                                label: <div onClick={showModal}>{t("New")}</div>,
+                                icon: <BsPlusLg />,
+                              },
+                            ]
+                          : []),
+                        ...(userPermissions.Print == 1
+                          ? [
+                              {
+                                key: "print",
+                                label: (
+                                  <div
+                                    onClick={() =>
+                                      handlePrint(tableRef, t(PageName), 12, locale)
+                                    }>
+                                    {t("Print")}
+                                  </div>
+                                ),
+                                icon: <FaPrint />,
+                              },
+                            ]
+                          : []),
+                          ...(userPermissions.Export == 1 ? [{
+                          key: "export",
+                          label: t("Export"),
+                          children:
+                            items.map((item) => ({
+                                  key: item.key,
+                                  label: (
+                                    <div onClick={() => handleExport(item)}>
+                                      {t(item.label)}
+                                    </div>
+                                  ),
+                                }))
+                              ,
+                        },] :[])
+                      ],
                     }}>
                     <Button
+                      shape='circle'
+                      icon={<FiMoreVertical />}
                       style={{ margin: 5 }}
-                      title='Export Data'
-                      icon={<FiDownloadCloud />}
-                      shape='round'>
-                      {t("Export")}
-                    </Button>
+                    />
                   </Dropdown>
-                )}
-                {userPermissions.Print == 1 && (
-                  <Button
-                    shape='round'
-                    icon={<FaPrint />}
-                    onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
-                    style={{ margin: 5 }}>
-                    {t("Print")}
-                  </Button>
-                )}
-                {userPermissions.Add == 1 && (
-                  <Button
-                    type='primary'
-                    shape='round'
-                    icon={<BsPlusLg />}
-                    onClick={showModal}
-                    style={{ margin: 5 }}>
-                    {t("New")}
-                  </Button>
-                )}
-              </>
-            }>
-            {!Errors.connectionError && (
-              <>
-                <Card>
-                  <Tree onSelect={handleSelect} treeData={treeData} />
-                </Card>
-                <Divider />
-                <Input.Search
-                  placeholder={t("Search...")}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ paddingBottom: 5 }}
-                  allowClear
-                  value={searchText}
-                />
-                <div ref={tableRef}>
-                  <Table
-                    id='print-table'
-                    size='small'
-                    columns={columns}
-                    dataSource={filteredData}
-                    loading={Loading}
-                    pagination={false}
-                    rowKey={(record) => record._id}
+                ) : (
+                  // Desktop: Separate buttons
+                  <>
+                    {userPermissions.Export == 1 && (
+                      <Dropdown
+                        menu={{
+                          items,
+                          onClick: (e) => handleExport(e),
+                        }}>
+                        <Button
+                          style={{ margin: 5 }}
+                          title='Export Data'
+                          icon={<FiDownloadCloud />}
+                          shape='round'>
+                          {t("Export")}
+                        </Button>
+                      </Dropdown>
+                    )}
+                    {userPermissions.Print == 1 && (
+                      <Button
+                        shape='round'
+                        icon={<FaPrint />}
+                        onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
+                        style={{ margin: 5 }}>
+                        {t("Print")}
+                      </Button>
+                    )}
+                    {userPermissions.Add == 1 && (
+                      <Button
+                        type='primary'
+                        shape='round'
+                        icon={<BsPlusLg />}
+                        onClick={showModal}
+                        style={{ margin: 5 }}>
+                        {t("New")}
+                      </Button>
+                    )}
+                  </>
+                )
+              }>
+              {!Errors.connectionError && (
+                <>
+                  <Card>
+                    <Tree onSelect={handleSelect} treeData={treeData} />
+                  </Card>
+                  <Divider />
+                  <Input.Search
+                    placeholder={t("Search...")}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ paddingBottom: 5 }}
+                    allowClear
+                    value={searchText}
                   />
-                </div>
-              </>
-            )}
-            {Errors.connectionError && (
-              <Result
-                status='warning'
-                title={"Can't Load Data :" + Errors.connectionError}
-              />
-            )}
-          </Card>
-        </>
-      )}
-    </Card>
+                  <div ref={tableRef} style={{ overflowX: "auto" }}>
+                    <Table
+                      id='print-table'
+                      size='small'
+                      columns={columns.map((col: any) => ({
+                        ...col,
+                        ellipsis: true, // Ensure text doesn't overflow
+                      }))}
+                      dataSource={filteredData}
+                      loading={Loading}
+                      pagination={false}
+                      rowKey={(record) => record._id}
+                      scroll={{ x: "max-content" }}
+                    />
+                  </div>
+                </>
+              )}
+              {Errors.connectionError && (
+                <Result
+                  status='warning'
+                  title={"Can't Load Data :" + Errors.connectionError}
+                />
+              )}
+            </Card>
+          </>
+        )}
+      </Card>
+    </div>
   );
 }
