@@ -292,59 +292,123 @@ export default function App(props: any) {
       },
       userPermissions.Remove == 1 || userPermissions.Edit == 1
         ? {
-            title: t("Actions"),
+            title: isMobile ? " " : t("Actions"),
             dataIndex: "Actions",
             key: "Actions",
             align: "center",
             className: "no_print",
             fixed: "right",
-            render: (_: any, record: any) => (
-              <>
-                {userPermissions.Remove == 1 && (
-                  <Popconfirm
-                    title={t("Delete the") + " " + t(PageName.slice(0, -1))}
-                    description={t("Are you sure to delete") + " " + record.accountName}
-                    onConfirm={() => {
-                      remove(record._id);
-                    }}
-                    okText={t("Yes, Remove")}
-                    cancelText={t("No")}>
+            render: (_: any, record: any) => {
+              if (isMobile) {
+                // Mobile: Use a single dropdown with actions
+                const menuItems = [
+                  ...(userPermissions.Edit == 1
+                    ? [
+                        {
+                          key: "edit",
+                          label: (
+                            <div
+                              onClick={() => {
+                                setAccountData(record);
+                                setOldData(record);
+                                form.setFieldsValue(
+                                  fieldsConfig.reduce((acc: any, field) => {
+                                    acc[field.fieldName] = record[field.fieldName];
+                                    return acc;
+                                  }, {})
+                                );
+                                setEdit(true);
+                                showModal();
+                              }}>
+                              <EditOutlined /> {t("Edit")}
+                            </div>
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(userPermissions.Remove == 1
+                    ? [
+                        {
+                          key: "remove",
+                          label: (
+                            <Popconfirm
+                              title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
+                              description={`${t("Are you sure to delete")} ${
+                                record.accountName
+                              }`}
+                              onConfirm={() => {
+                                remove(record._id);
+                              }}
+                              okText={t("Yes, Remove")}
+                              cancelText={t("No")}>
+                              <div>
+                                <DeleteOutlined /> {t("Remove")}
+                              </div>
+                            </Popconfirm>
+                          ),
+                        },
+                      ]
+                    : []),
+                ];
+
+                return (
+                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
                     <Button
-                      style={{ marginLeft: 5 }}
                       type='primary'
-                      danger
-                      onClick={() => {
-                        setAccountData(record);
-                      }}
                       shape='circle'
                       size='small'
-                      icon={<DeleteOutlined />}
+                      icon={<FiMoreVertical />}
                     />
-                  </Popconfirm>
-                )}
-                {userPermissions.Edit == 1 && (
-                  <Button
-                    type='primary'
-                    shape='circle'
-                    size='small'
-                    style={{ marginLeft: 5 }}
-                    icon={<EditOutlined />}
-                    onClick={() => {
-                      setAccountData(record);
-                      setOldData(record);
-                      form.setFieldsValue(
-                        fieldsConfig.reduce((acc: any, field) => {
-                          acc[field.fieldName] = record[field.fieldName];
-                          return acc;
-                        }, {})
-                      );
-                      setEdit(true);
-                      showModal();
-                    }}
-                  />
-                )}
-              </>
-            ),
+                  </Dropdown>
+                );
+              }
+
+              // Desktop: Show separate buttons
+              return (
+                <>
+                  {userPermissions.Remove == 1 && (
+                    <Popconfirm
+                      title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
+                      description={`${t("Are you sure to delete")} ${record.accountName}`}
+                      onConfirm={() => {
+                        remove(record._id);
+                      }}
+                      okText={t("Yes, Remove")}
+                      cancelText={t("No")}>
+                      <Button
+                        style={{ marginLeft: 5 }}
+                        type='primary'
+                        danger
+                        shape='circle'
+                        size='small'
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  )}
+                  {userPermissions.Edit == 1 && (
+                    <Button
+                      type='primary'
+                      shape='circle'
+                      size='small'
+                      style={{ marginLeft: 5 }}
+                      icon={<EditOutlined />}
+                      onClick={() => {
+                        setAccountData(record);
+                        setOldData(record);
+                        form.setFieldsValue(
+                          fieldsConfig.reduce((acc: any, field) => {
+                            acc[field.fieldName] = record[field.fieldName];
+                            return acc;
+                          }, {})
+                        );
+                        setEdit(true);
+                        showModal();
+                      }}
+                    />
+                  )}
+                </>
+              );
+            },
           }
         : {},
     ],
@@ -802,20 +866,22 @@ export default function App(props: any) {
                               },
                             ]
                           : []),
-                          ...(userPermissions.Export == 1 ? [{
-                          key: "export",
-                          label: t("Export"),
-                          children:
-                            items.map((item) => ({
+                        ...(userPermissions.Export == 1
+                          ? [
+                              {
+                                key: "export",
+                                label: t("Export"),
+                                children: items.map((item) => ({
                                   key: item.key,
                                   label: (
                                     <div onClick={() => handleExport(item)}>
                                       {t(item.label)}
                                     </div>
                                   ),
-                                }))
-                              ,
-                        },] :[])
+                                })),
+                              },
+                            ]
+                          : []),
                       ],
                     }}>
                     <Button
