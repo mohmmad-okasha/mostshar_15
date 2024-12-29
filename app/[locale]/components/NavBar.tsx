@@ -51,6 +51,24 @@ export default function App({
   const userName = cookies.username || window.localStorage.getItem("userName");
   const loginTime = cookies.loginTime || new Date().toLocaleString();
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
+    };
+
+    // Initial check
+    checkScreenSize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkScreenSize);
+
+    // Cleanup event listener on component unmount
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, [window.innerWidth]);
+
+
   // Load translations dynamically based on locale
   useEffect(() => {
     async function loadTranslations() {
@@ -103,7 +121,9 @@ export default function App({
       label: (
         <Space>
           <UserOutlined />
-          <Text>{t("User")}: {userName}</Text>
+          <Text>
+            {t("User")}: {userName}
+          </Text>
         </Space>
       ),
     },
@@ -167,6 +187,7 @@ export default function App({
   return (
     <Header
       style={{
+        direction: settings.lang === 'ar' && isMobile ? "ltr" : undefined,
         position: "sticky",
         top: 0,
         zIndex: 100,
@@ -176,14 +197,13 @@ export default function App({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-      }}
-    >
+      }}>
       <Text strong style={{ fontSize: 20 }}></Text>
 
-      <Space size="large" align="center">
-        <Dropdown menu={{ items: menuItems }} trigger={["click"]} placement="bottomRight">
+      <Space size='large' align='center'>
+        <Dropdown menu={{ items: menuItems }} trigger={["click"]} placement='bottomRight'>
           <Avatar
-            size="large"
+            size='large'
             icon={<UserOutlined />}
             style={{
               cursor: "pointer",
