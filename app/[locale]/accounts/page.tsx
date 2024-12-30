@@ -46,13 +46,45 @@ import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
+import { useRouter } from 'next/navigation';
 
 // --- Constants ---
 const PageName = "Accounts";
 const api = getApiUrl();
 
+
+
+
 // --- Main Component ---
 export default function App(props: any) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleKeydown = (event: { key: string; preventDefault: () => void; ctrlKey: any; }) => {
+      if (event.key === 'F1') {
+        event.preventDefault(); // منع السلوك الافتراضي (فتح دليل المساعدة)
+        console.log('Help shortcut triggered!');
+        alert('Opening Help Section...');
+      } else if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        console.log('Save shortcut triggered!');
+        alert('Saving...');
+      } else if (event.ctrlKey && event.key === 'n') {
+        event.preventDefault();
+        console.log('New shortcut triggered!');
+        router.push('/new');
+      }
+    };
+  
+    // إضافة Event Listener عند التحميل
+    window.addEventListener('keydown', handleKeydown);
+  
+    // تنظيف Event Listener عند الإزالة
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [router]);
+
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",

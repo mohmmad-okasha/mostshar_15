@@ -9,7 +9,7 @@ import { useCookies } from "react-cookie";
 import { LuFingerprint } from "react-icons/lu";
 import { getApiUrl, saveLog } from "@/app/shared";
 import { usePathname } from "next/navigation";
-import initTranslations from "../../i18n"; // Your i18n utility
+import initTranslations from "../../i18n";
 import Cookies from "js-cookie";
 
 const api = getApiUrl();
@@ -84,7 +84,7 @@ export default function App({ settings }: { settings: SettingsType }) {
           </Flex>
           <br />
           <br />
-          <Form name='normal_login' className='login-form' onFinish={onFinish}>
+          <Form style={{direction: locale === 'ar' ? 'rtl' : 'ltr'}} name='normal_login' className='login-form' onFinish={onFinish}>
             <Form.Item
               name='username'
               rules={[{ required: true, message: "Please input your Username!" }]}>
@@ -93,7 +93,7 @@ export default function App({ settings }: { settings: SettingsType }) {
                   setName(e.target.value);
                 }}
                 prefix={<UserOutlined className='site-form-item-icon' />}
-                placeholder='Username'
+                placeholder={t("Username")}
               />
             </Form.Item>
             <Form.Item
@@ -105,12 +105,12 @@ export default function App({ settings }: { settings: SettingsType }) {
                 }}
                 prefix={<LockOutlined className='site-form-item-icon' />}
                 type='password'
-                placeholder='Password'
+                placeholder={t("Password")}
               />
             </Form.Item>
 
             <Button block type='primary' htmlType='submit' className='login-form-button'>
-              {t("Log in")}
+              {t("Login")}
             </Button>
           </Form>
           <br />
