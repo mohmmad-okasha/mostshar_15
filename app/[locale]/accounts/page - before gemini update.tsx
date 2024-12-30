@@ -570,7 +570,7 @@
 //               <>
 //                 <Button
 //                   type='text'
-//                   title='Print'
+//                   title={t('Print')}
 //                   onClick={() => {
 //                     handlePrint(tableRef, PageName, 12);
 //                   }}

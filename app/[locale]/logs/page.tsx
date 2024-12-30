@@ -30,6 +30,7 @@ import {
 } from "antd";
 import { FaPrint } from "react-icons/fa6";
 import { Toaster } from "react-hot-toast";
+import { IoSync } from "react-icons/io5";
 
 const api = getApiUrl();
 
@@ -205,11 +206,20 @@ export default function App() {
                   <>
                     <Button
                       type='text'
-                      title='Print'
+                      title={t('Refresh Data')}
+                      onClick={() => {
+                        getData();
+                      }}
+                      icon={<IoSync size={"1em"} />}
+                    />
+                    <Button
+                      type='text'
+                      title={t('Print')}
                       onClick={() => {
                         handlePrint(tableRef, t(PageName), 12, locale);
                       }}
-                      icon={<FaPrint size={"1em"} />}></Button>
+                      icon={<FaPrint size={"1em"} />}
+                    />
                   </>
                 )
               }>
