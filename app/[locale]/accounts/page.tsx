@@ -842,6 +842,12 @@ export default function App(props: any) {
                   <Dropdown
                     menu={{
                       items: [
+
+                      {
+                        key: "refresh",
+                        label: <div onClick={getData}> {t("Refresh Data")}</div>,
+                        icon: <IoSync />,
+                      },
                         ...(userPermissions.Add == 1
                           ? [
                               {
