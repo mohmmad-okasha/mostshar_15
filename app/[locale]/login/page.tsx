@@ -10,6 +10,7 @@ import { LuFingerprint } from "react-icons/lu";
 import { getApiUrl, saveLog } from "@/app/shared";
 import { usePathname } from "next/navigation";
 import initTranslations from "../../i18n"; // Your i18n utility
+import Cookies from "js-cookie";
 
 const api = getApiUrl();
 
@@ -21,6 +22,7 @@ type SettingsType = {
 export default function App({ settings }: { settings: SettingsType }) {
   const pathname = usePathname();
   const locale = pathname.slice(-2);
+  Cookies.remove("loading");
 
   const [t, setT] = useState(() => (key: string) => key);
 
@@ -38,9 +40,12 @@ export default function App({ settings }: { settings: SettingsType }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState("");
-  const [_, setCookies] = useCookies(["token", "loading"]); //to check login
+  const [_, setCookies, removeCookie] = useCookies(["token", "loading"]); //to check login
 
   useEffect(() => {
+    Cookies.remove("loading");
+    Cookies.remove("token");
+
     setCookies("loading", false);
   }, []);
 

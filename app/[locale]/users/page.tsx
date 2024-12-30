@@ -40,7 +40,7 @@ import {
 } from "@ant-design/icons";
 import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
-import { FiDownloadCloud } from "react-icons/fi";
+import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import Search from "antd/es/input/Search";
 import initTranslations from "../../i18n.js";
@@ -82,6 +82,23 @@ export default function App() {
     lang: "",
     theme: "",
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
+    };
+
+    // Initial check
+    checkScreenSize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkScreenSize);
+
+    // Cleanup event listener on component unmount
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, [window.innerWidth]);
+  File;
 
   const locale = settings.lang;
   const [t, setT] = useState(() => (key: any) => key);
@@ -258,78 +275,162 @@ export default function App() {
       },
       userPermissions.Remove == 1 || userPermissions.Edit == 1
         ? {
-            title: t("Actions"),
+            title: isMobile ? " " : t("Actions"),
             dataIndex: "Actions",
             key: "Actions",
             align: "center",
             className: "no_print",
             fixed: "right",
-            render: (_: any, record: any) => (
-              <>
-                {userPermissions.Remove == 1 && (
-                  <Popconfirm
-                    title={t("Delete the") + " " + t(PageName.slice(0, -1))}
-                    description={t("Are you sure to delete") + " " + record.name}
-                    onConfirm={() => {
-                      remove(record._id);
-                    }}
-                    okText={t("Yes, Remove")}
-                    cancelText={t("No")}>
+            render: (_: any, record: any) => {
+              if (isMobile) {
+                // Mobile: Use a single dropdown with actions
+                const menuItems = [
+                  ...(userPermissions.Edit == 1
+                    ? [
+                        {
+                          key: "edit",
+                          label: (
+                            <div
+                            onClick={() => {
+                              setUserData(record);
+                              setOldData(record);
+                              form.setFieldsValue(
+                                fieldsConfig.reduce((acc: any, field) => {
+                                  acc[field.fieldName] = record[field.fieldName];
+                                  return acc;
+                                }, {})
+                              );
+                              form.setFieldValue("password", "");
+                              form.setFieldValue("password2", "");
+        
+                              setEdit(true);
+        
+                              // تجهيز checkedKeys بناءً على صلاحيات المستخدم
+                              const initialCheckedKeys: any[] = [];
+                              Object.keys(record.rules).forEach((table) => {
+                                const actions = record.rules[table];
+                                Object.keys(actions).forEach((action: any) => {
+                                  if (actions[action] === 1) {
+                                    initialCheckedKeys.push(`${table}_${action}`);
+                                  }
+                                });
+                              });
+        
+                              setCheckedKeys(initialCheckedKeys);
+                              showModal();
+                            }}>
+                              <EditOutlined /> {t("Edit")}
+                            </div>
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(userPermissions.Remove == 1
+                    ? [
+                        {
+                          key: "remove",
+                          label: (
+                            <Popconfirm
+                              title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
+                              description={`${t("Are you sure to delete")} ${
+                                record.name
+                              }`}
+                              onConfirm={() => {
+                                remove(record._id);
+                              }}
+                              okText={t("Yes, Remove")}
+                              cancelText={t("No")}>
+                              <div>
+                                <DeleteOutlined /> {t("Remove")}
+                              </div>
+                            </Popconfirm>
+                          ),
+                        },
+                      ]
+                    : []),
+                ];
+
+                return (
+                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
                     <Button
-                      type='primary'
-                      danger
-                      style={{ marginLeft: 5 }}
-                      onClick={() => {
-                        setUserData(record);
-                      }}
+                      type='dashed'
                       shape='circle'
                       size='small'
-                      icon={<DeleteOutlined />}
+                      icon={<FiMoreVertical />}
                     />
-                  </Popconfirm>
-                )}
+                  </Dropdown>
+                );
+              }
 
-                {userPermissions.Edit == 1 && (
-                  <Button
-                    type='primary'
-                    shape='circle'
-                    size='small'
-                    style={{ marginLeft: 5 }}
-                    icon={<EditOutlined />}
-                    onClick={() => {
-                      setUserData(record);
-                      setOldData(record);
-                      form.setFieldsValue(
-                        fieldsConfig.reduce((acc: any, field) => {
-                          acc[field.fieldName] = record[field.fieldName];
-                          return acc;
-                        }, {})
-                      );
-                      form.setFieldValue("password", "");
-                      form.setFieldValue("password2", "");
+              // Desktop: Show separate buttons
+              return (
+                <>
+                  {userPermissions.Remove == 1 && (
+                    <Popconfirm
+                      title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
+                      description={`${t("Are you sure to delete")} ${record.name}`}
+                      onConfirm={() => {
+                        remove(record._id);
+                      }}
+                      okText={t("Yes, Remove")}
+                      cancelText={t("No")}>
+                      <Button
+                        style={{ marginLeft: 5 }}
+                        type='primary'
+                        danger
+                        shape='circle'
+                        size='small'
+                        onClick={() => {
+                          setUserData(record);
+                        }}
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  )}
+                  {userPermissions.Edit == 1 && (
+                    <Button
+                      type='primary'
+                      shape='circle'
+                      size='small'
+                      style={{ marginLeft: 5 }}
+                      icon={<EditOutlined />}
+                      onClick={() => {
+                        setUserData(record);
+                        setOldData(record);
+                        form.setFieldsValue(
+                          fieldsConfig.reduce((acc: any, field) => {
+                            acc[field.fieldName] = record[field.fieldName];
+                            return acc;
+                          }, {})
+                        );
+                        form.setFieldValue("password", "");
+                        form.setFieldValue("password2", "");
 
-                      setEdit(true);
+                        setEdit(true);
 
-                      // تجهيز checkedKeys بناءً على صلاحيات المستخدم
-                      const initialCheckedKeys: any[] = [];
-                      Object.keys(record.rules).forEach((table) => {
-                        const actions = record.rules[table];
-                        Object.keys(actions).forEach((action: any) => {
-                          if (actions[action] === 1) {
-                            initialCheckedKeys.push(`${table}_${action}`);
-                          }
+                        // تجهيز checkedKeys بناءً على صلاحيات المستخدم
+                        const initialCheckedKeys: any[] = [];
+                        Object.keys(record.rules).forEach((table) => {
+                          const actions = record.rules[table];
+                          Object.keys(actions).forEach((action: any) => {
+                            if (actions[action] === 1) {
+                              initialCheckedKeys.push(`${table}_${action}`);
+                            }
+                          });
                         });
-                      });
 
-                      setCheckedKeys(initialCheckedKeys);
-                      showModal();
-                    }}
-                  />
-                )}
-              </>
-            ),
+                        setCheckedKeys(initialCheckedKeys);
+                        showModal();
+                      }}
+                    />
+                  )}
+                </>
+              );
+            },
           }
         : {},
+
+
     ],
     [fieldsConfig, remove, setUserData, showModal]
   );
@@ -485,6 +586,7 @@ export default function App() {
         ...prevData,
         parentUser: "",
       }));
+      //setCheckedKeys([])
     }
   }
 
@@ -738,157 +840,219 @@ export default function App() {
 
   // --- Render ---
   return (
-    <Card style={{ border: 0 }} loading={LangLoading}>
-      <div>
-        <Toaster />
-      </div>
-      {userPermissions.View == 1 && (
-        <>
-          <Modal
-            title={t(modalTitle)}
-            open={isModalOpen}
-            onCancel={handleCancel}
-            width={500}
-            maskClosable={false}
-            footer={[]}>
-            <Card>
-              <Form
-                form={form}
-                layout='vertical'
-                style={{ maxWidth: 500, textAlign: "center" }}
-                validateMessages={validateMessages}
-                onFinish={handleOk}>
-                <Row>
-                  {fieldsConfig.map((field) =>
-                    createFormItem({
-                      ...field,
-                      value: userData[field.fieldName],
-                    })
-                  )}
-                </Row>
+    <div className='responsive-card-wrapper'>
+      <Card style={{ border: 0 }} loading={LangLoading}>
+        <div>
+          <Toaster />
+        </div>
+        {userPermissions.View == 1 && (
+          <>
+            <Modal
+              title={t(modalTitle)}
+              open={isModalOpen}
+              onCancel={handleCancel}
+              width={500}
+              maskClosable={false}
+              footer={[]}>
+              <Card>
+                <Form
+                  form={form}
+                  layout='vertical'
+                  style={{ maxWidth: 500, textAlign: "center" }}
+                  validateMessages={validateMessages}
+                  onFinish={handleOk}>
+                  <Row>
+                    {fieldsConfig.map((field) =>
+                      createFormItem({
+                        ...field,
+                        value: userData[field.fieldName],
+                      })
+                    )}
+                  </Row>
 
-                <Card title={t("Permissions")}>
-                  <Search
-                    placeholder={t("Search")}
-                    allowClear
-                    onSearch={onSearch}
-                    onChange={(e) => onSearch(e.target.value)}
-                    style={{ marginBottom: "16px" }}
-                  />
-                  <Tree
-                    checkable
-                    //defaultExpandAll
-                    onCheck={onCheck}
-                    checkedKeys={checkedKeys}
-                    treeData={rolsFilteredData}
-                    style={{ direction: "ltr" }}
-                  />
-                </Card>
-                {Errors.saveErrors && (
-                  <>
-                    <Form.Item />
-                    <Alert
-                      closable
-                      description={Errors.saveErrors}
-                      type='error'
-                      showIcon
+                  <Card title={t("Permissions")}>
+                    <Search
+                      placeholder={t("Search")}
+                      allowClear
+                      onSearch={onSearch}
+                      onChange={(e) => onSearch(e.target.value)}
+                      style={{ marginBottom: "16px" }}
                     />
-                  </>
-                )}
-                <Divider />
-                <Form.Item
-                  style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
-                  <Button
-                    shape='round'
-                    icon={<CloseOutlined />}
-                    onClick={handleCancel}
-                    style={{ margin: 5 }}>
-                    {t("Cancel")}
-                  </Button>
+                    <Tree
+                      checkable
+                      //defaultExpandAll
+                      onCheck={onCheck}
+                      checkedKeys={checkedKeys}
+                      treeData={rolsFilteredData}
+                      style={{ direction: "ltr" }}
+                    />
+                  </Card>
+                  {Errors.saveErrors && (
+                    <>
+                      <Form.Item />
+                      <Alert
+                        closable
+                        description={Errors.saveErrors}
+                        type='error'
+                        showIcon
+                      />
+                    </>
+                  )}
+                  <Divider />
+                  <Form.Item
+                    style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
+                    <Button
+                      shape='round'
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      style={{ margin: 5 }}>
+                      {t("Cancel")}
+                    </Button>
 
-                  <Button
-                    type='primary'
-                    shape='round'
-                    htmlType='submit'
-                    icon={<SaveOutlined />}
-                    style={{ margin: 5 }}>
-                    {t("Save")}
-                  </Button>
-                </Form.Item>
-              </Form>
-              <br />
-            </Card>
-          </Modal>
-          <Card
-            title={t(PageName)}
-            style={cardStyle}
-            extra={
-              <>
-                {userPermissions.Export == 1 && (
+                    <Button
+                      type='primary'
+                      shape='round'
+                      htmlType='submit'
+                      icon={<SaveOutlined />}
+                      style={{ margin: 5 }}>
+                      {t("Save")}
+                    </Button>
+                  </Form.Item>
+                </Form>
+                <br />
+              </Card>
+            </Modal>
+            <Card
+              title={t(PageName)}
+              style={cardStyle}
+              className='responsive-card'
+              extra={
+                isMobile ? (
+                  // Mobile: Single dropdown with all actions
                   <Dropdown
                     menu={{
-                      items,
-                      onClick: (e) => handleExport(e),
+                      items: [
+                        ...(userPermissions.Add == 1
+                          ? [
+                              {
+                                key: "new",
+                                label: <div onClick={showModal}>{t("New")}</div>,
+                                icon: <BsPlusLg />,
+                              },
+                            ]
+                          : []),
+                        ...(userPermissions.Print == 1
+                          ? [
+                              {
+                                key: "print",
+                                label: (
+                                  <div
+                                    onClick={() =>
+                                      handlePrint(tableRef, t(PageName), 12, locale)
+                                    }>
+                                    {t("Print")}
+                                  </div>
+                                ),
+                                icon: <FaPrint />,
+                              },
+                            ]
+                          : []),
+                        ...(userPermissions.Export == 1
+                          ? [
+                              {
+                                key: "export",
+                                label: t("Export"),
+                                children: items.map((item) => ({
+                                  key: item.key,
+                                  label: (
+                                    <div onClick={() => handleExport(item)}>
+                                      {t(item.label)}
+                                    </div>
+                                  ),
+                                })),
+                              },
+                            ]
+                          : []),
+                      ],
                     }}>
-                    <Button title='Export Data' icon={<FiDownloadCloud />} shape='round'>
-                      {t("Export")}
-                    </Button>
+                    <Button
+                      shape='circle'
+                      icon={<FiMoreVertical />}
+                      style={{ margin: 5 }}
+                    />
                   </Dropdown>
-                )}
-
-                {userPermissions.Print == 1 && (
-                  <Button
-                    shape='round'
-                    icon={<FaPrint />}
-                    onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
-                    style={{ margin: 5 }}>
-                    {t("Print")}
-                  </Button>
-                )}
-
-                {userPermissions.Add == 1 && (
-                  <Button
-                    type='primary'
-                    shape='round'
-                    icon={<BsPlusLg />}
-                    onClick={showModal}
-                    style={{ margin: 5 }}>
-                    {t("New")}
-                  </Button>
-                )}
-              </>
-            }>
-            {!Errors.connectionError && (
-              <>
-                <Input.Search
-                  placeholder={t("Search...")}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ paddingBottom: 5 }}
-                  allowClear
-                  value={searchText}
-                />
-                <div ref={tableRef}>
-                  <Table
-                    id='print-table'
-                    size='small'
-                    columns={columns}
-                    dataSource={filteredData}
-                    loading={Loading}
-                    pagination={false}
-                    rowKey={(record) => record._id}
+                ) : (
+                  // Desktop: Separate buttons
+                  <>
+                    {userPermissions.Export == 1 && (
+                      <Dropdown
+                        menu={{
+                          items,
+                          onClick: (e) => handleExport(e),
+                        }}>
+                        <Button
+                          style={{ margin: 5 }}
+                          title='Export Data'
+                          icon={<FiDownloadCloud />}
+                          shape='round'>
+                          {t("Export")}
+                        </Button>
+                      </Dropdown>
+                    )}
+                    {userPermissions.Print == 1 && (
+                      <Button
+                        shape='round'
+                        icon={<FaPrint />}
+                        onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
+                        style={{ margin: 5 }}>
+                        {t("Print")}
+                      </Button>
+                    )}
+                    {userPermissions.Add == 1 && (
+                      <Button
+                        type='primary'
+                        shape='round'
+                        icon={<BsPlusLg />}
+                        onClick={showModal}
+                        style={{ margin: 5 }}>
+                        {t("New")}
+                      </Button>
+                    )}
+                  </>
+                )
+              }>
+              {!Errors.connectionError && (
+                <>
+                  <Input.Search
+                    placeholder={t("Search...")}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ paddingBottom: 5 }}
+                    allowClear
+                    value={searchText}
                   />
-                </div>
-              </>
-            )}
-            {Errors.connectionError && (
-              <Result
-                status='warning'
-                title={"Can't Load Data :" + Errors.connectionError}
-              />
-            )}
-          </Card>
-        </>
-      )}
-    </Card>
+                  <div ref={tableRef} style={{ overflowX: "auto" }}>
+                    <Table
+                      id='print-table'
+                      size='small'
+                      columns={columns}
+                      dataSource={filteredData}
+                      loading={Loading}
+                      pagination={false}
+                      rowKey={(record) => record._id}
+                    />
+                  </div>
+                </>
+              )}
+              {Errors.connectionError && (
+                <Result
+                  status='warning'
+                  title={"Can't Load Data :" + Errors.connectionError}
+                />
+              )}
+            </Card>
+          </>
+        )}
+      </Card>
+    </div>
   );
 }

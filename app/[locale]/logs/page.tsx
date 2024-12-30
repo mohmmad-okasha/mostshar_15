@@ -4,7 +4,14 @@ const PageName = "Logs";
 import React, { use, useEffect, useRef, useState } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
-import { getRules, getApiUrl, cardStyle, formatDate, handlePrint, getSettings } from "@/app/shared";
+import {
+  getRules,
+  getApiUrl,
+  cardStyle,
+  formatDate,
+  handlePrint,
+  getSettings,
+} from "@/app/shared";
 import initTranslations from "../../i18n.js";
 
 //Styling
@@ -183,107 +190,112 @@ export default function App() {
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   return (
-    <Card style={{ border: 0 }} loading={LangLoading}>
-      <div>
-        <Toaster />
-      </div>
-      {userPermissions.View == 1 && (
-        <>
-          <Card
-            title={t(PageName)}
-            style={cardStyle}
-            extra={
-              userPermissions.Print == 1 && (
+    <div className='responsive-card-wrapper'>
+      <Card style={{ border: 0 }} loading={LangLoading}>
+        <div>
+          <Toaster />
+        </div>
+        {userPermissions.View == 1 && (
+          <>
+            <Card
+              title={t(PageName)}
+              style={cardStyle}
+              extra={
+                userPermissions.Print == 1 && (
+                  <>
+                    <Button
+                      type='text'
+                      title='Print'
+                      onClick={() => {
+                        handlePrint(tableRef, t(PageName), 12, locale);
+                      }}
+                      icon={<FaPrint size={"1em"} />}></Button>
+                  </>
+                )
+              }>
+              {!Errors.connectionError && (
                 <>
-                  <Button
-                    type='text'
-                    title='Print'
-                    onClick={() => {
-                      handlePrint(tableRef, t(PageName), 12, locale);
-                    }}
-                    icon={<FaPrint size={"1em"} />}></Button>
-                </>
-              )
-            }>
-            {!Errors.connectionError && (
-              <>
-                <Collapse
-                  size='small'
-                  items={[
-                    {
-                      key: "1",
-                      label: t("Search"),
-                      children: (
-                        <Row>
-                          <Col
-                            xs={{ flex: "100%" }}
-                            sm={{ flex: "50%" }}
-                            lg={{ flex: "30%" }}
-                            style={{ padding: 5 }}>
-                            <Input.Search
-                              placeholder={t("Search...")}
-                              onChange={(e) => setSearchText(e.target.value)}
-                              allowClear
-                            />
-                          </Col>
-                          <Col
-                            xs={{ flex: "100%" }}
-                            sm={{ flex: "50%" }}
-                            lg={{ flex: "20%" }}
-                            style={{ padding: 5 }}>
-                            <Select
-                              onChange={(newValue) => setSearchUserName(newValue)}
-                              placeholder={t("User")}
-                              showSearch
-                              filterOption={filterOption}
-                              options={Users}
-                              style={{ width: "100%" }}
-                            />
-                          </Col>
-                          <Col
-                            xs={{ flex: "100%" }}
-                            sm={{ flex: "50%" }}
-                            lg={{ flex: "50%" }}
-                            style={{ padding: 5 }}>
-                            <RangePicker
-                              placeholder={[t("From date"), t("To date")]}
-                              style={{ width: "100%" }}
-                              onChange={(value, dateString) => {
-                                setSearchTime({ from: dateString[0], to: dateString[1] });
-                              }}
-                              //showTime
-                            />
-                          </Col>
-                        </Row>
-                      ),
-                    },
-                  ]}
-                />
-                <br />
-                <div ref={tableRef}>
-                  <Table
-                    id='test'
+                  <Collapse
                     size='small'
-                    columns={columns}
-                    dataSource={filteredData}
-                    loading={Loading}
-                    pagination={false}
-                    //pagination={{ hideOnSinglePage: true, pageSize: 15 }}
-                    //scroll={{ x: "calc(300px + 50%)", y: 500 }}
-                    rowKey={(record) => record._id}
+                    items={[
+                      {
+                        key: "1",
+                        label: t("Search"),
+                        children: (
+                          <Row>
+                            <Col
+                              xs={{ flex: "100%" }}
+                              sm={{ flex: "50%" }}
+                              lg={{ flex: "30%" }}
+                              style={{ padding: 5 }}>
+                              <Input.Search
+                                placeholder={t("Search...")}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                              />
+                            </Col>
+                            <Col
+                              xs={{ flex: "100%" }}
+                              sm={{ flex: "50%" }}
+                              lg={{ flex: "20%" }}
+                              style={{ padding: 5 }}>
+                              <Select
+                                onChange={(newValue) => setSearchUserName(newValue)}
+                                placeholder={t("User")}
+                                showSearch
+                                filterOption={filterOption}
+                                options={Users}
+                                style={{ width: "100%" }}
+                              />
+                            </Col>
+                            <Col
+                              xs={{ flex: "100%" }}
+                              sm={{ flex: "50%" }}
+                              lg={{ flex: "50%" }}
+                              style={{ padding: 5 }}>
+                              <RangePicker
+                                placeholder={[t("From date"), t("To date")]}
+                                style={{ width: "100%" }}
+                                onChange={(value, dateString) => {
+                                  setSearchTime({
+                                    from: dateString[0],
+                                    to: dateString[1],
+                                  });
+                                }}
+                                //showTime
+                              />
+                            </Col>
+                          </Row>
+                        ),
+                      },
+                    ]}
                   />
-                </div>
-              </>
-            )}
-            {Errors.connectionError && (
-              <Result
-                status='warning'
-                title={"Can't Load Data :" + Errors.connectionError}
-              />
-            )}
-          </Card>
-        </>
-      )}
-    </Card>
+                  <br />
+                  <div ref={tableRef} style={{ overflowX: "auto" }}>
+                    <Table
+                      id='test'
+                      size='small'
+                      columns={columns}
+                      dataSource={filteredData}
+                      loading={Loading}
+                      pagination={false}
+                      //pagination={{ hideOnSinglePage: true, pageSize: 15 }}
+                      //scroll={{ x: "calc(300px + 50%)", y: 500 }}
+                      rowKey={(record) => record._id}
+                    />
+                  </div>
+                </>
+              )}
+              {Errors.connectionError && (
+                <Result
+                  status='warning'
+                  title={"Can't Load Data :" + Errors.connectionError}
+                />
+              )}
+            </Card>
+          </>
+        )}
+      </Card>
+    </div>
   );
 }

@@ -45,6 +45,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
+import { IoSync } from "react-icons/io5";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -82,9 +83,9 @@ export default function App(props: any) {
     connectionError: "",
     saveErrors: "",
   });
-
   const [isMobile, setIsMobile] = useState(false);
 
+  //to set isMobile
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
@@ -624,7 +625,7 @@ export default function App(props: any) {
 
   // --- Modal Title (useMemo) ---
   const modalTitle = useMemo(
-    () => (edit ? "Edit " : "Add ") + PageName.slice(0, -1),
+    () => (edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1)),
     [edit]
   );
 
@@ -771,7 +772,7 @@ export default function App(props: any) {
         {userPermissions.View == 1 && (
           <>
             <Modal
-              title={t(modalTitle)}
+              title={modalTitle}
               open={isModalOpen}
               onCancel={handleCancel}
               width={500}
@@ -893,6 +894,14 @@ export default function App(props: any) {
                 ) : (
                   // Desktop: Separate buttons
                   <>
+                    <Button
+                      type='default'
+                      shape='circle'
+                      title={t("Refresh Data")}
+                      icon={<IoSync   />}
+                      onClick={getData}
+                      style={{ margin: 5 }}
+                    />
                     {userPermissions.Export == 1 && (
                       <Dropdown
                         menu={{

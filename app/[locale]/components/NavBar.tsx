@@ -25,6 +25,7 @@ import initTranslations from "../../i18n"; // Your i18n utility
 import { CiDark } from "react-icons/ci";
 import axios from "axios";
 import { getApiUrl, getSettings } from "@/app/shared";
+import Cookies from "js-cookie";
 
 const api = getApiUrl();
 const { Text } = Typography;
@@ -112,6 +113,7 @@ export default function App({
 
   const logout = () => {
     setCookies("token", "");
+    Cookies.remove("token");
     window.localStorage.removeItem("userId");
   };
 
