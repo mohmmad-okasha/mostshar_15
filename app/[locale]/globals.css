@@ -64,6 +64,20 @@
     vertical-align: bottom; /* Align headers to the bottom */
     border-bottom: 2px solid #eceeef; /* Thicker bottom border for headers */
   }
+
+/* Highlight the selected row */
+.selected-row-dark {
+  color:var(--primary-color); /* لون النص */
+  font-weight:bold; /* خط عريض */
+  background-color: transparent; /* بدون خلفية */
+}
+.selected-row-light {
+  color:var(--primary-color); /* لون النص */
+  font-weight:bold; /* خط عريض */
+  background-color: transparent; /* بدون خلفية */
+}
+
+
   
 
 

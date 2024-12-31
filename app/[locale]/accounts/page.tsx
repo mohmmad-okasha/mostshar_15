@@ -56,51 +56,8 @@ const api = getApiUrl();
 // --- Main Component ---
 export default function App(props: any) {
   const searchRef = useRef<InputRef>(null);
+  const router = useRouter();
 
-  // --- Keyboard Shortcuts ---
-  useEffect(() => {
-    const handleKeyDown = (event: {
-      ctrlKey: any;
-      key: string;
-      preventDefault: () => void;
-    }) => {
-      
-      if (event.ctrlKey && (event.key === "n" || event.key === "ى")) {
-        event.preventDefault();
-        showModal();
-      }
-
-      if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
-        event.preventDefault();
-        handlePrint(tableRef, t(PageName), 12, locale);
-      }
-
-      if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
-        event.preventDefault();
-        if (searchRef.current) {
-          searchRef.current.focus();
-        }
-      }
-
-      if (event.key === "F1") {
-        event.preventDefault(); // Prevent browser's default help behavior
-        console.log("F1 triggered");
-        //helpFunction(); // Replace with your help action
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-
-
-
-
-
- 
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",
@@ -243,6 +200,48 @@ export default function App(props: any) {
     [allAccountsData]
   );
 
+  // --- Keyboard Shortcuts ---
+  useEffect(() => {
+    const handleKeyDown = (event: {
+      target: any;
+      ctrlKey: any;
+      key: string;
+      preventDefault: () => void;
+    }) => {
+      if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
+        event.preventDefault();
+        handlePrint(tableRef, t(PageName), 12, locale);
+      }
+
+      if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
+        event.preventDefault();
+        if (searchRef.current) {
+          searchRef.current.focus();
+        }
+      }
+
+      if (event.key === "F5") {
+        event.preventDefault();
+        console.log("F5 triggered");
+        getData(true); // Refresh = true
+      }
+
+      if (
+        event.key === "Backspace" &&
+        event.target.tagName !== "INPUT" &&
+        event.target.tagName !== "TEXTAREA"
+      ) {
+        event.preventDefault();
+        router.back(); // Go to the previous page
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   // --- Export Data ---
   const exportToJson = (data: any) => {
     const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
@@ -318,6 +317,10 @@ export default function App(props: any) {
   useEffect(() => {
     getData();
   }, []);
+
+  useEffect(() => {
+    console.log("Account Data:", accountData);
+  }, [accountData]);
 
   // --- Table Columns (useMemo) ---
   const columns: any = useMemo(
@@ -474,7 +477,7 @@ export default function App(props: any) {
   }, [allAccountsData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
-  async function getData() {
+  async function getData(refresh?: boolean) {
     setLoading(true);
     try {
       const response = await Axios.get(`${api}/accounts`);
@@ -485,6 +488,13 @@ export default function App(props: any) {
     } finally {
       setLoading(false);
       setCookies("loading", false);
+
+      if (refresh) {
+        toast.remove();
+        toast.success(t("Refreshed"), {
+          position: "top-center",
+        });
+      }
     }
   }
 
@@ -889,7 +899,7 @@ export default function App(props: any) {
                       items: [
                         {
                           key: "refresh",
-                          label: <div onClick={getData}> {t("Refresh Data")}</div>,
+                          label: <div onClick={()=>getData(true)}> {t("Refresh Data")}</div>,
                           icon: <IoSync />,
                         },
                         ...(userPermissions.Add == 1
@@ -949,7 +959,7 @@ export default function App(props: any) {
                       shape='circle'
                       title={t("Refresh Data")}
                       icon={<IoSync />}
-                      onClick={getData}
+                      onClick={() => getData(true)}
                       style={{ margin: 5 }}
                     />
                     {userPermissions.Export == 1 && (
@@ -1017,6 +1027,19 @@ export default function App(props: any) {
                       pagination={false}
                       rowKey={(record) => record._id}
                       scroll={{ x: "max-content" }}
+                      rowClassName={(record) =>
+                        record._id === accountData._id
+                          ? settings.theme === "dark"
+                            ? "selected-row-dark"
+                            : "selected-row-light"
+                          : ""
+                      } // Add a class to the selected row
+                      onRow={(record) => ({
+                        onClick: () => {
+                          setAccountData(record);
+                        },
+                        style: { cursor: "pointer" },
+                      })}
                     />
                   </div>
                 </>
@@ -1028,6 +1051,13 @@ export default function App(props: any) {
                 />
               )}
             </Card>
+            <Modal
+              title={modalTitle}
+              open={isModalOpen}
+              onCancel={handleCancel}
+              width={500}
+              maskClosable={false}
+              footer={[]}></Modal>
           </>
         )}
       </Card>
