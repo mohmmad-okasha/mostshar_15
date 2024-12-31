@@ -22,6 +22,7 @@ import {
   Dropdown,
   Form,
   Input,
+  InputRef,
   Modal,
   Popconfirm,
   Result,
@@ -46,44 +47,99 @@ import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 // --- Constants ---
 const PageName = "Accounts";
 const api = getApiUrl();
 
-
-
-
 // --- Main Component ---
 export default function App(props: any) {
-  const router = useRouter();
+  const searchRef = useRef<InputRef>(null);
 
   useEffect(() => {
-    const handleKeydown = (event: { key: string; preventDefault: () => void; ctrlKey: any; }) => {
-      if (event.key === 'F1') {
-        event.preventDefault(); // منع السلوك الافتراضي (فتح دليل المساعدة)
-        console.log('Help shortcut triggered!');
-        alert('Opening Help Section...');
-      } else if (event.ctrlKey && event.key === 's') {
+    const handleKeyDown = (event: {
+      ctrlKey: any;
+      key: string;
+      preventDefault: () => void;
+    }) => {
+      // Handle Ctrl + S
+      if (event.ctrlKey && event.key === "s") {
         event.preventDefault();
-        console.log('Save shortcut triggered!');
-        alert('Saving...');
-      } else if (event.ctrlKey && event.key === 'n') {
+        saveFunction();
+      }
+
+      if (event.ctrlKey && event.key === "n") {
         event.preventDefault();
-        console.log('New shortcut triggered!');
-        router.push('/new');
+        newFunction();
+      }
+
+      if (event.ctrlKey && event.key === "p") {
+        event.preventDefault();
+
+       setIsPrintOpen(true)
+      }
+      // Handle Ctrl + P
+      if (event.ctrlKey && event.key === "f") {
+        event.preventDefault(); // Prevent browser's default print behavior
+        focusSearch(); // Replace with your print function
+      }
+
+      // Handle F1
+      if (event.key === "F1") {
+        event.preventDefault(); // Prevent browser's default help behavior
+        console.log("F1 triggered");
+        helpFunction(); // Replace with your help action
       }
     };
-  
-    // إضافة Event Listener عند التحميل
-    window.addEventListener('keydown', handleKeydown);
-  
-    // تنظيف Event Listener عند الإزالة
+
+    // Attach the event listener
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup the event listener on unmount
     return () => {
-      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [router]);
+  }, []);
+
+  const handleSearchKeyDown = (event: {
+    ctrlKey: any;
+    key: string;
+    preventDefault: () => void;
+  }) => {
+    // Handle Ctrl + P inside the input
+    if (event.ctrlKey && event.key === "p" && !isPrintOpen) {
+      event.preventDefault();
+      setIsPrintOpen(true)
+    }
+  };
+
+  const saveFunction = () => {
+    console.log("Save action performed");
+    // Your save logic here
+  };
+
+  const newFunction = () => {
+    console.log("New action performed");
+    // Your new action logic here
+  };
+
+
+
+  const printFunction = () => {
+    handlePrint(tableRef, t(PageName), 12, locale,isPrintOpen);
+  };
+
+  const helpFunction = () => {
+    console.log("Help action performed");
+    // Your help logic here
+  };
+
+  const focusSearch = () => {
+    if (searchRef.current) {
+      searchRef.current.focus();
+    }
+  };
 
   let [settings, setSettings] = useState({
     lang: "",
@@ -105,6 +161,7 @@ export default function App(props: any) {
     Export: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [LangLoading, setLangloading] = useState(true);
@@ -116,6 +173,10 @@ export default function App(props: any) {
     saveErrors: "",
   });
   const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    printFunction();
+  },[isPrintOpen])
 
   //to set isMobile
   useEffect(() => {
@@ -874,12 +935,11 @@ export default function App(props: any) {
                   <Dropdown
                     menu={{
                       items: [
-
-                      {
-                        key: "refresh",
-                        label: <div onClick={getData}> {t("Refresh Data")}</div>,
-                        icon: <IoSync />,
-                      },
+                        {
+                          key: "refresh",
+                          label: <div onClick={getData}> {t("Refresh Data")}</div>,
+                          icon: <IoSync />,
+                        },
                         ...(userPermissions.Add == 1
                           ? [
                               {
@@ -895,9 +955,17 @@ export default function App(props: any) {
                                 key: "print",
                                 label: (
                                   <div
-                                    onClick={() =>
-                                      handlePrint(tableRef, t(PageName), 12, locale)
-                                    }>
+                                    onClick={async () => {
+                                      setIsPrintOpen(true);
+                                      await handlePrint(
+                                        tableRef,
+                                        t(PageName),
+                                        12,
+                                        locale,
+                                        isPrintOpen
+                                      );
+                                      setIsPrintOpen(false);
+                                    }}>
                                     {t("Print")}
                                   </div>
                                 ),
@@ -936,7 +1004,7 @@ export default function App(props: any) {
                       type='default'
                       shape='circle'
                       title={t("Refresh Data")}
-                      icon={<IoSync   />}
+                      icon={<IoSync />}
                       onClick={getData}
                       style={{ margin: 5 }}
                     />
@@ -989,6 +1057,8 @@ export default function App(props: any) {
                     style={{ paddingBottom: 5 }}
                     allowClear
                     value={searchText}
+                    ref={searchRef}
+                    onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <Table
