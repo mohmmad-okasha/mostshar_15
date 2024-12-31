@@ -110,8 +110,8 @@ export async function getSettings(userName) {
   }
 }
 
-export const handlePrint = (tableRef, title, fontSize, lang,isPrintOpen) => {
-  if (tableRef.current && !isPrintOpen) {
+export const handlePrint = (tableRef, title, fontSize, lang) => {
+  if (tableRef.current) {
     const printContents = tableRef.current.innerHTML;
     const printWindow = window.open("", "", "height=2000,width=2000");
 

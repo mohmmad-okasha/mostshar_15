@@ -57,90 +57,50 @@ const api = getApiUrl();
 export default function App(props: any) {
   const searchRef = useRef<InputRef>(null);
 
+  // --- Keyboard Shortcuts ---
   useEffect(() => {
     const handleKeyDown = (event: {
       ctrlKey: any;
       key: string;
       preventDefault: () => void;
     }) => {
-      // Handle Ctrl + S
-      if (event.ctrlKey && event.key === "s") {
+      
+      if (event.ctrlKey && (event.key === "n" || event.key === "ى")) {
         event.preventDefault();
-        saveFunction();
+        showModal();
       }
 
-      if (event.ctrlKey && event.key === "n") {
+      if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
-        newFunction();
+        handlePrint(tableRef, t(PageName), 12, locale);
       }
 
-      if (event.ctrlKey && event.key === "p") {
+      if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
         event.preventDefault();
-
-       setIsPrintOpen(true)
-      }
-      // Handle Ctrl + P
-      if (event.ctrlKey && event.key === "f") {
-        event.preventDefault(); // Prevent browser's default print behavior
-        focusSearch(); // Replace with your print function
+        if (searchRef.current) {
+          searchRef.current.focus();
+        }
       }
 
-      // Handle F1
       if (event.key === "F1") {
         event.preventDefault(); // Prevent browser's default help behavior
         console.log("F1 triggered");
-        helpFunction(); // Replace with your help action
+        //helpFunction(); // Replace with your help action
       }
     };
 
-    // Attach the event listener
     window.addEventListener("keydown", handleKeyDown);
-
-    // Cleanup the event listener on unmount
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
-  const handleSearchKeyDown = (event: {
-    ctrlKey: any;
-    key: string;
-    preventDefault: () => void;
-  }) => {
-    // Handle Ctrl + P inside the input
-    if (event.ctrlKey && event.key === "p" && !isPrintOpen) {
-      event.preventDefault();
-      setIsPrintOpen(true)
-    }
-  };
-
-  const saveFunction = () => {
-    console.log("Save action performed");
-    // Your save logic here
-  };
-
-  const newFunction = () => {
-    console.log("New action performed");
-    // Your new action logic here
-  };
 
 
 
-  const printFunction = () => {
-    handlePrint(tableRef, t(PageName), 12, locale,isPrintOpen);
-  };
 
-  const helpFunction = () => {
-    console.log("Help action performed");
-    // Your help logic here
-  };
 
-  const focusSearch = () => {
-    if (searchRef.current) {
-      searchRef.current.focus();
-    }
-  };
-
+ 
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",
@@ -161,7 +121,6 @@ export default function App(props: any) {
     Export: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [LangLoading, setLangloading] = useState(true);
@@ -174,11 +133,7 @@ export default function App(props: any) {
   });
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    printFunction();
-  },[isPrintOpen])
-
-  //to set isMobile
+  // --- set isMobile screen ---
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
@@ -194,8 +149,7 @@ export default function App(props: any) {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, [window.innerWidth]);
 
-  //const params: any = use(props.params);
-  //const { locale } = params;
+  // --- set Language ---
   const locale = settings.lang;
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
@@ -207,61 +161,6 @@ export default function App(props: any) {
     }
     loadTranslations();
   }, [locale]);
-
-  // --- Export Data ---
-  const exportToJson = (data: any) => {
-    const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
-    const blob = new Blob([json], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = t(PageName) + ".json"; // اسم الملف
-    link.click();
-  };
-
-  const exportToExcel = (data: any) => {
-    const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
-    const wb = XLSX.utils.book_new(); // Create a new workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
-
-    // Write the workbook to Excel file and trigger download
-    XLSX.writeFile(wb, t(PageName) + ".xlsx");
-  };
-
-  const exportToSQL = () => {
-    const tableName = "accounts"; //table name
-
-    // Filter out columns that you don't want to include
-    const filteredColumns = columns.filter(
-      (col: any) => !["Actions"].includes(col.dataIndex)
-    ); // Example: Exclude 'age'
-
-    // Generate the column names part of the SQL
-    const columnNames = filteredColumns.map((col: any) => col.dataIndex).join(", ");
-
-    // Generate SQL values for each row
-    const values = filteredData
-      .map((row: any) => {
-        // Generate SQL-friendly values, escaping single quotes
-        const rowValues = filteredColumns
-          .map((col: any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
-          .join(", ");
-
-        return `(${rowValues})`;
-      })
-      .join(",\n");
-
-    // Combine the final SQL insert statement
-    const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
-
-    // Create a Blob object containing the SQL statement
-    const blob = new Blob([sql], { type: "text/plain" });
-
-    // Create a link element to trigger the download
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = t(PageName) + ".sql"; // The name of the downloaded file
-    link.click(); // Trigger the download
-  };
 
   // --- Field Configuration (useMemo) ---
   const fieldsConfig = useMemo(
@@ -344,6 +243,59 @@ export default function App(props: any) {
     [allAccountsData]
   );
 
+  // --- Export Data ---
+  const exportToJson = (data: any) => {
+    const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = t(PageName) + ".json"; // اسم الملف
+    link.click();
+  };
+  const exportToExcel = (data: any) => {
+    const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
+    const wb = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
+
+    // Write the workbook to Excel file and trigger download
+    XLSX.writeFile(wb, t(PageName) + ".xlsx");
+  };
+  const exportToSQL = () => {
+    const tableName = "accounts"; //table name
+
+    // Filter out columns that you don't want to include
+    const filteredColumns = columns.filter(
+      (col: any) => !["Actions"].includes(col.dataIndex)
+    ); // Example: Exclude 'age'
+
+    // Generate the column names part of the SQL
+    const columnNames = filteredColumns.map((col: any) => col.dataIndex).join(", ");
+
+    // Generate SQL values for each row
+    const values = filteredData
+      .map((row: any) => {
+        // Generate SQL-friendly values, escaping single quotes
+        const rowValues = filteredColumns
+          .map((col: any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
+          .join(", ");
+
+        return `(${rowValues})`;
+      })
+      .join(",\n");
+
+    // Combine the final SQL insert statement
+    const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
+
+    // Create a Blob object containing the SQL statement
+    const blob = new Blob([sql], { type: "text/plain" });
+
+    // Create a link element to trigger the download
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = t(PageName) + ".sql"; // The name of the downloaded file
+    link.click(); // Trigger the download
+  };
+
   // --- Initial Account Data State ---
   const [accountData, setAccountData] = useState(() => {
     const initialData: any = {};
@@ -353,7 +305,7 @@ export default function App(props: any) {
     return initialData;
   });
 
-  // --- Effects Hooks ---
+  // --- (Fetch Data, Settings, Permissions)
   useEffect(() => {
     getSettings(userName).then((value) => {
       setSettings(value);
@@ -956,15 +908,7 @@ export default function App(props: any) {
                                 label: (
                                   <div
                                     onClick={async () => {
-                                      setIsPrintOpen(true);
-                                      await handlePrint(
-                                        tableRef,
-                                        t(PageName),
-                                        12,
-                                        locale,
-                                        isPrintOpen
-                                      );
-                                      setIsPrintOpen(false);
+                                      handlePrint(tableRef, t(PageName), 12, locale);
                                     }}>
                                     {t("Print")}
                                   </div>
@@ -1058,7 +1002,7 @@ export default function App(props: any) {
                     allowClear
                     value={searchText}
                     ref={searchRef}
-                    onKeyDown={handleSearchKeyDown}
+                    //onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <Table
