@@ -47,6 +47,7 @@ import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
+import Paragraph from "antd/es/typography/Paragraph.js";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -75,6 +76,7 @@ export default function App(props: any) {
     Print: 0,
     Export: 0,
   });
+ 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
@@ -200,7 +202,7 @@ export default function App(props: any) {
 
   // --- Keyboard Shortcuts ---
   useEffect(() => {
-    const handleKeyDown = (event: {
+    const handleKeyDown = async (event: {
       target: any;
       ctrlKey: any;
       key: string;
@@ -223,6 +225,15 @@ export default function App(props: any) {
       if (event.key === "F1") {
         event.preventDefault();
         showModal(); // NEW
+      }
+      if (event.key === "Delete") {
+        event.preventDefault();
+        if (userPermissions.Remove == 1) {
+          const button = document.getElementById(accountDataRef.current._id);
+          if (button) {
+            button.click();
+          }
+        }
       }
     };
 
@@ -293,6 +304,12 @@ export default function App(props: any) {
     });
     return initialData;
   });
+  const accountDataRef = useRef(accountData); //to access last accountData value from inside useEffect
+  // Update the ref whenever accountData changes
+  useEffect(() => {
+    accountDataRef.current = accountData;
+  }, [accountData]);
+
 
   // --- (Fetch Data, Settings, Permissions)
   useEffect(() => {
@@ -308,9 +325,6 @@ export default function App(props: any) {
     getData();
   }, []);
 
-  useEffect(() => {
-    console.log("Account Data:", accountData);
-  }, [accountData]);
 
   // --- Table Columns (useMemo) ---
   const columns: any = useMemo(
@@ -417,10 +431,11 @@ export default function App(props: any) {
                       okText={t("Yes, Remove")}
                       cancelText={t("No")}>
                       <Button
+                        id={record._id}
                         style={{ marginLeft: 5 }}
                         type='primary'
                         danger
-                        title={t("Remove") + " " + record.accountName }
+                        title={t("Remove") + " " + record.accountName}
                         shape='circle'
                         size='small'
                         icon={<DeleteOutlined />}
@@ -432,7 +447,7 @@ export default function App(props: any) {
                       type='primary'
                       shape='circle'
                       size='small'
-                      title={t("Edit") + " " + record.accountName + "  'Dueble Click'"}
+                      title={t("Edit") + " " + record.accountName + " 'Dueble Click'"}
                       style={{ marginLeft: 5 }}
                       icon={<EditOutlined />}
                       onClick={() => {
@@ -783,7 +798,6 @@ export default function App(props: any) {
 
   // --- Export to
   function handleExport(e: any) {
-    console.log("Selected:", e.key);
     if (e.key == 1) {
       exportToJson(filteredData);
     } else if (e.key == 2) {
@@ -925,6 +939,7 @@ export default function App(props: any) {
                               {
                                 key: "export",
                                 label: t("Export"),
+                                icon: <FiDownloadCloud />,
                                 children: items.map((item) => ({
                                   key: item.key,
                                   label: (
@@ -1058,13 +1073,23 @@ export default function App(props: any) {
                 />
               )}
             </Card>
-            <Modal
-              title={modalTitle}
-              open={false}
-              onCancel={handleCancel}
-              width={500}
-              maskClosable={false}
-              footer={[]}></Modal>
+            
+            <br />
+
+            {accountData._id && <Card
+            title={t("Details")}
+            className='responsive-card'>
+            <Row>
+              {fieldsConfig.map((field) =>
+                <>
+                <Paragraph copyable>{accountData[field.fieldName]}</Paragraph>
+                <Divider />
+                </>
+              
+              )}
+              </Row>
+            </Card>}
+            
           </>
         )}
       </Card>
