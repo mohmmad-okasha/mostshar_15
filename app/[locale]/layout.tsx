@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import Axios from "axios";
 import { getApiUrl, getSettings } from "../shared";
+import { useRouter } from "next/navigation";
 
 const { Content, Footer } = Layout;
 
@@ -39,15 +40,40 @@ export default function RootLayout({
 
   useEffect(() => {
     // to get user settings
-    if(userName != null && userName != undefined)
-    getSettings(userName).then((value) => {
-      setSettings(value);
-    });
+    if (userName != null && userName != undefined)
+      getSettings(userName).then((value) => {
+        setSettings(value);
+      });
   }, [userName]);
 
   useEffect(() => {
-    
     //getUserData();
+  }, []);
+  const router = useRouter();
+
+  // --- Keyboard Shortcuts ---
+  useEffect(() => {
+    const handleKeyDown = (event: {
+      target: any;
+      ctrlKey: any;
+      key: string;
+      preventDefault: () => void;
+    }) => {
+      //Backspace to go back
+      if (
+        event.key === "Backspace" &&
+        event.target.tagName !== "INPUT" &&
+        event.target.tagName !== "TEXTAREA"
+      ) {
+        event.preventDefault();
+        router.back(); // Go to the previous page
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   async function getUserData() {

@@ -47,7 +47,6 @@ import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
-import { useRouter } from "next/navigation";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -55,14 +54,13 @@ const api = getApiUrl();
 
 // --- Main Component ---
 export default function App(props: any) {
-  const searchRef = useRef<InputRef>(null);
-  const router = useRouter();
-
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",
   });
   // --- Refs and Hooks ---
+  const searchRef = useRef<InputRef>(null);
+  const printRef = useRef<any>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
   const [form] = Form.useForm();
@@ -210,29 +208,21 @@ export default function App(props: any) {
     }) => {
       if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
-        handlePrint(tableRef, t(PageName), 12, locale);
+        printRef.current.click();
       }
-
       if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
         event.preventDefault();
         if (searchRef.current) {
           searchRef.current.focus();
         }
       }
-
       if (event.key === "F5") {
         event.preventDefault();
-        console.log("F5 triggered");
         getData(true); // Refresh = true
       }
-
-      if (
-        event.key === "Backspace" &&
-        event.target.tagName !== "INPUT" &&
-        event.target.tagName !== "TEXTAREA"
-      ) {
+      if (event.key === "F1") {
         event.preventDefault();
-        router.back(); // Go to the previous page
+        showModal(); // NEW
       }
     };
 
@@ -240,7 +230,7 @@ export default function App(props: any) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [locale, PageName]);
 
   // --- Export Data ---
   const exportToJson = (data: any) => {
@@ -382,9 +372,9 @@ export default function App(props: any) {
                           label: (
                             <Popconfirm
                               title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
-                              description={`${t("Are you sure to delete")} ${
+                              description={`${t("Are you sure to delete")} " ${
                                 record.accountName
-                              }`}
+                              } " `}
                               onConfirm={() => {
                                 remove(record._id);
                               }}
@@ -418,7 +408,9 @@ export default function App(props: any) {
                   {userPermissions.Remove == 1 && (
                     <Popconfirm
                       title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
-                      description={`${t("Are you sure to delete")} ${record.accountName}`}
+                      description={`${t("Are you sure to delete")} "${
+                        record.accountName
+                      }" `}
                       onConfirm={() => {
                         remove(record._id);
                       }}
@@ -428,6 +420,7 @@ export default function App(props: any) {
                         style={{ marginLeft: 5 }}
                         type='primary'
                         danger
+                        title={t("Remove") + " " + record.accountName }
                         shape='circle'
                         size='small'
                         icon={<DeleteOutlined />}
@@ -439,6 +432,7 @@ export default function App(props: any) {
                       type='primary'
                       shape='circle'
                       size='small'
+                      title={t("Edit") + " " + record.accountName + "  'Dueble Click'"}
                       style={{ marginLeft: 5 }}
                       icon={<EditOutlined />}
                       onClick={() => {
@@ -468,10 +462,8 @@ export default function App(props: any) {
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
     return allAccountsData.filter((account: any) => {
-      return (
-        fieldsConfig.some((field) =>
-          String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
-        ) || account.user.toLowerCase().includes(searchTextLower)
+      return fieldsConfig.some((field) =>
+        String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
       );
     });
   }, [allAccountsData, fieldsConfig, searchText]);
@@ -681,7 +673,7 @@ export default function App(props: any) {
   // --- Modal Title (useMemo) ---
   const modalTitle = useMemo(
     () => (edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1)),
-    [edit]
+    [edit, isModalOpen]
   );
 
   // --- Create Form Item Function ---
@@ -863,15 +855,7 @@ export default function App(props: any) {
                   <Form.Item
                     name='footer'
                     key='footer'
-                    style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
-                    <Button
-                      shape='round'
-                      icon={<CloseOutlined />}
-                      onClick={handleCancel}
-                      style={{ margin: 5 }}>
-                      {t("Cancel")}
-                    </Button>
-
+                    style={{ marginBottom: -40, textAlign: "right", direction: "rtl" }}>
                     <Button
                       type='primary'
                       shape='round'
@@ -879,6 +863,13 @@ export default function App(props: any) {
                       icon={<SaveOutlined />}
                       style={{ margin: 5 }}>
                       {t("Save")}
+                    </Button>
+                    <Button
+                      shape='round'
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      style={{ margin: 5 }}>
+                      {t("Cancel")}
                     </Button>
                   </Form.Item>
                 </Form>
@@ -899,7 +890,9 @@ export default function App(props: any) {
                       items: [
                         {
                           key: "refresh",
-                          label: <div onClick={()=>getData(true)}> {t("Refresh Data")}</div>,
+                          label: (
+                            <div onClick={() => getData(true)}> {t("Refresh Data")}</div>
+                          ),
                           icon: <IoSync />,
                         },
                         ...(userPermissions.Add == 1
@@ -957,7 +950,7 @@ export default function App(props: any) {
                     <Button
                       type='default'
                       shape='circle'
-                      title={t("Refresh Data")}
+                      title={t("Refresh") + " " + t(PageName) + " 'F5'"}
                       icon={<IoSync />}
                       onClick={() => getData(true)}
                       style={{ margin: 5 }}
@@ -970,7 +963,7 @@ export default function App(props: any) {
                         }}>
                         <Button
                           style={{ margin: 5 }}
-                          title='Export Data'
+                          title={t("Export Data")}
                           icon={<FiDownloadCloud />}
                           shape='round'>
                           {t("Export")}
@@ -979,10 +972,12 @@ export default function App(props: any) {
                     )}
                     {userPermissions.Print == 1 && (
                       <Button
+                        ref={printRef}
                         shape='round'
                         icon={<FaPrint />}
                         onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
-                        style={{ margin: 5 }}>
+                        style={{ margin: 5 }}
+                        title={t("Print") + " " + t(PageName) + " 'Ctrl+P'"}>
                         {t("Print")}
                       </Button>
                     )}
@@ -992,6 +987,7 @@ export default function App(props: any) {
                         shape='round'
                         icon={<BsPlusLg />}
                         onClick={showModal}
+                        title={t("New") + " " + t(PageName.slice(0, -1)) + " 'F1'"}
                         style={{ margin: 5 }}>
                         {t("New")}
                       </Button>
@@ -1038,6 +1034,17 @@ export default function App(props: any) {
                         onClick: () => {
                           setAccountData(record);
                         },
+                        onDoubleClick: () => {
+                          setOldData(record);
+                          form.setFieldsValue(
+                            fieldsConfig.reduce((acc: any, field) => {
+                              acc[field.fieldName] = record[field.fieldName];
+                              return acc;
+                            }, {})
+                          );
+                          setEdit(true);
+                          showModal();
+                        },
                         style: { cursor: "pointer" },
                       })}
                     />
@@ -1053,7 +1060,7 @@ export default function App(props: any) {
             </Card>
             <Modal
               title={modalTitle}
-              open={isModalOpen}
+              open={false}
               onCancel={handleCancel}
               width={500}
               maskClosable={false}
