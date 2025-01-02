@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo, use } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -18,6 +18,7 @@ import {
   Button,
   Card,
   Col,
+  Collapse,
   Divider,
   Dropdown,
   Form,
@@ -30,7 +31,6 @@ import {
   Select,
   Space,
   Table,
-  TableColumnsType,
   Tree,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
@@ -39,7 +39,6 @@ import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
-  DownOutlined,
 } from "@ant-design/icons";
 import { FaFileExport, FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
@@ -48,6 +47,9 @@ import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
 import Paragraph from "antd/es/typography/Paragraph.js";
+import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
+import { ExportData } from "../components/ExportData";
+import { TableActions } from "../components/TableActions";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -76,7 +78,7 @@ export default function App(props: any) {
     Print: 0,
     Export: 0,
   });
- 
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allAccountsData, setAllAccountsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
@@ -200,49 +202,6 @@ export default function App(props: any) {
     [allAccountsData]
   );
 
-  // --- Keyboard Shortcuts ---
-  useEffect(() => {
-    const handleKeyDown = async (event: {
-      target: any;
-      ctrlKey: any;
-      key: string;
-      preventDefault: () => void;
-    }) => {
-      if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
-        event.preventDefault();
-        printRef.current.click();
-      }
-      if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
-        event.preventDefault();
-        if (searchRef.current) {
-          searchRef.current.focus();
-        }
-      }
-      if (event.key === "F5") {
-        event.preventDefault();
-        getData(true); // Refresh = true
-      }
-      if (event.key === "F1") {
-        event.preventDefault();
-        showModal(); // NEW
-      }
-      if (event.key === "Delete") {
-        event.preventDefault();
-        if (userPermissions.Remove == 1) {
-          const button = document.getElementById(accountDataRef.current._id);
-          if (button) {
-            button.click();
-          }
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [locale, PageName]);
-
   // --- Export Data ---
   const exportToJson = (data: any) => {
     const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
@@ -310,7 +269,6 @@ export default function App(props: any) {
     accountDataRef.current = accountData;
   }, [accountData]);
 
-
   // --- (Fetch Data, Settings, Permissions)
   useEffect(() => {
     getSettings(userName).then((value) => {
@@ -324,7 +282,6 @@ export default function App(props: any) {
   useEffect(() => {
     getData();
   }, []);
-
 
   // --- Table Columns (useMemo) ---
   const columns: any = useMemo(
@@ -343,132 +300,23 @@ export default function App(props: any) {
         title: t("User"),
         dataIndex: "user",
       },
-      userPermissions.Remove == 1 || userPermissions.Edit == 1
-        ? {
-            title: isMobile ? " " : t("Actions"),
-            dataIndex: "Actions",
-            key: "Actions",
-            align: "center",
-            className: "no_print",
-            fixed: "right",
-            render: (_: any, record: any) => {
-              if (isMobile) {
-                // Mobile: Use a single dropdown with actions
-                const menuItems = [
-                  ...(userPermissions.Edit == 1
-                    ? [
-                        {
-                          key: "edit",
-                          label: (
-                            <div
-                              onClick={() => {
-                                setAccountData(record);
-                                setOldData(record);
-                                form.setFieldsValue(
-                                  fieldsConfig.reduce((acc: any, field) => {
-                                    acc[field.fieldName] = record[field.fieldName];
-                                    return acc;
-                                  }, {})
-                                );
-                                setEdit(true);
-                                showModal();
-                              }}>
-                              <EditOutlined /> {t("Edit")}
-                            </div>
-                          ),
-                        },
-                      ]
-                    : []),
-                  ...(userPermissions.Remove == 1
-                    ? [
-                        {
-                          key: "remove",
-                          label: (
-                            <Popconfirm
-                              title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
-                              description={`${t("Are you sure to delete")} " ${
-                                record.accountName
-                              } " `}
-                              onConfirm={() => {
-                                remove(record._id);
-                              }}
-                              okText={t("Yes, Remove")}
-                              cancelText={t("No")}>
-                              <div>
-                                <DeleteOutlined /> {t("Remove")}
-                              </div>
-                            </Popconfirm>
-                          ),
-                        },
-                      ]
-                    : []),
-                ];
-
-                return (
-                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-                    <Button
-                      type='dashed'
-                      shape='circle'
-                      size='small'
-                      icon={<FiMoreVertical />}
-                    />
-                  </Dropdown>
-                );
-              }
-
-              // Desktop: Show separate buttons
-              return (
-                <>
-                  {userPermissions.Remove == 1 && (
-                    <Popconfirm
-                      title={`${t("Delete the")} ${t(PageName.slice(0, -1))}`}
-                      description={`${t("Are you sure to delete")} "${
-                        record.accountName
-                      }" `}
-                      onConfirm={() => {
-                        remove(record._id);
-                      }}
-                      okText={t("Yes, Remove")}
-                      cancelText={t("No")}>
-                      <Button
-                        id={record._id}
-                        style={{ marginLeft: 5 }}
-                        type='primary'
-                        danger
-                        title={t("Remove") + " " + record.accountName}
-                        shape='circle'
-                        size='small'
-                        icon={<DeleteOutlined />}
-                      />
-                    </Popconfirm>
-                  )}
-                  {userPermissions.Edit == 1 && (
-                    <Button
-                      type='primary'
-                      shape='circle'
-                      size='small'
-                      title={t("Edit") + " " + record.accountName + " 'Dueble Click'"}
-                      style={{ marginLeft: 5 }}
-                      icon={<EditOutlined />}
-                      onClick={() => {
-                        setAccountData(record);
-                        setOldData(record);
-                        form.setFieldsValue(
-                          fieldsConfig.reduce((acc: any, field) => {
-                            acc[field.fieldName] = record[field.fieldName];
-                            return acc;
-                          }, {})
-                        );
-                        setEdit(true);
-                        showModal();
-                      }}
-                    />
-                  )}
-                </>
-              );
-            },
-          }
-        : {},
+      {
+        fixed: "right",
+        dataIndex: "actions",
+        key: "actions",
+        align: "center",
+        render: (_: any, record: any) => (
+          <TableActions
+            record={record}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            userPermissions={userPermissions}
+            isMobile={isMobile}
+            label={record.accountName}
+            locale={locale}
+          />
+        ),
+      },
     ],
     [fieldsConfig, remove, setAccountData, showModal]
   );
@@ -704,6 +552,23 @@ export default function App(props: any) {
     fieldWidth?: string;
     editable?: boolean;
   }
+
+  const handleEdit = (record: any) => {
+    setAccountData(record);
+    setEdit(true);
+    showModal();
+  };
+  
+  const handleDelete = (id: string) => {
+    Axios.delete(`${api}/accounts/${id}`)
+      .then((res) => {
+        toast.success(t("Account removed successfully."));
+        getData();
+      })
+      .catch((error) => {
+        toast.error(t("An error occurred. Please try again."));
+      });
+  };
 
   const createFormItem = ({
     fieldName,
@@ -971,19 +836,8 @@ export default function App(props: any) {
                       style={{ margin: 5 }}
                     />
                     {userPermissions.Export == 1 && (
-                      <Dropdown
-                        menu={{
-                          items,
-                          onClick: (e) => handleExport(e),
-                        }}>
-                        <Button
-                          style={{ margin: 5 }}
-                          title={t("Export Data")}
-                          icon={<FiDownloadCloud />}
-                          shape='round'>
-                          {t("Export")}
-                        </Button>
-                      </Dropdown>
+                      <ExportData title={t('Export')} data={filteredData} pageName={t(PageName)} />
+
                     )}
                     {userPermissions.Print == 1 && (
                       <Button
@@ -1073,26 +927,53 @@ export default function App(props: any) {
                 />
               )}
             </Card>
-            
+
             <br />
 
-            {accountData._id && <Card
-            title={t("Details")}
-            className='responsive-card'>
-            <Row>
-              {fieldsConfig.map((field) =>
-                <>
-                <Paragraph copyable>{accountData[field.fieldName]}</Paragraph>
-                <Divider />
-                </>
-              
-              )}
-              </Row>
-            </Card>}
-            
+            {accountData._id && (
+              <>
+                <Collapse
+                  className='responsive-card'
+                  size='small'
+                  items={[
+                    {
+                      key: "1",
+                      label: t("Details"),
+                      children: (
+                        <>
+                          {fieldsConfig.map((field) => (
+                            <>
+                              <Paragraph copyable>
+                                {accountData[field.fieldName]}
+                              </Paragraph>
+                              <Divider />
+                            </>
+                          ))}
+                        </>
+                      ),
+                    },
+                  ]}
+                />
+              </>
+            )}
           </>
         )}
       </Card>
+      <KeyboardShortcuts
+        onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
+        onSearch={() => searchRef.current?.focus()}
+        onRefresh={() => getData(true)}
+        onNew={showModal}
+        onDelete={() => {
+          if (userPermissions.Remove == 1) {
+            const button = document.getElementById(accountDataRef.current._id);
+            if (button) {
+              button.click();
+            }
+          }
+        }}
+        locale={locale}
+      />
     </div>
   );
 }
