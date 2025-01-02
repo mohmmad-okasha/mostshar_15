@@ -50,6 +50,8 @@ import Paragraph from "antd/es/typography/Paragraph.js";
 import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
 import { ExportData } from "../components/ExportData";
 import { TableActions } from "../components/TableActions";
+import { ModalForm } from "../components/ModalForm";
+import { error } from "console";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -308,7 +310,7 @@ export default function App(props: any) {
         render: (_: any, record: any) => (
           <TableActions
             record={record}
-            onEdit={handleEdit}
+            onEdit={() => handleEdit(record)}
             onDelete={handleDelete}
             userPermissions={userPermissions}
             isMobile={isMobile}
@@ -554,11 +556,17 @@ export default function App(props: any) {
   }
 
   const handleEdit = (record: any) => {
-    setAccountData(record);
+    setOldData(record);
+    form.setFieldsValue(
+      fieldsConfig.reduce((acc: any, field) => {
+        acc[field.fieldName] = record[field.fieldName];
+        return acc;
+      }, {})
+    );
     setEdit(true);
     showModal();
   };
-  
+
   const handleDelete = (id: string) => {
     Axios.delete(`${api}/accounts/${id}`)
       .then((res) => {
@@ -697,7 +705,7 @@ export default function App(props: any) {
         </div>
         {userPermissions.View == 1 && (
           <>
-            <Modal
+            {/* <Modal
               title={modalTitle}
               open={isModalOpen}
               onCancel={handleCancel}
@@ -754,7 +762,19 @@ export default function App(props: any) {
                 </Form>
                 <br />
               </Card>
-            </Modal>
+            </Modal> */}
+            <ModalForm
+              isModalOpen={isModalOpen} // Control modal visibility
+              handleOk={handleOk} // Handle form submission
+              handleCancel={handleCancel} // Handle modal close
+              form={form} // Ant Design form instance
+              fieldsConfig={fieldsConfig} // Form fields configuration
+              accountData={accountData} // Current form data
+              errors={Errors} // Error messages (if any)
+              modalTitle={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))} // Modal title
+              edit={edit} // Edit mode flag
+              locale={locale} // Current locale
+            />
             <Card
               title={t(PageName)}
               style={{
@@ -836,8 +856,11 @@ export default function App(props: any) {
                       style={{ margin: 5 }}
                     />
                     {userPermissions.Export == 1 && (
-                      <ExportData title={t('Export')} data={filteredData} pageName={t(PageName)} />
-
+                      <ExportData
+                        title={t("Export")}
+                        data={filteredData}
+                        pageName={t(PageName)}
+                      />
                     )}
                     {userPermissions.Print == 1 && (
                       <Button
@@ -904,15 +927,7 @@ export default function App(props: any) {
                           setAccountData(record);
                         },
                         onDoubleClick: () => {
-                          setOldData(record);
-                          form.setFieldsValue(
-                            fieldsConfig.reduce((acc: any, field) => {
-                              acc[field.fieldName] = record[field.fieldName];
-                              return acc;
-                            }, {})
-                          );
-                          setEdit(true);
-                          showModal();
+                          handleEdit(record)
                         },
                         style: { cursor: "pointer" },
                       })}
