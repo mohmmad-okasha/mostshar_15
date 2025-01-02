@@ -1,83 +1,89 @@
 :root {
-    --primary-color: #098290;
-    --selected-color: #06707b;
-    --secondary-color: #f6ffed;
-    --font-size: 16px;
-    --border-radius: 4px;
-  }
-  
-  @font-face {
-    font-family: "NotoSansArabic";
-    src: local("NotoSansArabic"), url(./fonts/NotoSansArabic-Regular.ttf) format("truetype");
-  }
-  
-  * {
-    font-family: "NotoSansArabic" !important;
-  }
-  
-  .cardStyle {
-    font-size: 1.8vh;
-    color: white;
-    border: none;
-    background-color: transparent;
-  }
-  
-  a > .ant-card {
-    background-color: var(--primary-color) !important;
-    box-shadow: 0 0 5px grey !important;
-    border: 0px;
-    border-radius: 10px;
-    transition: all 0.2s ease-in-out; /* Define transition properties and duration */
-  }
-  
-  a > .ant-card:hover {
-    /* Customize hover styles here (e.g., background-color, transform) */
-    background-color: #ddd; /* Example: change background on hover */
-    transform: scale(1.02); /* Example: slight scale on hover */
-  }
-  
-  .ant-menu-item-selected,
-  .ant-menu-sub {
-    background-color: var(--selected-color) !important;
-  }
-  
-  .ant-btn-primary {
-    box-shadow: 0px 0px !important;
-  }
-  
-  .button-container {
-    display: flex;  /* Enable flexbox layout */
-  }
-  
-  table {
-    width: 100%; /* Make the table fill the available width */
-    margin-bottom: 1rem; /* Add some spacing below the table */
-  }
-  
-  th,
-  td {
-    padding: 0.38vw; /* Padding for cells */
-    vertical-align: top; /* Align cell content to the top */
-  }
-  
-  thead th {
-    vertical-align: bottom; /* Align headers to the bottom */
-    border-bottom: 2px solid #eceeef; /* Thicker bottom border for headers */
-  }
+  --primary-color: #098290;
+  --selected-color: #06707b;
+  --secondary-color: #f6ffed;
+  --font-size: 16px;
+  --border-radius: 4px;
+}
+
+/* disable text selection */
+body {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+
+@font-face {
+  font-family: "NotoSansArabic";
+  src: local("NotoSansArabic"), url(./fonts/NotoSansArabic-Regular.ttf) format("truetype");
+}
+
+* {
+  font-family: "NotoSansArabic" !important;
+}
+
+.cardStyle {
+  font-size: 1.8vh;
+  color: white;
+  border: none;
+  background-color: transparent;
+}
+
+a > .ant-card {
+  background-color: var(--primary-color) !important;
+  box-shadow: 0 0 5px grey !important;
+  border: 0px;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out; /* Define transition properties and duration */
+}
+
+a > .ant-card:hover {
+  /* Customize hover styles here (e.g., background-color, transform) */
+  background-color: #ddd; /* Example: change background on hover */
+  transform: scale(1.02); /* Example: slight scale on hover */
+}
+
+.ant-menu-item-selected,
+.ant-menu-sub {
+  background-color: var(--selected-color) !important;
+}
+
+.ant-btn-primary {
+  box-shadow: 0px 0px !important;
+}
+
+.button-container {
+  display: flex; /* Enable flexbox layout */
+}
+
+table {
+  width: 100%; /* Make the table fill the available width */
+  margin-bottom: 1rem; /* Add some spacing below the table */
+}
+
+th,
+td {
+  padding: 0.38vw; /* Padding for cells */
+  vertical-align: top; /* Align cell content to the top */
+}
+
+thead th {
+  vertical-align: bottom; /* Align headers to the bottom */
+  border-bottom: 2px solid #eceeef; /* Thicker bottom border for headers */
+}
 
 /* Highlight the selected row */
 .selected-row-dark {
-  color:var(--primary-color); /* لون النص */
-  font-weight:bold; /* خط عريض */
+  color: var(--primary-color); /* لون النص */
+  font-weight: bold; /* خط عريض */
   background-color: transparent; /* بدون خلفية */
 }
 .selected-row-light {
-  color:var(--primary-color); /* لون النص */
-  font-weight:bold; /* خط عريض */
+  color: var(--primary-color); /* لون النص */
+  font-weight: bold; /* خط عريض */
   background-color: transparent; /* بدون خلفية */
 }
-
-
 
 @media (max-width: 768px) {
   .responsive-card-wrapper {
@@ -93,6 +99,3 @@
     margin: 0 auto; /* Ensure horizontal centering */
   }
 }
-
-  
-  

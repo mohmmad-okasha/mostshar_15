@@ -56,7 +56,7 @@ export const TableActions = ({
                   title={`${t("Delete")}`}
                   description={`${t("Are you sure to delete")} "${label}"`}
                   onConfirm={() => onDelete(record._id)}
-                  okText={t("Yes, Remove") + " " + label}
+                  okText={t("Yes, Remove")}
                   cancelText={t("No")}>
                   <div>
                     <DeleteOutlined /> {t("Remove") + " " + label}
@@ -69,7 +69,7 @@ export const TableActions = ({
     ];
 
     return (
-      <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+      <Dropdown className='no_print' menu={{ items: menuItems }} trigger={["click"]}>
         <Button type='dashed' shape='circle' size='small' icon={<FiMoreVertical />} />
       </Dropdown>
     );
@@ -80,10 +80,11 @@ export const TableActions = ({
     <>
       {userPermissions.Remove == 1 && (
         <Popconfirm
+          className='no_print'
           title={`${t("Delete")}`}
-          description={`${t("Are you sure to delete")} " ${label}"`}
+          description={`${t("Are you sure to delete")} "${label}"`}
           onConfirm={() => onDelete(record._id)}
-          okText={t("Yes, Remove") + ' "' + label+'"'}
+          okText={t("Yes, Remove")}
           cancelText={t("No")}>
           <Button
             id={record._id}
@@ -99,6 +100,7 @@ export const TableActions = ({
       )}
       {userPermissions.Edit == 1 && (
         <Button
+          className='no_print'
           type='primary'
           shape='circle'
           size='small'
