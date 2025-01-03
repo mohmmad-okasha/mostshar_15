@@ -35,9 +35,9 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale }: DetailsCardPro
     }
 
     return (
-        <Col key={fieldName} xs={12} sm={6} style={{ padding: 5 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Text strong>{t(displayedLabel)}:</Text>
+        <Col key={fieldName} xs={24} sm={6} style={{ padding: 5 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Text strong style={{padding:5}}>{t(displayedLabel)}: </Text>
             <Paragraph
               copyable={{
                 icon: [<FaRegCopy key='copy-icon' style={{ color: "gray" ,fontSize: "10px" }} />],
@@ -62,7 +62,7 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale }: DetailsCardPro
           label: t("Details"),
           children: (
             <>
-              <Row style={{ paddingRight: "40px", paddingLeft: "40px" }}>
+              <Row >
                 {fieldsConfig.map((field) => renderField(field))}
               </Row>
             </>
