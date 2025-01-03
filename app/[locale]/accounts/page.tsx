@@ -49,6 +49,7 @@ import { IoSync } from "react-icons/io5";
 import Paragraph from "antd/es/typography/Paragraph.js";
 import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
 import { ExportData } from "../components/ExportData";
+import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
 import { ModalForm } from "../components/ModalForm";
 import { error } from "console";
@@ -669,32 +670,8 @@ export default function App(props: any) {
   // --- Tree Data (useMemo) ---
   const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
 
-  // --- Export to
-  function handleExport(e: any) {
-    if (e.key == 1) {
-      exportToJson(filteredData);
-    } else if (e.key == 2) {
-      exportToExcel(filteredData);
-    } else if (e.key == 3) {
-      exportToSQL();
-    }
-  }
 
-  // Define menu items
-  const items = [
-    {
-      key: "1",
-      label: "JSON",
-    },
-    {
-      key: "2",
-      label: "EXCEL",
-    },
-    {
-      key: "3",
-      label: "SQL",
-    },
-  ];
+  
 
   // --- Render ---
   return (
@@ -821,21 +798,18 @@ export default function App(props: any) {
                           : []),
                         ...(userPermissions.Export == 1
                           ? [
-                              {
-                                key: "export",
-                                label: t("Export"),
-                                icon: <FiDownloadCloud />,
-                                children: items.map((item) => ({
-                                  key: item.key,
-                                  label: (
-                                    <div onClick={() => handleExport(item)}>
-                                      {t(item.label)}
-                                    </div>
-                                  ),
-                                })),
-                              },
-                            ]
-                          : []),
+                            {
+                              key: "export",
+                              label: t("Export"),
+                              icon: <FiDownloadCloud />,
+                              children: ExportDataMobile({
+                                title: t("Export Data"),
+                                data: filteredData,
+                                pageName: t(PageName),
+                              }),
+                            },
+                          ]
+                        : []),
                       ],
                     }}>
                     <Button

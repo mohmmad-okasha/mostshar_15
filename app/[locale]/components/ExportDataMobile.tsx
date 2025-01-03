@@ -1,6 +1,5 @@
 import * as XLSX from "xlsx";
-import { Dropdown, Button } from "antd";
-import { FiDownloadCloud } from "react-icons/fi";
+import { Menu } from "antd";
 
 interface ExportDataProps {
   title: string;
@@ -8,13 +7,13 @@ interface ExportDataProps {
   pageName: string;
 }
 
-export const ExportData = ({ title, data, pageName }: ExportDataProps) => {
+export const ExportDataMobile = ({ data, pageName }: ExportDataProps) => {
   const exportToJson = () => {
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = pageName + ".json";
+    link.download = `${pageName}.json`;
     link.click();
   };
 
@@ -22,7 +21,7 @@ export const ExportData = ({ title, data, pageName }: ExportDataProps) => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, pageName + ".xlsx");
+    XLSX.writeFile(wb, `${pageName}.xlsx`);
   };
 
   const exportToSQL = () => {
@@ -41,7 +40,7 @@ export const ExportData = ({ title, data, pageName }: ExportDataProps) => {
     const blob = new Blob([sql], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = pageName + ".sql";
+    link.download = `${pageName}.sql`;
     link.click();
   };
 
@@ -51,15 +50,16 @@ export const ExportData = ({ title, data, pageName }: ExportDataProps) => {
     { key: "3", label: "SQL", onClick: exportToSQL },
   ];
 
-  return (
-    <Dropdown menu={{ items }} trigger={["click"]}>
-      <Button
-        style={{ margin: 5 }}
-        title={title}
-        icon={<FiDownloadCloud />}
-        shape='round'>
-        {title}
-      </Button>
-    </Dropdown>
-  );
+  // Return menu items for mobile
+
+  return items.map((item) => ({
+    key: item.key,
+    label: (
+      <div onClick={item.onClick} style={{ padding: "5px 10px" }}>
+        {item.label}
+      </div>
+    ),
+  }));
+
+  return items;
 };
