@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col, Typography, Collapse } from "antd";
+import { Card, Row, Col, Typography, Form, Collapse } from "antd";
 import initTranslations from "../../i18n";
 import { FaRegCopy } from "react-icons/fa6";
 
@@ -15,7 +15,6 @@ export const DetailsCard = ({
   fieldsConfig,
   recordData,
   locale,
-  
 }: DetailsCardProps) => {
   const [t, setT] = React.useState(() => (key: string) => key);
 
@@ -27,7 +26,16 @@ export const DetailsCard = ({
     loadTranslations();
   }, [locale]);
 
-  const renderField = ({ fieldName, label, type, fieldOptions }: any) => {
+  const renderField = ({
+    fieldName,
+    label,
+    type,
+    fieldOptions,
+    fieldWidth,
+    showDetails,
+  }: any) => {
+    if (!showDetails) return null;
+
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
     const value = recordData[fieldName];
@@ -35,7 +43,9 @@ export const DetailsCard = ({
     let displayedValue = value;
 
     if (type === "select" && fieldOptions) {
-      const selectedOption = fieldOptions.find((option: any) => option.value === value);
+      const selectedOption = fieldOptions.find(
+        (option: any) => option.value === value
+      );
       displayedValue = selectedOption ? selectedOption.label : value;
     }
 
@@ -62,20 +72,28 @@ export const DetailsCard = ({
 
   return (
     <Collapse
-      defaultActiveKey={["1"]}
-      className='responsive-card'
-      size='small'
-      items={[
-        {
-          key: "1",
-          label: t("Details"),
-          children: (
-            <>
-              <Row>{fieldsConfig.map((field) => renderField(field))}</Row>
-            </>
-          ),
-        },
-      ]}
-    />
+    defaultActiveKey={["1"]}
+    className='responsive-card'
+    size='small'
+    items={[
+      {
+        key: "1",
+        label: t("Details"),
+        children: (
+          <>
+            <Row>{fieldsConfig.map((field) =>
+            renderField({
+              ...field,
+              value: recordData[field.fieldName],
+              fieldOptions: field.options,
+            })
+          )}</Row>
+          </>
+        ),
+      },
+    ]}
+  />
+
+
   );
 };

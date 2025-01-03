@@ -124,7 +124,7 @@ export default function App(props: any) {
         readOnly: true,
         showTable: true,
         showInput: false,
-        showDetails: false,
+        showDetails: true,
         fieldWidth: "100%",
       },
       {
@@ -421,31 +421,6 @@ export default function App(props: any) {
     setAccountData(""); //clear accountData
     form.resetFields(); //reset form fields
   }
-
-  // --- Input Change Handler ---
-  const handleInputChange = useCallback(
-    (field: any) => (e: any) => {
-      let value;
-
-      if (e && e.target) {
-        if (e.target.type === "checkbox") {
-          value = e.target.checked;
-        } else {
-          value = e.target.value;
-        }
-      } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
-        value = e.value;
-      } else {
-        value = e;
-      }
-
-      setAccountData((prevData: any) => ({
-        ...prevData,
-        [field]: value,
-      }));
-    },
-    []
-  );
 
   // --- Generate Account Number Effect Hook ---
   useEffect(() => {
