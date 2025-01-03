@@ -11,7 +11,12 @@ interface DetailsCardProps {
   locale: string;
 }
 
-export const DetailsCard = ({ fieldsConfig, recordData, locale }: DetailsCardProps) => {
+export const DetailsCard = ({
+  fieldsConfig,
+  recordData,
+  locale,
+  
+}: DetailsCardProps) => {
   const [t, setT] = React.useState(() => (key: string) => key);
 
   React.useEffect(() => {
@@ -35,20 +40,24 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale }: DetailsCardPro
     }
 
     return (
-        <Col key={fieldName} xs={24} sm={6} style={{ padding: 5 }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Text strong style={{padding:5}}>{t(displayedLabel)}: </Text>
-            <Paragraph
-              copyable={{
-                icon: [<FaRegCopy key='copy-icon' style={{ color: "gray" ,fontSize: "10px" }} />],
-              }}
-              style={{ margin: 0 }} // Remove margin to align properly
-            >
-              {displayedValue}
-            </Paragraph>
-          </div>
-        </Col>
-      );
+      <Col key={fieldName} xs={24} sm={6} style={{ padding: 5 }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Text strong style={{ padding: 5 }}>
+            {t(displayedLabel)}:{" "}
+          </Text>
+          <Paragraph
+            copyable={{
+              icon: [
+                <FaRegCopy key='copy-icon' style={{ color: "gray", fontSize: "10px" }} />,
+              ],
+            }}
+            style={{ margin: 0 }} // Remove margin to align properly
+          >
+            {displayedValue}
+          </Paragraph>
+        </div>
+      </Col>
+    );
   };
 
   return (
@@ -62,9 +71,7 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale }: DetailsCardPro
           label: t("Details"),
           children: (
             <>
-              <Row >
-                {fieldsConfig.map((field) => renderField(field))}
-              </Row>
+              <Row>{fieldsConfig.map((field) => renderField(field))}</Row>
             </>
           ),
         },

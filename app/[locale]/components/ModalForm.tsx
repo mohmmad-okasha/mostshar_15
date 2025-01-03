@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Modal, Card, Form, Row, Col, Button, Alert, Divider, Select, Input } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import initTranslations from "../../i18n";
@@ -7,6 +7,7 @@ interface ModalFormProps {
   isModalOpen: boolean;
   handleOk: () => void;
   handleCancel: () => void;
+  setAccountData: any;
   form: any;
   fieldsConfig: any[];
   accountData: any;
@@ -20,6 +21,7 @@ export const ModalForm = ({
   isModalOpen,
   handleOk,
   handleCancel,
+  setAccountData,
   form,
   fieldsConfig,
   accountData,
@@ -37,6 +39,31 @@ export const ModalForm = ({
     }
     loadTranslations();
   }, [locale]);
+
+  // --- Input Change Handler ---
+  const handleInputChange = useCallback(
+    (field: any) => (e: any) => {
+      let value;
+
+      if (e && e.target) {
+        if (e.target.type === "checkbox") {
+          value = e.target.checked;
+        } else {
+          value = e.target.value;
+        }
+      } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
+        value = e.value;
+      } else {
+        value = e;
+      }
+
+      setAccountData((prevData: any) => ({
+        ...prevData,
+        [field]: value,
+      }));
+    },
+    []
+  );
 
   const createFormItem = ({
     fieldName,
@@ -64,7 +91,7 @@ export const ModalForm = ({
             {type === "select" && (
               <Select
                 value={value}
-                onChange={(value) => form.setFieldsValue({ [fieldName]: value })}
+                onChange={handleInputChange(fieldName)}
                 showSearch
                 allowClear
                 options={fieldOptions}
@@ -75,7 +102,7 @@ export const ModalForm = ({
             {(type === "text" || type === "number") && (
               <Input
                 value={value}
-                onChange={(e) => form.setFieldsValue({ [fieldName]: e.target.value })}
+                onChange={handleInputChange(fieldName)}
                 type={type}
                 disabled={edit ? !editable : readOnly}
               />
@@ -83,7 +110,7 @@ export const ModalForm = ({
             {type === "text area" && (
               <Input.TextArea
                 value={value}
-                onChange={(e) => form.setFieldsValue({ [fieldName]: e.target.value })}
+                onChange={handleInputChange(fieldName)}
                 disabled={edit ? !editable : readOnly}
               />
             )}

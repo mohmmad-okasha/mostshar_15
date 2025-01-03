@@ -124,6 +124,7 @@ export default function App(props: any) {
         readOnly: true,
         showTable: true,
         showInput: false,
+        showDetails: false,
         fieldWidth: "100%",
       },
       {
@@ -133,6 +134,7 @@ export default function App(props: any) {
         type: "text",
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: true,
       },
@@ -150,6 +152,7 @@ export default function App(props: any) {
         ],
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: false,
       },
@@ -167,6 +170,7 @@ export default function App(props: any) {
         ],
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "50%",
         editable: true,
       },
@@ -177,6 +181,7 @@ export default function App(props: any) {
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "50%",
         editable: true,
       },
@@ -187,6 +192,7 @@ export default function App(props: any) {
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: true,
       },
@@ -398,7 +404,8 @@ export default function App(props: any) {
     if (!edit) {
       if (await save()) {
         setIsModalOpen(false);
-        form.resetFields();
+        setAccountData(""); //clear accountData
+        form.resetFields(); //reset form fields
       }
     } else {
       if (await update()) {
@@ -411,7 +418,8 @@ export default function App(props: any) {
   function handleCancel() {
     setIsModalOpen(false);
     setEdit(false);
-    form.resetFields();
+    setAccountData(""); //clear accountData
+    form.resetFields(); //reset form fields
   }
 
   // --- Input Change Handler ---
@@ -441,18 +449,20 @@ export default function App(props: any) {
 
   // --- Generate Account Number Effect Hook ---
   useEffect(() => {
-    getData();
-    const fetchAndGenerateAccountNumber = async () => {
-      if (accountData.parentAccount != "") {
-        const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-        setAccountData((prevData: any) => ({
-          ...prevData,
-          accountNumber: newAccountNumber,
-        }));
-      }
-    };
+    if (isModalOpen) {
+      getData();
+      const fetchAndGenerateAccountNumber = async () => {
+        if (accountData.parentAccount != "") {
+          const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
+          setAccountData((prevData: any) => ({
+            ...prevData,
+            accountNumber: newAccountNumber,
+          }));
+        }
+      };
 
-    fetchAndGenerateAccountNumber();
+      fetchAndGenerateAccountNumber();
+    }
   }, [accountData.parentAccount]);
 
   // --- Set Form Field Value Effect Hook ---
@@ -490,6 +500,7 @@ export default function App(props: any) {
     fieldOptions?: { label: string; value: any }[];
     readOnly?: boolean;
     showInput?: boolean;
+    showDetails?: boolean;
     fieldWidth?: string;
     editable?: boolean;
   }
@@ -562,68 +573,11 @@ export default function App(props: any) {
         </div>
         {userPermissions.View == 1 && (
           <>
-            {/* <Modal
-              title={modalTitle}
-              open={isModalOpen}
-              onCancel={handleCancel}
-              width={500}
-              maskClosable={false}
-              footer={[]}>
-              <Card>
-                <Form
-                  form={form}
-                  layout='vertical'
-                  style={{ maxWidth: 500, textAlign: "center" }}
-                  validateMessages={validateMessages}
-                  onFinish={handleOk}>
-                  <Row>
-                    {fieldsConfig.map((field) =>
-                      createFormItem({
-                        ...field,
-                        value: accountData[field.fieldName],
-                        fieldOptions: field.options,
-                      })
-                    )}
-                  </Row>
-                  {Errors.saveErrors && (
-                    <>
-                      <Alert
-                        closable
-                        description={Errors.saveErrors}
-                        type='error'
-                        showIcon
-                      />
-                    </>
-                  )}
-                  <Divider />
-                  <Form.Item
-                    name='footer'
-                    key='footer'
-                    style={{ marginBottom: -40, textAlign: "right", direction: "rtl" }}>
-                    <Button
-                      type='primary'
-                      shape='round'
-                      htmlType='submit'
-                      icon={<SaveOutlined />}
-                      style={{ margin: 5 }}>
-                      {t("Save")}
-                    </Button>
-                    <Button
-                      shape='round'
-                      icon={<CloseOutlined />}
-                      onClick={handleCancel}
-                      style={{ margin: 5 }}>
-                      {t("Cancel")}
-                    </Button>
-                  </Form.Item>
-                </Form>
-                <br />
-              </Card>
-            </Modal> */}
             <ModalForm
               isModalOpen={isModalOpen} // Control modal visibility
               handleOk={handleOk} // Handle form submission
               handleCancel={handleCancel} // Handle modal close
+              setAccountData={setAccountData} // Update account data
               form={form} // Ant Design form instance
               fieldsConfig={fieldsConfig} // Form fields configuration
               accountData={accountData} // Current form data
@@ -799,7 +753,7 @@ export default function App(props: any) {
 
             <br />
 
-            {accountData._id && (
+            {accountData._id && !isModalOpen && (
               <DetailsCard
                 fieldsConfig={fieldsConfig}
                 recordData={accountData}
