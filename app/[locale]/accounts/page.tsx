@@ -42,6 +42,7 @@ import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
 import { ModalForm } from "../components/ModalForm";
 import { DetailsCard } from "../components/DetailsCard";
+import ReusableTable from "../components/ReusableTable";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -495,11 +496,11 @@ export default function App(props: any) {
   const handleDelete = (id: string) => {
     Axios.delete(`${api}/accounts/${id}`)
       .then((res) => {
-        toast.success(t("Account removed successfully."));
+        toast.success(t("Removed Successfully."));
         getData();
       })
       .catch((error) => {
-        toast.error(t("An error occurred. Please try again."));
+        toast.error(t(error.response.data.message));
       });
   };
 
@@ -538,6 +539,14 @@ export default function App(props: any) {
 
   // --- Tree Data (useMemo) ---
   const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
+
+  const handleRowClick = (record: any) => {
+    setAccountData(record);
+  };
+
+  const handleRowDoubleClick = (record: any) => {
+    handleEdit(record);
+  };
 
   // --- Render ---
   return (
@@ -686,6 +695,19 @@ export default function App(props: any) {
                     //onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
+                    <ReusableTable
+                      ref={tableRef}
+                      columns={columns}
+                      data={filteredData}
+                      loading={Loading}
+                      selectedId={accountData._id}
+                      theme={settings.theme}
+                      onRowClick={handleRowClick}
+                      onRowDoubleClick={handleRowDoubleClick}
+                    />
+                  </div>
+
+                  {/* <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <Table
                       id='print-table'
                       size='small'
@@ -715,7 +737,7 @@ export default function App(props: any) {
                         style: { cursor: "pointer" },
                       })}
                     />
-                  </div>
+                  </div> */}
                 </>
               )}
               {Errors.connectionError && (
