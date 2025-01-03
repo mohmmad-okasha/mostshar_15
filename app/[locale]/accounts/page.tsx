@@ -14,7 +14,6 @@ import {
   getSettings,
 } from "@/app/shared";
 import {
-  Alert,
   Button,
   Card,
   Col,
@@ -24,23 +23,13 @@ import {
   Form,
   Input,
   InputRef,
-  Modal,
-  Popconfirm,
   Result,
-  Row,
   Select,
-  Space,
   Table,
   Tree,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  SaveOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
-import { FaFileExport, FaPrint } from "react-icons/fa6";
+import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import * as XLSX from "xlsx";
@@ -52,7 +41,6 @@ import { ExportData } from "../components/ExportData";
 import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
 import { ModalForm } from "../components/ModalForm";
-import { error } from "console";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -205,59 +193,6 @@ export default function App(props: any) {
     [allAccountsData]
   );
 
-  // --- Export Data ---
-  const exportToJson = (data: any) => {
-    const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
-    const blob = new Blob([json], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = t(PageName) + ".json"; // اسم الملف
-    link.click();
-  };
-  const exportToExcel = (data: any) => {
-    const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
-    const wb = XLSX.utils.book_new(); // Create a new workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
-
-    // Write the workbook to Excel file and trigger download
-    XLSX.writeFile(wb, t(PageName) + ".xlsx");
-  };
-  const exportToSQL = () => {
-    const tableName = "accounts"; //table name
-
-    // Filter out columns that you don't want to include
-    const filteredColumns = columns.filter(
-      (col: any) => !["Actions"].includes(col.dataIndex)
-    ); // Example: Exclude 'age'
-
-    // Generate the column names part of the SQL
-    const columnNames = filteredColumns.map((col: any) => col.dataIndex).join(", ");
-
-    // Generate SQL values for each row
-    const values = filteredData
-      .map((row: any) => {
-        // Generate SQL-friendly values, escaping single quotes
-        const rowValues = filteredColumns
-          .map((col: any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
-          .join(", ");
-
-        return `(${rowValues})`;
-      })
-      .join(",\n");
-
-    // Combine the final SQL insert statement
-    const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
-
-    // Create a Blob object containing the SQL statement
-    const blob = new Blob([sql], { type: "text/plain" });
-
-    // Create a link element to trigger the download
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = t(PageName) + ".sql"; // The name of the downloaded file
-    link.click(); // Trigger the download
-  };
-
   // --- Initial Account Data State ---
   const [accountData, setAccountData] = useState(() => {
     const initialData: any = {};
@@ -266,13 +201,15 @@ export default function App(props: any) {
     });
     return initialData;
   });
-  const accountDataRef = useRef(accountData); //to access last accountData value from inside useEffect
+
+  // --- to access last accountData value from inside useEffect ---
+  const accountDataRef = useRef(accountData); 
   // Update the ref whenever accountData changes
   useEffect(() => {
     accountDataRef.current = accountData;
   }, [accountData]);
 
-  // --- (Fetch Data, Settings, Permissions)
+  // --- (Fetch Data, Settings, Permissions) ---
   useEffect(() => {
     getSettings(userName).then((value) => {
       setSettings(value);
@@ -579,60 +516,6 @@ export default function App(props: any) {
       });
   };
 
-  const createFormItem = ({
-    fieldName,
-    value,
-    rules,
-    type = "text",
-    label,
-    fieldOptions = [],
-    readOnly,
-    showInput,
-    fieldWidth,
-    editable,
-  }: CreateFormItemProps) => {
-    const displayedLabel =
-      label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-
-    return (
-      <Col key={fieldName} xs={{ flex: fieldWidth }} style={{ padding: 5 }}>
-        {showInput && (
-          <Form.Item
-            key={fieldName}
-            label={t(displayedLabel)}
-            name={fieldName}
-            rules={rules}>
-            {type === "select" && (
-              <Select
-                value={value}
-                onChange={handleInputChange(fieldName)}
-                showSearch
-                allowClear
-                options={fieldOptions}
-                style={{ width: "100%" }}
-                disabled={edit ? !editable : readOnly}
-              />
-            )}
-            {(type === "text" || type === "number") && (
-              <Input
-                value={value}
-                onChange={handleInputChange(fieldName)}
-                type={type}
-                disabled={edit ? !editable : readOnly}
-              />
-            )}
-            {type === "text area" && (
-              <Input.TextArea
-                value={value}
-                onChange={handleInputChange(fieldName)}
-                disabled={edit ? !editable : readOnly}
-              />
-            )}
-          </Form.Item>
-        )}
-      </Col>
-    );
-  };
 
   // --- Build Tree Data Function ---
   function buildTreeData(data: any) {
@@ -669,9 +552,6 @@ export default function App(props: any) {
 
   // --- Tree Data (useMemo) ---
   const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
-
-
-  
 
   // --- Render ---
   return (
@@ -798,18 +678,18 @@ export default function App(props: any) {
                           : []),
                         ...(userPermissions.Export == 1
                           ? [
-                            {
-                              key: "export",
-                              label: t("Export"),
-                              icon: <FiDownloadCloud />,
-                              children: ExportDataMobile({
-                                title: t("Export Data"),
-                                data: filteredData,
-                                pageName: t(PageName),
-                              }),
-                            },
-                          ]
-                        : []),
+                              {
+                                key: "export",
+                                label: t("Export"),
+                                icon: <FiDownloadCloud />,
+                                children: ExportDataMobile({
+                                  title: t("Export Data"),
+                                  data: filteredData,
+                                  pageName: t(PageName),
+                                }),
+                              },
+                            ]
+                          : []),
                       ],
                     }}>
                     <Button
@@ -901,7 +781,7 @@ export default function App(props: any) {
                           setAccountData(record);
                         },
                         onDoubleClick: () => {
-                          handleEdit(record)
+                          handleEdit(record);
                         },
                         style: { cursor: "pointer" },
                       })}
