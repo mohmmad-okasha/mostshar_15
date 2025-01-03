@@ -41,6 +41,7 @@ import { ExportData } from "../components/ExportData";
 import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
 import { ModalForm } from "../components/ModalForm";
+import { DetailsCard } from "../components/DetailsCard";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -203,7 +204,7 @@ export default function App(props: any) {
   });
 
   // --- to access last accountData value from inside useEffect ---
-  const accountDataRef = useRef(accountData); 
+  const accountDataRef = useRef(accountData);
   // Update the ref whenever accountData changes
   useEffect(() => {
     accountDataRef.current = accountData;
@@ -516,7 +517,6 @@ export default function App(props: any) {
       });
   };
 
-
   // --- Build Tree Data Function ---
   function buildTreeData(data: any) {
     const sortedData = data.sort((a: any, b: any) =>
@@ -800,30 +800,11 @@ export default function App(props: any) {
             <br />
 
             {accountData._id && (
-              <>
-                <Collapse
-                  className='responsive-card'
-                  size='small'
-                  items={[
-                    {
-                      key: "1",
-                      label: t("Details"),
-                      children: (
-                        <>
-                          {fieldsConfig.map((field) => (
-                            <>
-                              <Paragraph copyable>
-                                {accountData[field.fieldName]}
-                              </Paragraph>
-                              <Divider />
-                            </>
-                          ))}
-                        </>
-                      ),
-                    },
-                  ]}
-                />
-              </>
+              <DetailsCard
+                fieldsConfig={fieldsConfig}
+                recordData={accountData}
+                locale={locale}
+              />
             )}
           </>
         )}
