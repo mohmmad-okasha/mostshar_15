@@ -124,7 +124,7 @@ export default function RootLayout({
           }}
           direction={settings.lang === "ar" ? "rtl" : "ltr"} // Ant Design RTL support
         >
-          {Authed === "false" && <Login settings={settings} />}
+          {Authed === "false" && <Login/>}
           {Authed === "true" && (
             <Layout hasSider style={{ minHeight: "100vh" }}>
               <SideBar locale={settings?.lang} />

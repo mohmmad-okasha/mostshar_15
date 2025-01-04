@@ -14,12 +14,9 @@ import Cookies from "js-cookie";
 
 const api = getApiUrl();
 
-type SettingsType = {
-  lang: string;
-  theme: string;
-};
 
-export default function App({ settings }: { settings: SettingsType }) {
+
+export default function App() {
   const pathname = usePathname();
   const locale = pathname.slice(-2);
   Cookies.remove("loading");
