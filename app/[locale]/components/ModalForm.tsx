@@ -65,6 +65,18 @@ export const ModalForm = ({
     []
   );
 
+  // --- Validation Messages ---
+  const validateMessages = {
+    required: t("${label}") + " " + t("is required!"),
+    types: {
+      email: t("not valid email!"),
+      number: t("not a valid number!"),
+    },
+    number: {
+      range: "${label} must be between ${min} and ${max}",
+    },
+  };
+
   const createFormItem = ({
     fieldName,
     value,
@@ -134,7 +146,9 @@ export const ModalForm = ({
           form={form}
           layout='vertical'
           style={{ maxWidth: 500, textAlign: "center" }}
-          onFinish={handleOk}>
+          onFinish={handleOk}
+          validateMessages={validateMessages}>
+            
           <Row>
             {fieldsConfig.map((field) =>
               createFormItem({
