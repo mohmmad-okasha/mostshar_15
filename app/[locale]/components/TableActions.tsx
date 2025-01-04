@@ -3,11 +3,13 @@ import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { FiMoreVertical } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import initTranslations from "../../i18n";
+import { FaPrint } from "react-icons/fa6";
 
 interface TableActionsProps {
   record: any; // The current row data
   onEdit: (record: any) => void; // Function to handle edit action
   onDelete: (id: string) => void; // Function to handle delete action
+  onPrint: () => void; // Function to handle print action
   userPermissions: any; // User permissions (e.g., canEdit, canDelete)
   isMobile: boolean; // Whether the screen is mobile
   label: string; // like record.accountName ....
@@ -18,6 +20,7 @@ export const TableActions = ({
   record,
   onEdit,
   onDelete,
+  onPrint,
   userPermissions,
   isMobile,
   label,
@@ -35,6 +38,18 @@ export const TableActions = ({
   // Mobile: Use a dropdown for actions
   if (isMobile) {
     const menuItems = [
+      ...(userPermissions.Print == 1
+        ? [
+            {
+              key: "print",
+              label: (
+                <div onClick={() => onPrint}>
+                  <FaPrint /> {t("Print") + " " + label}
+                </div>
+              ),
+            },
+          ]
+        : []),
       ...(userPermissions.Edit == 1
         ? [
             {
@@ -108,6 +123,18 @@ export const TableActions = ({
           title={t("Edit") + " " + label}
           icon={<EditOutlined />}
           onClick={() => onEdit(record)}
+        />
+      )} 
+      {userPermissions.Print == 1 && (
+        <Button
+          className='no_print'
+          type='default'
+          shape='circle'
+          size='small'
+          style={{ marginLeft: 5 }}
+          title={t("Print") + " " + label}
+          icon={<FaPrint />}
+          onClick={() => onPrint}
         />
       )}
     </>

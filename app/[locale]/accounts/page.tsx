@@ -26,6 +26,7 @@ import {
   Result,
   Select,
   Table,
+  Tooltip,
   Tree,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
@@ -58,6 +59,7 @@ export default function App(props: any) {
   const searchRef = useRef<InputRef>(null);
   const printRef = useRef<any>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
   const [form] = Form.useForm();
   const userName = window.localStorage.getItem("userName");
@@ -127,6 +129,7 @@ export default function App(props: any) {
         showInput: false,
         showDetails: true,
         fieldWidth: "100%",
+        columnLength: 20,
       },
       {
         fieldName: "accountName",
@@ -138,6 +141,7 @@ export default function App(props: any) {
         showDetails: true,
         fieldWidth: "100%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "parentAccount",
@@ -156,6 +160,7 @@ export default function App(props: any) {
         showDetails: true,
         fieldWidth: "100%",
         editable: false,
+        columnLength: 20,
       },
       {
         fieldName: "accountType",
@@ -174,6 +179,7 @@ export default function App(props: any) {
         showDetails: true,
         fieldWidth: "50%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "balance",
@@ -185,6 +191,7 @@ export default function App(props: any) {
         showDetails: true,
         fieldWidth: "50%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "notes",
@@ -196,6 +203,7 @@ export default function App(props: any) {
         showDetails: true,
         fieldWidth: "100%",
         editable: true,
+        columnLength: 20,
       },
     ],
     [allAccountsData]
@@ -240,6 +248,19 @@ export default function App(props: any) {
             ? {
                 title: t(field.label),
                 dataIndex: field.fieldName,
+                render: (text: any) => {
+                  const maxLength = field.columnLength || 20; // Use field-specific maxLength or default to 20
+                  const truncatedText =
+                    text && text.length > maxLength
+                      ? `${text.substring(0, maxLength)} ...`
+                      : text;
+
+                  return (
+                    <Tooltip title={text?.length > 20 ? text : ""} placement='topLeft'>
+                      <span>{truncatedText}</span>
+                    </Tooltip>
+                  );
+                },
               }
             : null
         )
@@ -257,7 +278,8 @@ export default function App(props: any) {
           <TableActions
             record={record}
             onEdit={() => handleEdit(record)}
-            onDelete={handleDelete}
+            onDelete={remove}
+            onPrint={() => alert(1)}
             userPermissions={userPermissions}
             isMobile={isMobile}
             label={record.accountName}
@@ -751,15 +773,19 @@ export default function App(props: any) {
             <br />
 
             {accountData._id && !isModalOpen && (
-              <DetailsCard
-                fieldsConfig={fieldsConfig}
-                recordData={accountData}
-                locale={locale}
-              />
+              <div ref={detailsRef}>
+                <DetailsCard
+                  fieldsConfig={fieldsConfig}
+                  recordData={accountData}
+                  locale={locale}
+                  pageName={t(PageName)}
+                />
+              </div>
             )}
           </>
         )}
       </Card>
+      
       <KeyboardShortcuts
         onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
         onSearch={() => searchRef.current?.focus()}

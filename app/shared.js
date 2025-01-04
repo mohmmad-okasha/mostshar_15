@@ -165,7 +165,7 @@ export const handlePrint = (tableRef, title, fontSize, lang) => {
             .table-striped tbody tr:nth-of-type(odd) {
               background-color: rgba(0, 0, 0, 0.05);
             }
-            .no_print {
+            .no_print, button, .ant-collapse-header {
               display: none;
             }
             @media print {
