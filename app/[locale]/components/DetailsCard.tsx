@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
-import { Card, Row, Col, Typography, Form, Collapse, Tooltip } from "antd";
+import React, { useEffect, useRef } from "react";
+import { Card, Row, Col, Typography, Form, Collapse, Tooltip, Button, Divider } from "antd";
 import initTranslations from "../../i18n";
 import { FaRegCopy } from "react-icons/fa6";
 import { handlePrint } from "@/app/shared";
+import { TbPrinter } from "react-icons/tb";
 
 const { Paragraph, Text } = Typography;
 
@@ -13,9 +14,29 @@ interface DetailsCardProps {
   pageName: string;
 }
 
-export const DetailsCard = ({ fieldsConfig, recordData, locale,pageName }: DetailsCardProps) => {
+export const DetailsCard = ({
+  fieldsConfig,
+  recordData,
+  locale,
+  pageName,
+}: DetailsCardProps) => {
   const [t, setT] = React.useState(() => (key: string) => key);
   const ref = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.altKey && (event.key === "p" || event.key === "ح")) {
+        event.preventDefault();
+        handlePrint(ref, pageName, 14, locale)
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [locale, pageName]);
 
   React.useEffect(() => {
     async function loadTranslations() {
@@ -55,9 +76,12 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale,pageName }: Detai
 
           <Paragraph
             copyable={{
-              
               icon: [
-                <FaRegCopy className="no_print" key='copy-icon' style={{ color: "gray", fontSize: "12px" }} />,
+                <FaRegCopy
+                  className='no_print'
+                  key='copy-icon'
+                  style={{ color: "gray", fontSize: "12px" }}
+                />,
               ],
               tooltips: ["Copy", "Copied!"],
             }}
@@ -87,7 +111,7 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale,pageName }: Detai
           label: t("Details"),
           children: (
             <>
-              <button className="no_print" onClick={() => handlePrint(ref, pageName, 14, locale)}>Print</button>
+              
               <Row>
                 {fieldsConfig.map((field) =>
                   renderField({
@@ -97,6 +121,20 @@ export const DetailsCard = ({ fieldsConfig, recordData, locale,pageName }: Detai
                   })
                 )}
               </Row>
+
+              <Divider />
+              <div style={{ textAlign: "right", direction: "rtl" }}>
+              <Button
+                className='no_print'
+                type='default'
+                shape='circle'
+                size='small'
+                style={{ marginLeft: 5 }}
+                title={t("Print")}
+                icon={<TbPrinter />}
+                onClick={() => handlePrint(ref, pageName, 14, locale)}
+              />
+              </div>
             </>
           ),
         },

@@ -16,16 +16,12 @@ import {
 import {
   Button,
   Card,
-  Col,
-  Collapse,
   Divider,
   Dropdown,
   Form,
   Input,
   InputRef,
   Result,
-  Select,
-  Table,
   Tooltip,
   Tree,
 } from "antd";
@@ -33,10 +29,8 @@ import { BsPlusLg } from "react-icons/bs";
 import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
-import * as XLSX from "xlsx";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
-import Paragraph from "antd/es/typography/Paragraph.js";
 import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
 import { ExportData } from "../components/ExportData";
 import { ExportDataMobile } from "../components/ExportDataMobile";
@@ -44,6 +38,7 @@ import { TableActions } from "../components/TableActions";
 import { ModalForm } from "../components/ModalForm";
 import { DetailsCard } from "../components/DetailsCard";
 import ReusableTable from "../components/ReusableTable";
+import { TbPrinter } from "react-icons/tb";
 
 // --- Constants ---
 const PageName = "Accounts";
@@ -279,7 +274,6 @@ export default function App(props: any) {
             record={record}
             onEdit={() => handleEdit(record)}
             onDelete={remove}
-            onPrint={() => alert(1)}
             userPermissions={userPermissions}
             isMobile={isMobile}
             label={record.accountName}
@@ -632,7 +626,7 @@ export default function App(props: any) {
                                     {t("Print")}
                                   </div>
                                 ),
-                                icon: <FaPrint />,
+                                icon: <TbPrinter />,
                               },
                             ]
                           : []),
@@ -680,7 +674,7 @@ export default function App(props: any) {
                       <Button
                         ref={printRef}
                         shape='round'
-                        icon={<FaPrint />}
+                        icon={<TbPrinter />}
                         onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
                         style={{ margin: 5 }}
                         title={t("Print") + " " + t(PageName) + " 'Ctrl+P'"}>

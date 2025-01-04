@@ -19,7 +19,7 @@ export const KeyboardShortcuts = ({
 }: KeyboardShortcutsProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && (event.key === "p" || event.key === "ح")) {
+      if (event.ctrlKey && !event.altKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
         onPrint();
       }
