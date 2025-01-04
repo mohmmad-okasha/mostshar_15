@@ -83,7 +83,7 @@ export const getApiUrl = (req) => {
   // Determine if running in a local environment
   const isLocal = host && (host.includes('localhost') || host.includes('127.0.0.1'));
 
-  const baseUrl = isLocal ? 'http://localhost:3001' : 'https://crown-server.vercel.app';
+  const baseUrl = isLocal ? 'http://localhost:3001' : 'https://mostshar-15-server.vercel.app';
 
   return baseUrl
 };
