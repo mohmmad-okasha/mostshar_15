@@ -26,7 +26,6 @@ import {
   Tree,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
-import { FaPrint } from "react-icons/fa6";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import initTranslations from "../../i18n.js";
@@ -215,6 +214,7 @@ export default function App(props: any) {
 
   // --- to access last accountData value from inside useEffect ---
   const accountDataRef = useRef(accountData);
+
   // Update the ref whenever accountData changes
   useEffect(() => {
     accountDataRef.current = accountData;
@@ -476,27 +476,6 @@ export default function App(props: any) {
     },
   };
 
-  // --- Modal Title (useMemo) ---
-  const modalTitle = useMemo(
-    () => (edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1)),
-    [edit, isModalOpen]
-  );
-
-  // --- Create Form Item Function ---
-  interface CreateFormItemProps {
-    fieldName: string;
-    value?: any;
-    rules?: any[];
-    type?: string;
-    label?: string;
-    fieldOptions?: { label: string; value: any }[];
-    readOnly?: boolean;
-    showInput?: boolean;
-    showDetails?: boolean;
-    fieldWidth?: string;
-    editable?: boolean;
-  }
-
   const handleEdit = (record: any) => {
     setOldData(record);
     form.setFieldsValue(
@@ -507,17 +486,6 @@ export default function App(props: any) {
     );
     setEdit(true);
     showModal();
-  };
-
-  const handleDelete = (id: string) => {
-    Axios.delete(`${api}/accounts/${id}`)
-      .then((res) => {
-        toast.success(t("Removed Successfully."));
-        getData();
-      })
-      .catch((error) => {
-        toast.error(t(error.response.data.message));
-      });
   };
 
   // --- Build Tree Data Function ---
