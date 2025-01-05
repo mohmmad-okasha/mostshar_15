@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -10,7 +10,6 @@ import {
   saveLog,
   handlePrint,
   cardStyle,
-  generateAccountNumber,
   getSettings,
 } from "@/app/shared";
 import {
@@ -25,6 +24,7 @@ import {
   Tooltip,
   Tree,
 } from "antd";
+import Search from "antd/es/input/Search";
 import { BsPlusLg } from "react-icons/bs";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
@@ -40,7 +40,7 @@ import ReusableTable from "../components/ReusableTable";
 import { TbPrinter } from "react-icons/tb";
 
 // --- Constants ---
-const PageName = "Accounts";
+const PageName = "Users";
 const api = getApiUrl();
 
 // --- Main Component ---
@@ -69,7 +69,7 @@ export default function App(props: any) {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allAccountsData, setAllAccountsData] = useState<any>([]);
+  const [allUsersData, setAllUsersData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [LangLoading, setLangloading] = useState(true);
   const [Loading, setLoading] = useState(true);
@@ -114,22 +114,22 @@ export default function App(props: any) {
   const fieldsConfig = useMemo(
     () => [
       {
-        fieldName: "accountNumber",
-        label: "Account Number",
-        type: "number",
-        rules: [{ required: false }],
-        readOnly: true,
+        fieldName: "name",
+        label: "Name",
+        type: "text",
+        rules: [{ required: true }],
+        readOnly: false,
         showTable: true,
-        showInput: false,
+        showInput: true,
         showDetails: true,
         fieldWidth: "100%",
         columnLength: 20,
       },
       {
-        fieldName: "accountName",
-        label: "Account Name",
+        fieldName: "email",
+        label: "Email",
         rules: [{ required: true }],
-        type: "text",
+        type: "email",
         showTable: true,
         showInput: true,
         showDetails: true,
@@ -138,51 +138,25 @@ export default function App(props: any) {
         columnLength: 20,
       },
       {
-        fieldName: "parentAccount",
-        label: "Parent Account",
-        type: "select",
+        fieldName: "password",
+        label: "Password",
+        type: "password",
         rules: [{ required: true }],
-        options: [
-          { value: "Main", label: t("Main") },
-          ...allAccountsData.map((field: any) => ({
-            value: field.accountName,
-            label: field.accountName,
-          })),
-        ],
-        showTable: true,
+        showTable: false,
         showInput: true,
-        showDetails: true,
-        fieldWidth: "100%",
-        editable: false,
-        columnLength: 20,
-      },
-      {
-        fieldName: "accountType",
-        label: "Account Type",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Assets", label: t("Assets") },
-          { value: "Liabilities", label: t("Liabilities") },
-          { value: "Equity", label: t("Equity") },
-          { value: "Revenue", label: t("Revenue") },
-          { value: "Expenses", label: t("Expenses") },
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
+        showDetails: false,
         fieldWidth: "50%",
         editable: true,
         columnLength: 20,
       },
       {
-        fieldName: "balance",
-        label: "Balance",
-        type: "number",
-        rules: [{ required: false }],
-        showTable: true,
+        fieldName: "password2",
+        label: "Confirm Password",
+        type: "password",
+        rules: [{ required: true }],
+        showTable: false,
         showInput: true,
-        showDetails: true,
+        showDetails: false,
         fieldWidth: "50%",
         editable: true,
         columnLength: 20,
@@ -200,11 +174,11 @@ export default function App(props: any) {
         columnLength: 20,
       },
     ],
-    [allAccountsData]
+    [allUsersData]
   );
 
-  // --- Initial Account Data State ---
-  const [accountData, setAccountData] = useState(() => {
+  // --- Initial User Data State ---
+  const [userData, setUserData] = useState(() => {
     const initialData: any = {};
     fieldsConfig.forEach((field) => {
       initialData[field.fieldName] = "";
@@ -212,13 +186,13 @@ export default function App(props: any) {
     return initialData;
   });
 
-  // --- to access last accountData value from inside useEffect ---
-  const accountDataRef = useRef(accountData);
+  // --- to access last userData value from inside useEffect ---
+  const userDataRef = useRef(userData);
 
-  // Update the ref whenever accountData changes
+  // Update the ref whenever userData changes
   useEffect(() => {
-    accountDataRef.current = accountData;
-  }, [accountData]);
+    userDataRef.current = userData;
+  }, [userData]);
 
   // --- (Fetch Data, Settings, Permissions) ---
   useEffect(() => {
@@ -276,34 +250,34 @@ export default function App(props: any) {
             onDelete={remove}
             userPermissions={userPermissions}
             isMobile={isMobile}
-            label={record.accountName}
+            label={record.name}
             locale={locale}
           />
         ),
       },
     ],
-    [fieldsConfig, remove, setAccountData, showModal]
+    [fieldsConfig, remove, setUserData, showModal]
   );
 
   // --- Filtered Data (useMemo) ---
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
-    return allAccountsData.filter((account: any) => {
+    return allUsersData.filter((user: any) => {
       return fieldsConfig.some((field) =>
-        String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
+        String(user[field.fieldName]).toLowerCase().includes(searchTextLower)
       );
     });
-  }, [allAccountsData, fieldsConfig, searchText]);
+  }, [allUsersData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
   async function getData(refresh?: boolean) {
     setLoading(true);
     try {
-      const response = await Axios.get(`${api}/accounts`);
-      setAllAccountsData(response.data);
+      const response = await Axios.get(`${api}/users`);
+      setAllUsersData(response.data);
     } catch (error) {
       setErrors({ ...Errors, connectionError: error });
-      console.error("Error fetching accounts:", error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
       setCookies("loading", false);
@@ -317,19 +291,19 @@ export default function App(props: any) {
     }
   }
 
-  // --- Save Account Function ---
+  // --- Save User Function ---
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const { _id, ...rest } = accountData; //to  send data without _id
+    const { _id, ...rest } = userData; //to  send data without _id
 
-    const response = await Axios.post(`${api}/accounts`, {
+    const response = await Axios.post(`${api}/users`, {
       ...rest,
       user: userName,
     });
 
     if (response.data.message === "Saved!") {
       getData();
-      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + accountData.accountName);
+      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + userData.name);
       toast.remove();
       toast.success(t(response.data.message), {
         position: "top-center",
@@ -341,7 +315,7 @@ export default function App(props: any) {
     }
   }
 
-  // --- Update Account Function ---
+  // --- Update User Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
@@ -364,8 +338,8 @@ export default function App(props: any) {
     }
     //
 
-    const response = await Axios.put(`${api}/accounts`, {
-      _id: accountData._id,
+    const response = await Axios.put(`${api}/users`, {
+      _id: userData._id,
       ...updateData,
     });
 
@@ -375,7 +349,7 @@ export default function App(props: any) {
       toast.success(t(response.data.message), {
         position: "top-center",
       });
-      saveLog(t("update") + " " + t("account") + ": " + accountData.accountName);
+      saveLog(t("update") + " " + t("user") + ": " + userData.name);
       setEdit(false);
       return true;
     } else {
@@ -384,12 +358,12 @@ export default function App(props: any) {
     }
   }
 
-  // --- Remove Account Function ---
+  // --- Remove User Function ---
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`)
+    Axios.delete(`${api}/users/${id}`)
       .then((res) => {
-        saveLog(t("remove") + " " + t("account") + ": " + accountData.accountName);
-        toast.success(t("Account") + " " + t("removed successfully."));
+        saveLog(t("remove") + " " + t("user") + ": " + userData.name);
+        toast.success(t("User") + " " + t("removed successfully."));
         getData();
       })
       .catch((error) => {
@@ -409,10 +383,10 @@ export default function App(props: any) {
     setIsModalOpen(true);
 
     if (!edit) {
-      // clear last parentAccount to fix account Number generat
-      setAccountData((prevData: any) => ({
+      // clear last parentUser to fix user Number generat
+      setUserData((prevData: any) => ({
         ...prevData,
-        parentAccount: "",
+        parentUser: "",
       }));
     }
   }
@@ -421,7 +395,7 @@ export default function App(props: any) {
     if (!edit) {
       if (await save()) {
         setIsModalOpen(false);
-        setAccountData(""); //clear accountData
+        setUserData(""); //clear userData
         form.resetFields(); //reset form fields
       }
     } else {
@@ -435,34 +409,16 @@ export default function App(props: any) {
   function handleCancel() {
     setIsModalOpen(false);
     setEdit(false);
-    setAccountData(""); //clear accountData
+    setUserData(""); //clear userData
     form.resetFields(); //reset form fields
   }
-
-  // --- Generate Account Number Effect Hook ---
-  useEffect(() => {
-    if (isModalOpen) {
-      getData();
-      const fetchAndGenerateAccountNumber = async () => {
-        if (accountData.parentAccount != "") {
-          const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-          setAccountData((prevData: any) => ({
-            ...prevData,
-            accountNumber: newAccountNumber,
-          }));
-        }
-      };
-
-      fetchAndGenerateAccountNumber();
-    }
-  }, [accountData.parentAccount]);
 
   // --- Set Form Field Value Effect Hook ---
   useEffect(() => {
     form.setFieldsValue({
-      accountNumber: accountData.accountNumber,
+      userNumber: userData.userNumber,
     });
-  }, [accountData.accountNumber]);
+  }, [userData.userNumber]);
 
   // --- Validation Messages ---
   const validateMessages = {
@@ -488,44 +444,8 @@ export default function App(props: any) {
     showModal();
   };
 
-  // --- Build Tree Data Function ---
-  function buildTreeData(data: any) {
-    const sortedData = data.sort((a: any, b: any) =>
-      a.accountNumber.localeCompare(b.accountNumber)
-    );
-
-    const map: any = {};
-    const treeData: any[] = [];
-
-    sortedData.forEach((item: any) => {
-      map[item.accountName] = {
-        key: item._id,
-        title: `${item.accountNumber} - ${item.accountName}`,
-        children: [],
-      };
-    });
-
-    sortedData.forEach((item: any) => {
-      if (item.parentAccount === "Main") {
-        treeData.push(map[item.accountName]);
-      } else if (map[item.parentAccount]) {
-        map[item.parentAccount].children.push(map[item.accountName]);
-      }
-    });
-
-    return treeData;
-  }
-
-  // --- Handle Tree Select Function ---
-  const handleSelect = (selectedKeys: any, { node }: { node: any }) => {
-    setSearchText(`${node.title.split(" - ")[1]}`);
-  };
-
-  // --- Tree Data (useMemo) ---
-  const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
-
   const handleRowClick = (record: any) => {
-    setAccountData(record);
+    setUserData(record);
   };
 
   const handleRowDoubleClick = (record: any) => {
@@ -545,14 +465,33 @@ export default function App(props: any) {
               isModalOpen={isModalOpen} // Control modal visibility
               handleOk={handleOk} // Handle form submission
               handleCancel={handleCancel} // Handle modal close
-              setPageData={setAccountData} // Update account data
+              setPageData={setUserData} // Update user data
               form={form} // Ant Design form instance
               fieldsConfig={fieldsConfig} // Form fields configuration
-              pageData={accountData} // Current form data
+              pageData={userData} // Current form data
               errors={Errors} // Error messages (if any)
               modalTitle={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))} // Modal title
               edit={edit} // Edit mode flag
               locale={locale} // Current locale
+              element={
+                <Card title={t("Permissions")}>
+                  <Search
+                    placeholder={t("Search")}
+                    allowClear
+                    onSearch={onSearch}
+                    onChange={(e) => onSearch(e.target.value)}
+                    style={{ marginBottom: "16px" }}
+                  />
+                  <Tree
+                    checkable
+                    //defaultExpandAll
+                    onCheck={onCheck}
+                    checkedKeys={checkedKeys}
+                    treeData={rolsFilteredData}
+                    style={{ direction: "ltr" }}
+                  />
+                </Card>
+              }
             />
             <Card
               title={t(PageName)}
@@ -665,10 +604,6 @@ export default function App(props: any) {
               }>
               {!Errors.connectionError && (
                 <>
-                  <Card>
-                    <Tree onSelect={handleSelect} treeData={treeData} />
-                  </Card>
-                  <Divider />
                   <Input.Search
                     placeholder={t("Search...")}
                     onChange={(e) => setSearchText(e.target.value)}
@@ -676,7 +611,6 @@ export default function App(props: any) {
                     allowClear
                     value={searchText}
                     ref={searchRef}
-                    //onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <ReusableTable
@@ -684,44 +618,12 @@ export default function App(props: any) {
                       columns={columns}
                       data={filteredData}
                       loading={Loading}
-                      selectedId={accountData._id}
+                      selectedId={userData._id}
                       theme={settings.theme}
                       onRowClick={handleRowClick}
                       onRowDoubleClick={handleRowDoubleClick}
                     />
                   </div>
-
-                  {/* <div ref={tableRef} style={{ overflowX: "auto" }}>
-                    <Table
-                      id='print-table'
-                      size='small'
-                      columns={columns.map((col: any) => ({
-                        ...col,
-                        ellipsis: true, // Ensure text doesn't overflow
-                      }))}
-                      dataSource={filteredData}
-                      loading={Loading}
-                      pagination={false}
-                      rowKey={(record) => record._id}
-                      scroll={{ x: "max-content" }}
-                      rowClassName={(record) =>
-                        record._id === accountData._id
-                          ? settings.theme === "dark"
-                            ? "selected-row-dark"
-                            : "selected-row-light"
-                          : ""
-                      } // Add a class to the selected row
-                      onRow={(record) => ({
-                        onClick: () => {
-                          setAccountData(record);
-                        },
-                        onDoubleClick: () => {
-                          handleEdit(record);
-                        },
-                        style: { cursor: "pointer" },
-                      })}
-                    />
-                  </div> */}
                 </>
               )}
               {Errors.connectionError && (
@@ -734,11 +636,11 @@ export default function App(props: any) {
 
             <br />
 
-            {accountData._id && !isModalOpen && (
+            {userData._id && !isModalOpen && (
               <div ref={detailsRef}>
                 <DetailsCard
                   fieldsConfig={fieldsConfig}
-                  recordData={accountData}
+                  recordData={userData}
                   locale={locale}
                   pageName={t(PageName)}
                 />
@@ -747,7 +649,7 @@ export default function App(props: any) {
           </>
         )}
       </Card>
-      
+
       <KeyboardShortcuts
         onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
         onSearch={() => searchRef.current?.focus()}
@@ -755,7 +657,7 @@ export default function App(props: any) {
         onNew={showModal}
         onDelete={() => {
           if (userPermissions.Remove == 1) {
-            const button = document.getElementById(accountDataRef.current._id);
+            const button = document.getElementById(userDataRef.current._id);
             if (button) {
               button.click();
             }

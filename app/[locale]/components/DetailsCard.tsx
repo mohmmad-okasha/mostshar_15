@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Card, Row, Col, Typography, Form, Collapse, Tooltip, Button, Divider } from "antd";
+import { Row, Col, Typography, Collapse, Button, Divider } from "antd";
 import initTranslations from "../../i18n";
 import { FaRegCopy } from "react-icons/fa6";
 import { handlePrint } from "@/app/shared";
@@ -23,12 +23,11 @@ export const DetailsCard = ({
   const [t, setT] = React.useState(() => (key: string) => key);
   const ref = useRef<HTMLDivElement>(null);
 
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.altKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
-        handlePrint(ref, pageName, 14, locale)
+        handlePrint(ref, pageName, 14, locale);
       }
     };
 
@@ -51,7 +50,6 @@ export const DetailsCard = ({
     label,
     type,
     fieldOptions,
-    fieldWidth,
     showDetails,
   }: any) => {
     if (!showDetails) return null;
@@ -111,7 +109,6 @@ export const DetailsCard = ({
           label: t("Details"),
           children: (
             <>
-              
               <Row>
                 {fieldsConfig.map((field) =>
                   renderField({
@@ -124,16 +121,16 @@ export const DetailsCard = ({
 
               <Divider />
               <div style={{ textAlign: "right", direction: "rtl" }}>
-              <Button
-                className='no_print'
-                type='default'
-                shape='circle'
-                size='small'
-                style={{ marginLeft: 5 }}
-                title={t("Print")}
-                icon={<TbPrinter />}
-                onClick={() => handlePrint(ref, pageName, 14, locale)}
-              />
+                <Button
+                  className='no_print'
+                  type='default'
+                  shape='circle'
+                  size='small'
+                  style={{ marginLeft: 5 }}
+                  title={t("Print")}
+                  icon={<TbPrinter />}
+                  onClick={() => handlePrint(ref, pageName, 12, locale)}
+                />
               </div>
             </>
           ),

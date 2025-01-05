@@ -7,28 +7,30 @@ interface ModalFormProps {
   isModalOpen: boolean;
   handleOk: () => void;
   handleCancel: () => void;
-  setAccountData: any;
+  setPageData: any;
   form: any;
   fieldsConfig: any[];
-  accountData: any;
+  pageData: any;
   errors: any;
   modalTitle: string;
   edit: boolean;
   locale: string;
+  element? : any;
 }
 
 export const ModalForm = ({
   isModalOpen,
   handleOk,
   handleCancel,
-  setAccountData,
+  setPageData,
   form,
   fieldsConfig,
-  accountData,
+  pageData,
   errors,
   modalTitle,
   edit,
   locale,
+  element
 }: ModalFormProps) => {
   const [t, setT] = useState(() => (key: string) => key);
 
@@ -57,7 +59,7 @@ export const ModalForm = ({
         value = e;
       }
 
-      setAccountData((prevData: any) => ({
+      setPageData((prevData: any) => ({
         ...prevData,
         [field]: value,
       }));
@@ -111,7 +113,7 @@ export const ModalForm = ({
                 disabled={edit ? !editable : readOnly}
               />
             )}
-            {(type === "text" || type === "number") && (
+            {(type === "text" || type === "number" || type === "password" || type === "email") && (
               <Input
                 value={value}
                 onChange={handleInputChange(fieldName)}
@@ -153,11 +155,14 @@ export const ModalForm = ({
             {fieldsConfig.map((field) =>
               createFormItem({
                 ...field,
-                value: accountData[field.fieldName],
+                value: pageData[field.fieldName],
                 fieldOptions: field.options,
               })
             )}
           </Row>
+
+          {element}
+          
           {errors.saveErrors && (
             <Alert closable description={errors.saveErrors} type='error' showIcon />
           )}

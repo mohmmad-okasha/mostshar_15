@@ -16,7 +16,7 @@ function LanguageChanger() {
     const [asPath, setAsPath] = useState('');
     const [userLang, setUserLang] = useState(''); // Store user's language preference
     const [isArabicLocale, setIsArabicLocale] = useState(false);
-    const userName = window?.localStorage?.getItem("userName") ;
+    const userName = window?.localStorage?.getItem("userName");
 
     // Fetch user's preferred language from database on mount
     useEffect(() => {
@@ -40,10 +40,15 @@ function LanguageChanger() {
     // Handle button click to change locale and update DB
     const handleLocaleChange = async (locale) => {
         try {
-            const newPath = isArabicLocale
-                ? asPath.replace('/ar', `/${locale}`)
-                : `/${locale}${asPath}`;
+            let newPath = ''
 
+            if (locale == 'ar' && asPath.includes(`/ar`)) {
+                newPath = asPath.replace('/ar', '')
+            } else {
+                newPath = isArabicLocale
+                    ? asPath.replace('/ar', `/${locale}`)
+                    : `/${locale}${asPath}`;
+            }
             // Update language preference in backend
             const user = await axios.get(`${api}/users/${userName}`); // API endpoint
             const settings = {
@@ -55,6 +60,7 @@ function LanguageChanger() {
             setUserLang(locale);
             setIsArabicLocale(locale === 'ar');
             router.push(newPath);
+            router.refresh();
         } catch (error) {
             console.error('Error updating language preference:', error);
         }
