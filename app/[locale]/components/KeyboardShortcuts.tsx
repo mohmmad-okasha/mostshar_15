@@ -7,6 +7,7 @@ interface KeyboardShortcutsProps {
   onNew: () => void;
   onDelete: () => void;
   locale: string;
+  userPermissions: any;
 }
 
 export const KeyboardShortcuts = ({
@@ -16,12 +17,13 @@ export const KeyboardShortcuts = ({
   onNew,
   onDelete,
   locale,
+  userPermissions,
 }: KeyboardShortcutsProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && !event.altKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
-        onPrint();
+        if (userPermissions.Print === 1) onPrint();
       }
       if (event.ctrlKey && (event.key === "f" || event.key === "ب")) {
         event.preventDefault();
@@ -33,11 +35,11 @@ export const KeyboardShortcuts = ({
       }
       if (event.key === "F1") {
         event.preventDefault();
-        onNew();
+        if (userPermissions.Add === 1) onNew();
       }
       if (event.key === "Delete") {
         event.preventDefault();
-        onDelete();
+        if (userPermissions.Remove === 1) onDelete();
       }
     };
 

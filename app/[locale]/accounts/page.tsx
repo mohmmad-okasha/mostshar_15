@@ -477,15 +477,17 @@ export default function App(props: any) {
   };
 
   const handleEdit = (record: any) => {
-    setOldData(record);
-    form.setFieldsValue(
-      fieldsConfig.reduce((acc: any, field) => {
-        acc[field.fieldName] = record[field.fieldName];
-        return acc;
-      }, {})
-    );
-    setEdit(true);
-    showModal();
+    if (userPermissions.Edit === 1) {
+      setOldData(record);
+      form.setFieldsValue(
+        fieldsConfig.reduce((acc: any, field) => {
+          acc[field.fieldName] = record[field.fieldName];
+          return acc;
+        }, {})
+      );
+      setEdit(true);
+      showModal();
+    }
   };
 
   // --- Build Tree Data Function ---
@@ -741,14 +743,16 @@ export default function App(props: any) {
                   recordData={accountData}
                   locale={locale}
                   pageName={t(PageName)}
+                  userPermissions={userPermissions}
                 />
               </div>
             )}
           </>
         )}
       </Card>
-      
+
       <KeyboardShortcuts
+        userPermissions={userPermissions}
         onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
         onSearch={() => searchRef.current?.focus()}
         onRefresh={() => getData(true)}

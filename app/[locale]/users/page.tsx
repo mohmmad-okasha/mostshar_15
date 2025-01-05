@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo, use } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -10,40 +10,45 @@ import {
   saveLog,
   handlePrint,
   cardStyle,
-  capitalize,
   getSettings,
 } from "@/app/shared";
 import {
-  Alert,
   Button,
   Card,
-  Checkbox,
-  Col,
   Divider,
   Dropdown,
   Form,
   Input,
-  Modal,
-  Popconfirm,
+  InputRef,
   Result,
+  Tooltip,
+  Modal,
   Row,
+  Col,
+  Alert,
   Select,
-  Table,
   Tree,
+  Popconfirm,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
+import toast, { Toaster } from "react-hot-toast";
+import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
+import initTranslations from "../../i18n.js";
+import { IoSync } from "react-icons/io5";
+import { KeyboardShortcuts } from "../components/KeyboardShortcuts";
+import { ExportData } from "../components/ExportData";
+import { ExportDataMobile } from "../components/ExportDataMobile";
+import { TableActions } from "../components/TableActions";
+import { DetailsCard } from "../components/DetailsCard";
+import ReusableTable from "../components/ReusableTable";
+import { TbPrinter } from "react-icons/tb";
 import {
+  CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   SaveOutlined,
-  CloseOutlined,
 } from "@ant-design/icons";
-import { FaPrint } from "react-icons/fa6";
-import toast, { Toaster } from "react-hot-toast";
-import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
-import * as XLSX from "xlsx";
-import Search from "antd/es/input/Search";
-import initTranslations from "../../i18n.js";
+import Search from "antd/es/input/Search.js";
 
 // --- Constants ---
 const PageName = "Users";
@@ -52,24 +57,16 @@ const api = getApiUrl();
 // --- Main Component ---
 export default function App() {
   // --- Refs and Hooks ---
+  const searchRef = useRef<InputRef>(null);
+  const printRef = useRef<any>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
   const [_, setCookies] = useCookies(["loading"]);
   const [form] = Form.useForm();
   const userName = window.localStorage.getItem("userName");
 
   // --- State Variables ---
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allUsersData, setAllUsersData] = useState<any>([]);
-  const [treeData, setTreeData] = useState<any>([]);
-  const [oldData, setOldData] = useState<any>([]);
-  const [Loading, setLoading] = useState(true);
-  const [LangLoading, setLangloading] = useState(true);
-  const [edit, setEdit] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [Errors, setErrors] = useState<any>({
-    connectionError: "",
-    saveErrors: "",
-  });
+  const [settings, setSettings] = useState({ lang: "", theme: "" }); // Added settings state
   const [userPermissions, setUserPermissions] = useState<any>({
     View: 0,
     Add: 0,
@@ -78,12 +75,20 @@ export default function App() {
     Print: 0,
     Export: 0,
   });
-  let [settings, setSettings] = useState({
-    lang: "",
-    theme: "",
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allUsersData, setAllUsersData] = useState<any>([]);
+  const [oldData, setOldData] = useState<any>([]);
+  const [LangLoading, setLangloading] = useState(true);
+  const [Loading, setLoading] = useState(true);
+  const [edit, setEdit] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [Errors, setErrors] = useState<any>({
+    connectionError: "",
+    saveErrors: "",
   });
   const [isMobile, setIsMobile] = useState(false);
 
+  // --- set isMobile screen ---
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth <= 768); // Mobile screen width threshold
@@ -97,9 +102,9 @@ export default function App() {
 
     // Cleanup event listener on component unmount
     return () => window.removeEventListener("resize", checkScreenSize);
-  }, [window.innerWidth]);
-  File;
+  }, []);
 
+  // --- set Language ---
   const locale = settings.lang;
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
@@ -112,69 +117,6 @@ export default function App() {
     loadTranslations();
   }, [locale]);
 
-  // --- Export Data ---
-  const exportToJson = (data: any) => {
-    const json = JSON.stringify(data, null, 2); // تحويل البيانات إلى JSON
-    const blob = new Blob([json], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = PageName + ".json"; // اسم الملف
-    link.click();
-  };
-
-  const exportToExcel = (data: any) => {
-    const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to sheet
-    const wb = XLSX.utils.book_new(); // Create a new workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1"); // Append the sheet to the workbook
-
-    // Write the workbook to Excel file and trigger download
-    XLSX.writeFile(wb, PageName + ".xlsx");
-  };
-
-  const exportToSQL = () => {
-    const tableName = "users"; //table name
-
-    // Filter out columns that you don't want to include
-    const filteredColumns = columns.filter(
-      (col: any) => !["Actions"].includes(col.dataIndex)
-    ); // Example: Exclude 'age'
-
-    // Generate the column names part of the SQL
-    const columnNames = filteredColumns.map((col: any) => col.dataIndex).join(", ");
-
-    // Generate SQL values for each row
-    const values = filteredData
-      .map((row: any) => {
-        // Generate SQL-friendly values, escaping single quotes
-        const rowValues = filteredColumns
-          .map((col: any) => `'${String(row[col.dataIndex]).replace(/'/g, "''")}'`)
-          .join(", ");
-
-        return `(${rowValues})`;
-      })
-      .join(",\n");
-
-    // Combine the final SQL insert statement
-    const sql = `INSERT INTO ${tableName} (${columnNames}) VALUES\n${values};`;
-
-    // Create a Blob object containing the SQL statement
-    const blob = new Blob([sql], { type: "text/plain" });
-
-    // Create a link element to trigger the download
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = PageName + ".sql"; // The name of the downloaded file
-    link.click(); // Trigger the download
-  };
-
-  const [userRules, setUserRules] = useState<{ [key: string]: number }>({
-    //users rules
-    Users: 0,
-    Logs: 0,
-    Accounts: 0,
-    //"Two Words": 0,
-  });
-
   // --- Field Configuration (useMemo) ---
   const fieldsConfig = useMemo(
     () => [
@@ -186,7 +128,9 @@ export default function App() {
         readOnly: false,
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
+        columnLength: 20,
       },
       {
         fieldName: "email",
@@ -195,8 +139,10 @@ export default function App() {
         type: "email",
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "password",
@@ -205,8 +151,10 @@ export default function App() {
         rules: [{ required: true }],
         showTable: false,
         showInput: true,
+        showDetails: false,
         fieldWidth: "50%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "password2",
@@ -215,8 +163,10 @@ export default function App() {
         rules: [{ required: true }],
         showTable: false,
         showInput: true,
+        showDetails: false,
         fieldWidth: "50%",
         editable: true,
+        columnLength: 20,
       },
       {
         fieldName: "notes",
@@ -225,8 +175,10 @@ export default function App() {
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: true,
+        columnLength: 20,
       },
     ],
     [allUsersData]
@@ -241,9 +193,16 @@ export default function App() {
     return initialData;
   });
 
-  // --- Effects Hooks ---
+  // --- to access last userData value from inside useEffect ---
+  const userDataRef = useRef(userData);
+
+  // Update the ref whenever userData changes
   useEffect(() => {
-    // to get user settings
+    userDataRef.current = userData;
+  }, [userData]);
+
+  // --- (Fetch Data, Settings, Permissions) ---
+  useEffect(() => {
     getSettings(userName).then((value) => {
       setSettings(value);
     });
@@ -265,6 +224,19 @@ export default function App() {
             ? {
                 title: t(field.label),
                 dataIndex: field.fieldName,
+                render: (text: any) => {
+                  const maxLength = field.columnLength || 20; // Use field-specific maxLength or default to 20
+                  const truncatedText =
+                    text && text.length > maxLength
+                      ? `${text.substring(0, maxLength)} ...`
+                      : text;
+
+                  return (
+                    <Tooltip title={text?.length > 20 ? text : ""} placement='topLeft'>
+                      <span>{truncatedText}</span>
+                    </Tooltip>
+                  );
+                },
               }
             : null
         )
@@ -291,34 +263,9 @@ export default function App() {
                           key: "edit",
                           label: (
                             <div
-                            onClick={() => {
-                              setUserData(record);
-                              setOldData(record);
-                              form.setFieldsValue(
-                                fieldsConfig.reduce((acc: any, field) => {
-                                  acc[field.fieldName] = record[field.fieldName];
-                                  return acc;
-                                }, {})
-                              );
-                              form.setFieldValue("password", "");
-                              form.setFieldValue("password2", "");
-        
-                              setEdit(true);
-        
-                              // تجهيز checkedKeys بناءً على صلاحيات المستخدم
-                              const initialCheckedKeys: any[] = [];
-                              Object.keys(record.rules).forEach((table) => {
-                                const actions = record.rules[table];
-                                Object.keys(actions).forEach((action: any) => {
-                                  if (actions[action] === 1) {
-                                    initialCheckedKeys.push(`${table}_${action}`);
-                                  }
-                                });
-                              });
-        
-                              setCheckedKeys(initialCheckedKeys);
-                              showModal();
-                            }}>
+                              onClick={() => {
+                                handleEdit(record);
+                              }}>
                               <EditOutlined /> {t("Edit")}
                             </div>
                           ),
@@ -375,6 +322,7 @@ export default function App() {
                       okText={t("Yes, Remove")}
                       cancelText={t("No")}>
                       <Button
+                        id={record._id}
                         style={{ marginLeft: 5 }}
                         type='primary'
                         danger
@@ -395,32 +343,7 @@ export default function App() {
                       style={{ marginLeft: 5 }}
                       icon={<EditOutlined />}
                       onClick={() => {
-                        setUserData(record);
-                        setOldData(record);
-                        form.setFieldsValue(
-                          fieldsConfig.reduce((acc: any, field) => {
-                            acc[field.fieldName] = record[field.fieldName];
-                            return acc;
-                          }, {})
-                        );
-                        form.setFieldValue("password", "");
-                        form.setFieldValue("password2", "");
-
-                        setEdit(true);
-
-                        // تجهيز checkedKeys بناءً على صلاحيات المستخدم
-                        const initialCheckedKeys: any[] = [];
-                        Object.keys(record.rules).forEach((table) => {
-                          const actions = record.rules[table];
-                          Object.keys(actions).forEach((action: any) => {
-                            if (actions[action] === 1) {
-                              initialCheckedKeys.push(`${table}_${action}`);
-                            }
-                          });
-                        });
-
-                        setCheckedKeys(initialCheckedKeys);
-                        showModal();
+                        handleEdit(record);
                       }}
                     />
                   )}
@@ -429,8 +352,6 @@ export default function App() {
             },
           }
         : {},
-
-
     ],
     [fieldsConfig, remove, setUserData, showModal]
   );
@@ -439,16 +360,14 @@ export default function App() {
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
     return allUsersData.filter((user: any) => {
-      return (
-        fieldsConfig.some((field) =>
-          String(user[field.fieldName]).toLowerCase().includes(searchTextLower)
-        ) || user.user.toLowerCase().includes(searchTextLower)
+      return fieldsConfig.some((field) =>
+        String(user[field.fieldName]).toLowerCase().includes(searchTextLower)
       );
     });
   }, [allUsersData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
-  async function getData() {
+  async function getData(refresh?: boolean) {
     setLoading(true);
     try {
       const response = await Axios.get(`${api}/users`);
@@ -459,6 +378,13 @@ export default function App() {
     } finally {
       setLoading(false);
       setCookies("loading", false);
+
+      if (refresh) {
+        toast.remove();
+        toast.success(t("Refreshed"), {
+          position: "top-center",
+        });
+      }
     }
   }
 
@@ -560,16 +486,16 @@ export default function App() {
   async function remove(id: string) {
     Axios.delete(`${api}/users/${id}`)
       .then((res) => {
-        saveLog("remove user: " + userData.userName);
-        toast.success("User removed successfully.");
+        saveLog(t("remove") + " " + t("user") + ": " + userData.name);
+        toast.success(t("User") + " " + t("removed successfully."));
         getData();
       })
       .catch((error) => {
         console.log(error);
         if (error.response) {
-          toast.error(`${error.response.data.message}`);
+          toast.error(t(`${error.response.data.message}`));
         } else {
-          toast.error("An error occurred. Please try again.");
+          toast.error(t("An error occurred. Please try again."));
         }
       });
   }
@@ -586,7 +512,6 @@ export default function App() {
         ...prevData,
         parentUser: "",
       }));
-      //setCheckedKeys([])
     }
   }
 
@@ -594,7 +519,8 @@ export default function App() {
     if (!edit) {
       if (await save()) {
         setIsModalOpen(false);
-        form.resetFields();
+        setUserData(""); //clear userData
+        form.resetFields(); //reset form fields
       }
     } else {
       if (await update()) {
@@ -607,8 +533,94 @@ export default function App() {
   function handleCancel() {
     setIsModalOpen(false);
     setEdit(false);
-    form.resetFields();
+    setUserData(""); //clear userData
+    form.resetFields(); //reset form fields
   }
+
+  // جلب أسماء الجداول من API
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const res = await Axios.get(`${api}/tables`); // يعيد أسماء الجداول
+        const tables = res.data;
+
+        // تجهيز بيانات الـ TreeView
+        const formattedData = Object.keys(tables).map((table) => ({
+          title: t(table),
+          key: table,
+          children: Object.keys(tables[table]).map((action) => ({
+            title: t(action),
+            key: `${table}_${action}`,
+          })),
+        }));
+
+        setTreeData(formattedData);
+        setRolsFilteredData(formattedData);
+      } catch (error) {
+        console.log("Failed to fetch table data");
+      }
+    };
+
+    fetchTables();
+  }, []);
+
+  // --- Set Form Field Value Effect Hook ---
+  useEffect(() => {
+    form.setFieldsValue({
+      userNumber: userData.userNumber,
+    });
+  }, [userData.userNumber]);
+
+  // --- Validation Messages ---
+  const validateMessages = {
+    required: t("${label}") + " " + t("is required!"),
+    types: {
+      email: t("not valid email!"),
+      number: t("not a valid number!"),
+    },
+    number: {
+      range: "${label} must be between ${min} and ${max}",
+    },
+  };
+
+  const handleEdit = (record: any) => {
+    if (userPermissions.Edit === 1) {
+      setUserData(record);
+      setOldData(record);
+      form.setFieldsValue(
+        fieldsConfig.reduce((acc: any, field) => {
+          acc[field.fieldName] = record[field.fieldName];
+          return acc;
+        }, {})
+      );
+      form.setFieldValue("password", "");
+      form.setFieldValue("password2", "");
+
+      setEdit(true);
+
+      // تجهيز checkedKeys بناءً على صلاحيات المستخدم
+      const initialCheckedKeys: any[] = [];
+      Object.keys(record.rules).forEach((table) => {
+        const actions = record.rules[table];
+        Object.keys(actions).forEach((action: any) => {
+          if (actions[action] === 1) {
+            initialCheckedKeys.push(`${table}_${action}`);
+          }
+        });
+      });
+
+      setCheckedKeys(initialCheckedKeys);
+      showModal();
+    }
+  };
+
+  const handleRowClick = (record: any) => {
+    setUserData(record);
+  };
+
+  const handleRowDoubleClick = (record: any) => {
+    handleEdit(record);
+  };
 
   // --- Input Change Handler ---
   const handleInputChange = useCallback(
@@ -635,39 +647,6 @@ export default function App() {
     []
   );
 
-  function handleCheckboxChange(key: string) {
-    //on check/unchek rule box change userRules values
-    setUserRules((prevState) => ({
-      ...prevState,
-      [key]: prevState[key] === 0 ? 1 : 0,
-    }));
-  }
-
-  // --- Set Form Field Value Effect Hook ---
-  useEffect(() => {
-    form.setFieldsValue({
-      userNumber: userData.userNumber,
-    });
-  }, [userData.userNumber]);
-
-  // --- Validation Messages ---
-  const validateMessages = {
-    required: "${label} is required!",
-    types: {
-      email: "not valid email!",
-      number: "not a valid number!",
-    },
-    number: {
-      range: "${label} must be between ${min} and ${max}",
-    },
-  };
-
-  // --- Modal Title (useMemo) ---
-  const modalTitle = useMemo(
-    () => (edit ? "Edit " : "Add ") + PageName.slice(0, -1),
-    [edit]
-  );
-
   // --- Create Form Item Function ---
   interface CreateFormItemProps {
     fieldName: string;
@@ -681,7 +660,6 @@ export default function App() {
     fieldWidth?: string;
     editable?: boolean;
   }
-
   const createFormItem = ({
     fieldName,
     value,
@@ -737,81 +715,20 @@ export default function App() {
     );
   };
 
-  // --- Export to
-  function handleExport(e: any) {
-    console.log("Selected:", e.key);
-    if (e.key == 1) {
-      exportToJson(filteredData);
-    } else if (e.key == 2) {
-      exportToExcel(filteredData);
-    } else if (e.key == 3) {
-      exportToSQL();
-    }
-  }
-
-  // Define menu items
-  const items = [
-    {
-      key: "1",
-      label: "JSON",
-    },
-    {
-      key: "2",
-      label: "EXCEL",
-    },
-    {
-      key: "3",
-      label: "SQL",
-    },
-  ];
-
-  const [checkedKeys, setCheckedKeys] = useState<any>([]); //الصلاحيات المحددة على الشجرة
-  const [rolsFilteredData, setRolsFilteredData] = useState<any>([]); //للبحث في الصلاحيات
-
-  // جلب أسماء الجداول من API
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const res = await Axios.get(`${api}/tables`); // يعيد أسماء الجداول
-        const tables = res.data;
-
-        // تجهيز بيانات الـ TreeView
-        const formattedData = Object.keys(tables).map((table) => ({
-          title: t(table),
-          key: table,
-          children: Object.keys(tables[table]).map((action) => ({
-            title: t(action),
-            key: `${table}_${action}`,
-          })),
-        }));
-
-        setTreeData(formattedData);
-        setRolsFilteredData(formattedData);
-      } catch (error) {
-        console.log("Failed to fetch table data");
-      }
-    };
-
-    fetchTables();
-  }, []);
+  // --- Modal Title (useMemo) ---
+  const modalTitle = useMemo(
+    () => (edit ? "Edit " : "Add ") + PageName.slice(0, -1),
+    [edit]
+  );
 
   // عند تحديد أو إلغاء تحديد أي عنصر
   const onCheck = (checkedKeys: any) => {
     setCheckedKeys(checkedKeys);
   };
 
-  //test
-  useEffect(() => {
-    const formattedPermissions: any = {};
-    checkedKeys.forEach((key: any) => {
-      const [table, action] = key.split("_");
-      if (!formattedPermissions[table]) {
-        formattedPermissions[table] = {};
-      }
-      formattedPermissions[table][action] = 1;
-    });
-    console.log(formattedPermissions);
-  }, [checkedKeys]);
+  const [checkedKeys, setCheckedKeys] = useState<any>([]); //الصلاحيات المحددة على الشجرة
+  const [rolsFilteredData, setRolsFilteredData] = useState<any>([]); //للبحث في الصلاحيات
+  const [treeData, setTreeData] = useState<any>([]);
 
   // البحث في الصلاحيات
   const onSearch = (value: any) => {
@@ -924,7 +841,9 @@ export default function App() {
             </Modal>
             <Card
               title={t(PageName)}
-              style={cardStyle}
+              style={{
+                ...cardStyle,
+              }}
               className='responsive-card'
               extra={
                 isMobile ? (
@@ -932,6 +851,13 @@ export default function App() {
                   <Dropdown
                     menu={{
                       items: [
+                        {
+                          key: "refresh",
+                          label: (
+                            <div onClick={() => getData(true)}> {t("Refresh Data")}</div>
+                          ),
+                          icon: <IoSync />,
+                        },
                         ...(userPermissions.Add == 1
                           ? [
                               {
@@ -947,13 +873,13 @@ export default function App() {
                                 key: "print",
                                 label: (
                                   <div
-                                    onClick={() =>
-                                      handlePrint(tableRef, t(PageName), 12, locale)
-                                    }>
+                                    onClick={async () => {
+                                      handlePrint(tableRef, t(PageName), 12, locale);
+                                    }}>
                                     {t("Print")}
                                   </div>
                                 ),
-                                icon: <FaPrint />,
+                                icon: <TbPrinter />,
                               },
                             ]
                           : []),
@@ -962,14 +888,12 @@ export default function App() {
                               {
                                 key: "export",
                                 label: t("Export"),
-                                children: items.map((item) => ({
-                                  key: item.key,
-                                  label: (
-                                    <div onClick={() => handleExport(item)}>
-                                      {t(item.label)}
-                                    </div>
-                                  ),
-                                })),
+                                icon: <FiDownloadCloud />,
+                                children: ExportDataMobile({
+                                  title: t("Export Data"),
+                                  data: filteredData,
+                                  pageName: t(PageName),
+                                }),
                               },
                             ]
                           : []),
@@ -984,27 +908,29 @@ export default function App() {
                 ) : (
                   // Desktop: Separate buttons
                   <>
+                    <Button
+                      type='default'
+                      shape='circle'
+                      title={t("Refresh") + " " + t(PageName) + " 'F5'"}
+                      icon={<IoSync />}
+                      onClick={() => getData(true)}
+                      style={{ margin: 5 }}
+                    />
                     {userPermissions.Export == 1 && (
-                      <Dropdown
-                        menu={{
-                          items,
-                          onClick: (e) => handleExport(e),
-                        }}>
-                        <Button
-                          style={{ margin: 5 }}
-                          title='Export Data'
-                          icon={<FiDownloadCloud />}
-                          shape='round'>
-                          {t("Export")}
-                        </Button>
-                      </Dropdown>
+                      <ExportData
+                        title={t("Export")}
+                        data={filteredData}
+                        pageName={t(PageName)}
+                      />
                     )}
                     {userPermissions.Print == 1 && (
                       <Button
+                        ref={printRef}
                         shape='round'
-                        icon={<FaPrint />}
+                        icon={<TbPrinter />}
                         onClick={() => handlePrint(tableRef, t(PageName), 12, locale)}
-                        style={{ margin: 5 }}>
+                        style={{ margin: 5 }}
+                        title={t("Print") + " " + t(PageName) + " 'Ctrl+P'"}>
                         {t("Print")}
                       </Button>
                     )}
@@ -1014,6 +940,7 @@ export default function App() {
                         shape='round'
                         icon={<BsPlusLg />}
                         onClick={showModal}
+                        title={t("New") + " " + t(PageName.slice(0, -1)) + " 'F1'"}
                         style={{ margin: 5 }}>
                         {t("New")}
                       </Button>
@@ -1029,16 +956,18 @@ export default function App() {
                     style={{ paddingBottom: 5 }}
                     allowClear
                     value={searchText}
+                    ref={searchRef}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
-                    <Table
-                      id='print-table'
-                      size='small'
+                    <ReusableTable
+                      ref={tableRef}
                       columns={columns}
-                      dataSource={filteredData}
+                      data={filteredData}
                       loading={Loading}
-                      pagination={false}
-                      rowKey={(record) => record._id}
+                      selectedId={userData._id}
+                      theme={settings.theme}
+                      onRowClick={handleRowClick}
+                      onRowDoubleClick={handleRowDoubleClick}
                     />
                   </div>
                 </>
@@ -1050,9 +979,40 @@ export default function App() {
                 />
               )}
             </Card>
+
+            <br />
+
+            {userData._id && !isModalOpen && (
+              <div ref={detailsRef}>
+                <DetailsCard
+                  fieldsConfig={fieldsConfig}
+                  recordData={userData}
+                  locale={locale}
+                  pageName={t(PageName)}
+                  userPermissions={userPermissions}
+                />
+              </div>
+            )}
           </>
         )}
       </Card>
+
+      <KeyboardShortcuts
+        userPermissions={userPermissions}
+        onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
+        onSearch={() => searchRef.current?.focus()}
+        onRefresh={() => getData(true)}
+        onNew={showModal}
+        onDelete={() => {
+          if (userPermissions.Remove == 1) {
+            const button = document.getElementById(userDataRef.current._id);
+            if (button) {
+              button.click();
+            }
+          }
+        }}
+        locale={locale}
+      />
     </div>
   );
 }

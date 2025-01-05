@@ -12,6 +12,7 @@ interface DetailsCardProps {
   recordData: any;
   locale: string;
   pageName: string;
+  userPermissions: any;
 }
 
 export const DetailsCard = ({
@@ -19,6 +20,7 @@ export const DetailsCard = ({
   recordData,
   locale,
   pageName,
+  userPermissions,
 }: DetailsCardProps) => {
   const [t, setT] = React.useState(() => (key: string) => key);
   const ref = useRef<HTMLDivElement>(null);
@@ -27,7 +29,7 @@ export const DetailsCard = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.altKey && (event.key === "p" || event.key === "ح")) {
         event.preventDefault();
-        handlePrint(ref, pageName, 14, locale);
+        if (userPermissions.Print === 1) handlePrint(ref, pageName, 14, locale);
       }
     };
 
@@ -45,13 +47,7 @@ export const DetailsCard = ({
     loadTranslations();
   }, [locale]);
 
-  const renderField = ({
-    fieldName,
-    label,
-    type,
-    fieldOptions,
-    showDetails,
-  }: any) => {
+  const renderField = ({ fieldName, label, type, fieldOptions, showDetails }: any) => {
     if (!showDetails) return null;
 
     const displayedLabel =
@@ -119,19 +115,21 @@ export const DetailsCard = ({
                 )}
               </Row>
 
-              <Divider />
-              <div style={{ textAlign: "right", direction: "rtl" }}>
-                <Button
-                  className='no_print'
-                  type='default'
-                  shape='circle'
-                  size='small'
-                  style={{ marginLeft: 5 }}
-                  title={t("Print")}
-                  icon={<TbPrinter />}
-                  onClick={() => handlePrint(ref, pageName, 12, locale)}
-                />
-              </div>
+              {userPermissions.Print == 1 && (
+                <div style={{ textAlign: "right", direction: "rtl" }}>
+                  <Divider />
+                  <Button
+                    className='no_print'
+                    type='default'
+                    shape='circle'
+                    size='small'
+                    style={{ marginLeft: 5 }}
+                    title={t("Print")}
+                    icon={<TbPrinter />}
+                    onClick={() => handlePrint(ref, pageName, 12, locale)}
+                  />
+                </div>
+              )}
             </>
           ),
         },
