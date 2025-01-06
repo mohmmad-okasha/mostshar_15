@@ -1,5 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Modal, Card, Form, Row, Col, Button, Alert, Divider, Select, Input } from "antd";
+import {
+  Modal,
+  Card,
+  Form,
+  Row,
+  Col,
+  Button,
+  Alert,
+  Divider,
+  Select,
+  Input,
+  DatePicker,
+} from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import initTranslations from "../../i18n";
 
@@ -15,7 +27,7 @@ interface ModalFormProps {
   modalTitle: string;
   edit: boolean;
   locale: string;
-  element? : any;
+  element?: any;
 }
 
 export const ModalForm = ({
@@ -30,7 +42,7 @@ export const ModalForm = ({
   modalTitle,
   edit,
   locale,
-  element
+  element,
 }: ModalFormProps) => {
   const [t, setT] = useState(() => (key: string) => key);
 
@@ -113,7 +125,10 @@ export const ModalForm = ({
                 disabled={edit ? !editable : readOnly}
               />
             )}
-            {(type === "text" || type === "number" || type === "password" || type === "email") && (
+            {(type === "text" ||
+              type === "number" ||
+              type === "password" ||
+              type === "email") && (
               <Input
                 value={value}
                 onChange={handleInputChange(fieldName)}
@@ -125,6 +140,14 @@ export const ModalForm = ({
               <Input.TextArea
                 value={value}
                 onChange={handleInputChange(fieldName)}
+                disabled={edit ? !editable : readOnly}
+              />
+            )}
+            {type === "date" && (
+              <DatePicker
+                value={value}
+                onChange={handleInputChange(fieldName)}
+                type={type}
                 disabled={edit ? !editable : readOnly}
               />
             )}
@@ -150,7 +173,6 @@ export const ModalForm = ({
           style={{ maxWidth: 500, textAlign: "center" }}
           onFinish={handleOk}
           validateMessages={validateMessages}>
-            
           <Row>
             {fieldsConfig.map((field) =>
               createFormItem({
@@ -162,7 +184,7 @@ export const ModalForm = ({
           </Row>
 
           {element}
-          
+
           {errors.saveErrors && (
             <Alert closable description={errors.saveErrors} type='error' showIcon />
           )}

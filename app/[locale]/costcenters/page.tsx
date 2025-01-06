@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -10,27 +10,15 @@ import {
   saveLog,
   handlePrint,
   cardStyle,
-  generateAccountNumber,
   getSettings,
 } from "@/app/shared";
-import {
-  Button,
-  Card,
-  Divider,
-  Dropdown,
-  Form,
-  Input,
-  InputRef,
-  Result,
-  Tooltip,
-  Tree,
-} from "antd";
+import { Button, Card, Divider, Dropdown, Form, Input, InputRef, Result, Tooltip } from "antd";
 import { BsPlusLg } from "react-icons/bs";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
-import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
+import { KeyboardShortcuts } from "../components/KeyboardShortcuts";
 import { ExportData } from "../components/ExportData";
 import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
@@ -40,11 +28,11 @@ import ReusableTable from "../components/ReusableTable";
 import { TbPrinter } from "react-icons/tb";
 
 // --- Constants ---
-const PageName = "Accounts";
+const PageName = "CostCenters";
 const api = getApiUrl();
 
 // --- Main Component ---
-export default function App(props: any) {
+export default function CostCentersPage(props: any) {
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",
@@ -69,7 +57,7 @@ export default function App(props: any) {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allAccountsData, setAllAccountsData] = useState<any>([]);
+  const [allCostCentersData, setAllCostCentersData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [LangLoading, setLangloading] = useState(true);
   const [Loading, setLoading] = useState(true);
@@ -114,22 +102,10 @@ export default function App(props: any) {
   const fieldsConfig = useMemo(
     () => [
       {
-        fieldName: "accountNumber",
-        label: "Account Number",
-        type: "number",
-        rules: [{ required: false }],
-        readOnly: true,
-        showTable: true,
-        showInput: false,
-        showDetails: true,
-        fieldWidth: "100%",
-        columnLength: 20,
-      },
-      {
-        fieldName: "accountName",
-        label: "Account Name",
-        rules: [{ required: true }],
+        fieldName: "name",
+        label: "Name",
         type: "text",
+        rules: [{ required: true }],
         showTable: true,
         showInput: true,
         showDetails: true,
@@ -138,58 +114,8 @@ export default function App(props: any) {
         columnLength: 20,
       },
       {
-        fieldName: "parentAccount",
-        label: "Parent Account",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Main", label: t("Main") },
-          ...allAccountsData.map((field: any) => ({
-            value: field.accountName,
-            label: field.accountName,
-          })),
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "100%",
-        editable: false,
-        columnLength: 20,
-      },
-      {
-        fieldName: "accountType",
-        label: "Account Type",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Assets", label: t("Assets") },
-          { value: "Liabilities", label: t("Liabilities") },
-          { value: "Equity", label: t("Equity") },
-          { value: "Revenue", label: t("Revenue") },
-          { value: "Expenses", label: t("Expenses") },
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "50%",
-        editable: true,
-        columnLength: 20,
-      },
-      {
-        fieldName: "balance",
-        label: "Balance",
-        type: "number",
-        rules: [{ required: false }],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "50%",
-        editable: true,
-        columnLength: 20,
-      },
-      {
-        fieldName: "notes",
-        label: "Notes",
+        fieldName: "discription",
+        label: "Description",
         type: "text area",
         rules: [{ required: false }],
         showTable: true,
@@ -199,12 +125,72 @@ export default function App(props: any) {
         editable: true,
         columnLength: 20,
       },
+      {
+        fieldName: "type",
+        label: "Type",
+        type: "select",
+        rules: [{ required: true }],
+        options: [
+          { value: "Fixed", label: t("Fixed") },
+          { value: "Variable", label: t("Variable") },
+        ],
+        showTable: true,
+        showInput: true,
+        showDetails: true,
+        fieldWidth: "50%",
+        editable: true,
+        columnLength: 20,
+      },
+      {
+        fieldName: "project",
+        label: "Project",
+        type: "select",
+        rules: [{ required: true }],
+        options: [
+          { value: "Project A", label: t("Project A") },
+          { value: "Project B", label: t("Project B") },
+        ],
+        showTable: true,
+        showInput: true,
+        showDetails: true,
+        fieldWidth: "50%",
+        editable: true,
+        columnLength: 20,
+      },
+      {
+        fieldName: "startDate",
+        label: "Start Date",
+        type: "date",
+        rules: [{ required: true }],
+        showTable: true,
+        showInput: true,
+        showDetails: true,
+        fieldWidth: "50%",
+        editable: true,
+        columnLength: 20,
+      },
+      {
+        fieldName: "status",
+        label: "Status",
+        type: "select",
+        rules: [{ required: true }],
+        options: [
+          { value: "Active", label: t("Active") },
+          { value: "Inactive", label: t("Inactive") },
+        ],
+        showTable: true,
+        showInput: true,
+        showDetails: true,
+        fieldWidth: "50%",
+        editable: true,
+        columnLength: 20,
+      },
     ],
-    [allAccountsData]
+    [t]
   );
 
-  // --- Initial Account Data State ---
-  const [accountData, setAccountData] = useState(() => {
+  // --- Initial Cost Center Data State ---
+  const [costCenterData, setCostCenterData] = useState(() => {
     const initialData: any = {};
     fieldsConfig.forEach((field) => {
       initialData[field.fieldName] = "";
@@ -212,13 +198,13 @@ export default function App(props: any) {
     return initialData;
   });
 
-  // --- to access last accountData value from inside useEffect ---
-  const accountDataRef = useRef(accountData);
+  // --- to access last costCenterData value from inside useEffect ---
+  const costCenterDataRef = useRef(costCenterData);
 
-  // Update the ref whenever accountData changes
+  // Update the ref whenever costCenterData changes
   useEffect(() => {
-    accountDataRef.current = accountData;
-  }, [accountData]);
+    costCenterDataRef.current = costCenterData;
+  }, [costCenterData]);
 
   // --- (Fetch Data, Settings, Permissions) ---
   useEffect(() => {
@@ -276,34 +262,34 @@ export default function App(props: any) {
             onDelete={remove}
             userPermissions={userPermissions}
             isMobile={isMobile}
-            label={record.accountName}
+            label={record.name}
             locale={locale}
           />
         ),
       },
     ],
-    [fieldsConfig, remove, setAccountData, showModal]
+    [fieldsConfig, remove, setCostCenterData, showModal]
   );
 
   // --- Filtered Data (useMemo) ---
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
-    return allAccountsData.filter((account: any) => {
+    return allCostCentersData.filter((costCenter: any) => {
       return fieldsConfig.some((field) =>
-        String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
+        String(costCenter[field.fieldName]).toLowerCase().includes(searchTextLower)
       );
     });
-  }, [allAccountsData, fieldsConfig, searchText]);
+  }, [allCostCentersData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
   async function getData(refresh?: boolean) {
     setLoading(true);
     try {
-      const response = await Axios.get(`${api}/accounts`);
-      setAllAccountsData(response.data);
+      const response = await Axios.get(`${api}/costCenters`);
+      setAllCostCentersData(response.data);
     } catch (error) {
       setErrors({ ...Errors, connectionError: error });
-      console.error("Error fetching accounts:", error);
+      console.error("Error fetching cost centers:", error);
     } finally {
       setLoading(false);
       setCookies("loading", false);
@@ -317,19 +303,19 @@ export default function App(props: any) {
     }
   }
 
-  // --- Save Account Function ---
+  // --- Save Cost Center Function ---
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const { _id, ...rest } = accountData; //to  send data without _id
+    const { _id, ...rest } = costCenterData; //to  send data without _id
 
-    const response = await Axios.post(`${api}/accounts`, {
+    const response = await Axios.post(`${api}/costCenters`, {
       ...rest,
       user: userName,
     });
 
     if (response.data.message === "Saved!") {
       getData();
-      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + accountData.accountName);
+      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + costCenterData.name);
       toast.remove();
       toast.success(t(response.data.message), {
         position: "top-center",
@@ -341,7 +327,7 @@ export default function App(props: any) {
     }
   }
 
-  // --- Update Account Function ---
+  // --- Update Cost Center Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
@@ -362,10 +348,9 @@ export default function App(props: any) {
       });
       return;
     }
-    //
 
-    const response = await Axios.put(`${api}/accounts`, {
-      _id: accountData._id,
+    const response = await Axios.put(`${api}/costCenters`, {
+      _id: costCenterData._id,
       ...updateData,
     });
 
@@ -375,7 +360,7 @@ export default function App(props: any) {
       toast.success(t(response.data.message), {
         position: "top-center",
       });
-      saveLog(t("update") + " " + t("account") + ": " + accountData.accountName);
+      saveLog(t("update") + " " + t("cost center") + ": " + costCenterData.name);
       setEdit(false);
       return true;
     } else {
@@ -384,12 +369,12 @@ export default function App(props: any) {
     }
   }
 
-  // --- Remove Account Function ---
+  // --- Remove Cost Center Function ---
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`)
+    Axios.delete(`${api}/costCenters/${id}`)
       .then((res) => {
-        saveLog(t("remove") + " " + t("account") + ": " + accountData.accountName);
-        toast.success(t("Account") + " " + t("removed successfully."));
+        saveLog(t("remove") + " " + t("cost center") + ": " + costCenterData.name);
+        toast.success(t("Cost Center") + " " + t("removed successfully."));
         getData();
       })
       .catch((error) => {
@@ -407,21 +392,13 @@ export default function App(props: any) {
     setErrors({ ...Errors, saveErrors: "" });
     setErrors("");
     setIsModalOpen(true);
-
-    if (!edit) {
-      // clear last parentAccount to fix account Number generat
-      setAccountData((prevData: any) => ({
-        ...prevData,
-        parentAccount: "",
-      }));
-    }
   }
 
   async function handleOk() {
     if (!edit) {
       if (await save()) {
         setIsModalOpen(false);
-        setAccountData(""); //clear accountData
+        setCostCenterData(""); //clear costCenterData
         form.resetFields(); //reset form fields
       }
     } else {
@@ -435,34 +412,16 @@ export default function App(props: any) {
   function handleCancel() {
     setIsModalOpen(false);
     setEdit(false);
-    setAccountData(""); //clear accountData
+    setCostCenterData(""); //clear costCenterData
     form.resetFields(); //reset form fields
   }
-
-  // --- Generate Account Number Effect Hook ---
-  useEffect(() => {
-    if (isModalOpen) {
-      getData();
-      const fetchAndGenerateAccountNumber = async () => {
-        if (accountData.parentAccount != "") {
-          const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-          setAccountData((prevData: any) => ({
-            ...prevData,
-            accountNumber: newAccountNumber,
-          }));
-        }
-      };
-
-      fetchAndGenerateAccountNumber();
-    }
-  }, [accountData.parentAccount]);
 
   // --- Set Form Field Value Effect Hook ---
   useEffect(() => {
     form.setFieldsValue({
-      accountNumber: accountData.accountNumber,
+      name: costCenterData.name,
     });
-  }, [accountData.accountNumber]);
+  }, [costCenterData.name]);
 
   // --- Validation Messages ---
   const validateMessages = {
@@ -477,55 +436,21 @@ export default function App(props: any) {
   };
 
   const handleEdit = (record: any) => {
-    setOldData(record);
-    form.setFieldsValue(
-      fieldsConfig.reduce((acc: any, field) => {
-        acc[field.fieldName] = record[field.fieldName];
-        return acc;
-      }, {})
-    );
-    setEdit(true);
-    showModal();
+    if (userPermissions.Edit === 1) {
+      setOldData(record);
+      form.setFieldsValue(
+        fieldsConfig.reduce((acc: any, field) => {
+          acc[field.fieldName] = record[field.fieldName];
+          return acc;
+        }, {})
+      );
+      setEdit(true);
+      showModal();
+    }
   };
-
-  // --- Build Tree Data Function ---
-  function buildTreeData(data: any) {
-    const sortedData = data.sort((a: any, b: any) =>
-      a.accountNumber.localeCompare(b.accountNumber)
-    );
-
-    const map: any = {};
-    const treeData: any[] = [];
-
-    sortedData.forEach((item: any) => {
-      map[item.accountName] = {
-        key: item._id,
-        title: `${item.accountNumber} - ${item.accountName}`,
-        children: [],
-      };
-    });
-
-    sortedData.forEach((item: any) => {
-      if (item.parentAccount === "Main") {
-        treeData.push(map[item.accountName]);
-      } else if (map[item.parentAccount]) {
-        map[item.parentAccount].children.push(map[item.accountName]);
-      }
-    });
-
-    return treeData;
-  }
-
-  // --- Handle Tree Select Function ---
-  const handleSelect = (selectedKeys: any, { node }: { node: any }) => {
-    setSearchText(`${node.title.split(" - ")[1]}`);
-  };
-
-  // --- Tree Data (useMemo) ---
-  const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
 
   const handleRowClick = (record: any) => {
-    setAccountData(record);
+    setCostCenterData(record);
   };
 
   const handleRowDoubleClick = (record: any) => {
@@ -545,10 +470,10 @@ export default function App(props: any) {
               isModalOpen={isModalOpen} // Control modal visibility
               handleOk={handleOk} // Handle form submission
               handleCancel={handleCancel} // Handle modal close
-              setPageData={setAccountData} // Update account data
+              setPageData={setCostCenterData} // Update cost center data
               form={form} // Ant Design form instance
               fieldsConfig={fieldsConfig} // Form fields configuration
-              pageData={accountData} // Current form data
+              pageData={costCenterData} // Current form data
               errors={Errors} // Error messages (if any)
               modalTitle={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))} // Modal title
               edit={edit} // Edit mode flag
@@ -665,10 +590,6 @@ export default function App(props: any) {
               }>
               {!Errors.connectionError && (
                 <>
-                  <Card>
-                    <Tree onSelect={handleSelect} treeData={treeData} />
-                  </Card>
-                  <Divider />
                   <Input.Search
                     placeholder={t("Search...")}
                     onChange={(e) => setSearchText(e.target.value)}
@@ -676,7 +597,6 @@ export default function App(props: any) {
                     allowClear
                     value={searchText}
                     ref={searchRef}
-                    //onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <ReusableTable
@@ -684,44 +604,12 @@ export default function App(props: any) {
                       columns={columns}
                       data={filteredData}
                       loading={Loading}
-                      selectedId={accountData._id}
+                      selectedId={costCenterData._id}
                       theme={settings.theme}
                       onRowClick={handleRowClick}
                       onRowDoubleClick={handleRowDoubleClick}
                     />
                   </div>
-
-                  {/* <div ref={tableRef} style={{ overflowX: "auto" }}>
-                    <Table
-                      id='print-table'
-                      size='small'
-                      columns={columns.map((col: any) => ({
-                        ...col,
-                        ellipsis: true, // Ensure text doesn't overflow
-                      }))}
-                      dataSource={filteredData}
-                      loading={Loading}
-                      pagination={false}
-                      rowKey={(record) => record._id}
-                      scroll={{ x: "max-content" }}
-                      rowClassName={(record) =>
-                        record._id === accountData._id
-                          ? settings.theme === "dark"
-                            ? "selected-row-dark"
-                            : "selected-row-light"
-                          : ""
-                      } // Add a class to the selected row
-                      onRow={(record) => ({
-                        onClick: () => {
-                          setAccountData(record);
-                        },
-                        onDoubleClick: () => {
-                          handleEdit(record);
-                        },
-                        style: { cursor: "pointer" },
-                      })}
-                    />
-                  </div> */}
                 </>
               )}
               {Errors.connectionError && (
@@ -734,11 +622,11 @@ export default function App(props: any) {
 
             <br />
 
-            {accountData._id && !isModalOpen && (
+            {costCenterData._id && !isModalOpen && (
               <div ref={detailsRef}>
                 <DetailsCard
                   fieldsConfig={fieldsConfig}
-                  recordData={accountData}
+                  recordData={costCenterData}
                   locale={locale}
                   pageName={t(PageName)}
                   userPermissions={userPermissions}
@@ -748,22 +636,22 @@ export default function App(props: any) {
           </>
         )}
       </Card>
-      
+
       <KeyboardShortcuts
+        userPermissions={userPermissions}
         onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
         onSearch={() => searchRef.current?.focus()}
         onRefresh={() => getData(true)}
         onNew={showModal}
         onDelete={() => {
           if (userPermissions.Remove == 1) {
-            const button = document.getElementById(accountDataRef.current._id);
+            const button = document.getElementById(costCenterDataRef.current._id);
             if (button) {
               button.click();
             }
           }
         }}
         locale={locale}
-        userPermissions={userPermissions}
       />
     </div>
   );
