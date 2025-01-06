@@ -93,8 +93,8 @@ export default function App(/*props: any*/) {
       {!LangLoading ? (
         <Row gutter={12}>
           {Object.keys(allBtns).map(
-            (key: any) =>
-              userPermissions[allBtns[key].title.toLowerCase()]?.View == 1 && (
+            (key: any) =>//change .title to .url 6/1/25
+              userPermissions[allBtns[key].url.toLowerCase()]?.View == 1 && (
                 <Col
                   style={{ padding: 5 }}
                   key={key}
