@@ -30,12 +30,20 @@ export default async function initTranslations(
     defaultNS: namespaces[0],
     fallbackNS: namespaces[0],
     ns: namespaces,
-    preload: resources ? [] : i18nConfig.locales
+    preload: resources ? [] : i18nConfig.locales,
   });
+
+  // Wrap the `t` function to convert keys to lowercase before translation
+  const originalT = i18nInstance.t;
+  i18nInstance.t = (key, options) => {
+    // Convert the key to lowercase before passing it to the original `t` function
+    const lowercaseKey = typeof key === 'string' ? key.toLowerCase() : key;
+    return originalT.call(i18nInstance, lowercaseKey, options);
+  };
 
   return {
     i18n: i18nInstance,
     resources: i18nInstance.services.resourceStore.data,
-    t: i18nInstance.t
+    t: i18nInstance.t,
   };
 }

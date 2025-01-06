@@ -14,6 +14,7 @@ import {
 } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import initTranslations from "../../i18n";
+import moment from "moment";
 
 interface ModalFormProps {
   isModalOpen: boolean;
@@ -106,6 +107,8 @@ export const ModalForm = ({
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
+
+
     return (
       <Col key={fieldName} xs={{ flex: fieldWidth }} style={{ padding: 5 }}>
         {showInput && (
@@ -144,12 +147,13 @@ export const ModalForm = ({
               />
             )}
             {type === "date" && (
+
               <DatePicker
-                value={value}
-                onChange={handleInputChange(fieldName)}
-                type={type}
-                disabled={edit ? !editable : readOnly}
-              />
+              format="YYYY-MM-DD"
+              value={value ? moment(value, "YYYY-MM-DD", true) : moment()}
+              onChange={(date, dateString) => handleInputChange(fieldName)(dateString)}
+              disabled={edit ? !editable : readOnly}
+            />
             )}
           </Form.Item>
         )}

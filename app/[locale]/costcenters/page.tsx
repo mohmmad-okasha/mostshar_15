@@ -26,9 +26,11 @@ import { ModalForm } from "../components/ModalForm";
 import { DetailsCard } from "../components/DetailsCard";
 import ReusableTable from "../components/ReusableTable";
 import { TbPrinter } from "react-icons/tb";
+import moment from "moment";
+import dayjs from "dayjs";
 
 // --- Constants ---
-const PageName = "CostCenters";
+const PageName = "Cost Centers";
 const api = getApiUrl();
 
 // --- Main Component ---
@@ -211,7 +213,7 @@ export default function CostCentersPage(props: any) {
     getSettings(userName).then((value) => {
       setSettings(value);
     });
-    getRules(userName, PageName.toLowerCase()).then((value) => {
+    getRules(userName, PageName.replace(/\s+/g, '').toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
   }, [userName, PageName]);
@@ -219,6 +221,8 @@ export default function CostCentersPage(props: any) {
   useEffect(() => {
     getData();
   }, []);
+
+
 
   // --- Table Columns (useMemo) ---
   const columns: any = useMemo(
@@ -438,16 +442,29 @@ export default function CostCentersPage(props: any) {
   const handleEdit = (record: any) => {
     if (userPermissions.Edit === 1) {
       setOldData(record);
-      form.setFieldsValue(
-        fieldsConfig.reduce((acc: any, field) => {
-          acc[field.fieldName] = record[field.fieldName];
-          return acc;
-        }, {})
-      );
+
+      // Format date fields to "YYYY-MM-DD"
+      const formattedFields = fieldsConfig.reduce((acc: any, field) => {
+        const value = record[field.fieldName];
+
+        // Check if the field type is date
+        if (field.type === "date" && value) {
+          const parsedDate = dayjs(value); // Strict parsing
+          acc[field.fieldName] = parsedDate;
+          } else {
+          acc[field.fieldName] = value;
+        }
+
+        return acc;
+      }, {});
+
+      form.setFieldsValue(formattedFields);
       setEdit(true);
       showModal();
     }
   };
+  
+  
 
   const handleRowClick = (record: any) => {
     setCostCenterData(record);
