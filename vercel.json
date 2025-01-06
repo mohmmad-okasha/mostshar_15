@@ -1,0 +1,7 @@
+{
+    "github": {
+      "enabled": true,
+      "autoJobCancelation": true,
+      "ignoreCommand": "git diff --quiet HEAD^ HEAD ./vercel.json"
+    }
+  }
