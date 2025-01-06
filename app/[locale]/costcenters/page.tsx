@@ -12,7 +12,17 @@ import {
   cardStyle,
   getSettings,
 } from "@/app/shared";
-import { Button, Card, Divider, Dropdown, Form, Input, InputRef, Result, Tooltip } from "antd";
+import {
+  Button,
+  Card,
+  Divider,
+  Dropdown,
+  Form,
+  Input,
+  InputRef,
+  Result,
+  Tooltip,
+} from "antd";
 import { BsPlusLg } from "react-icons/bs";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
@@ -88,7 +98,7 @@ export default function CostCentersPage(props: any) {
   }, [window.innerWidth]);
 
   // --- set Language ---
-  const locale = settings.lang;
+  const locale = settings.lang ? settings.lang : "en";
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
     setLangloading(true);
@@ -213,7 +223,7 @@ export default function CostCentersPage(props: any) {
     getSettings(userName).then((value) => {
       setSettings(value);
     });
-    getRules(userName, PageName.replace(/\s+/g, '').toLowerCase()).then((value) => {
+    getRules(userName, PageName.replace(/\s+/g, "").toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
   }, [userName, PageName]);
@@ -221,8 +231,6 @@ export default function CostCentersPage(props: any) {
   useEffect(() => {
     getData();
   }, []);
-
-
 
   // --- Table Columns (useMemo) ---
   const columns: any = useMemo(
@@ -336,7 +344,14 @@ export default function CostCentersPage(props: any) {
     setErrors({ ...Errors, saveErrors: "" });
 
     const updateData = fieldsConfig.reduce((acc: any, field) => {
-      acc[field.fieldName] = form.getFieldValue(field.fieldName);
+      // Check if the field type is date
+      if (field.type === "date" && form.getFieldValue(field.fieldName)) {
+        alert('ok')
+        const parsedDate = dayjs(form.getFieldValue(field.fieldName)).format('YYYY-MM-DD'); // Strict parsing
+        acc[field.fieldName] = parsedDate;
+      } else {
+        acc[field.fieldName] = form.getFieldValue(field.fieldName);
+      }
       return acc;
     }, {});
 
@@ -451,7 +466,7 @@ export default function CostCentersPage(props: any) {
         if (field.type === "date" && value) {
           const parsedDate = dayjs(value); // Strict parsing
           acc[field.fieldName] = parsedDate;
-          } else {
+        } else {
           acc[field.fieldName] = value;
         }
 
@@ -463,8 +478,6 @@ export default function CostCentersPage(props: any) {
       showModal();
     }
   };
-  
-  
 
   const handleRowClick = (record: any) => {
     setCostCenterData(record);
@@ -622,7 +635,7 @@ export default function CostCentersPage(props: any) {
                       data={filteredData}
                       loading={Loading}
                       selectedId={costCenterData._id}
-                      theme={settings.theme}
+                      theme={settings.theme ? settings.theme : "light"}
                       onRowClick={handleRowClick}
                       onRowDoubleClick={handleRowDoubleClick}
                     />

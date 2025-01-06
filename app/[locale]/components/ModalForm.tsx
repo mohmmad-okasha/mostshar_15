@@ -15,6 +15,7 @@ import {
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import initTranslations from "../../i18n";
 import moment from "moment";
+import dayjs from "dayjs";
 
 interface ModalFormProps {
   isModalOpen: boolean;
@@ -150,8 +151,9 @@ export const ModalForm = ({
 
               <DatePicker
               format="YYYY-MM-DD"
-              value={value ? moment(value, "YYYY-MM-DD", true) : moment()}
-              onChange={(date, dateString) => handleInputChange(fieldName)(dateString)}
+              //value={value ? moment(value, "YYYY-MM-DD", true) : moment()}
+              value={dayjs()}
+              onChange={handleInputChange(fieldName)}
               disabled={edit ? !editable : readOnly}
             />
             )}

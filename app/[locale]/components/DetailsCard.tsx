@@ -106,13 +106,13 @@ export const DetailsCard = ({
           children: (
             <>
               <Row>
-                {fieldsConfig.map((field) =>
+                {fieldsConfig ? fieldsConfig.map((field) =>
                   renderField({
                     ...field,
                     value: recordData[field.fieldName],
                     fieldOptions: field.options,
                   })
-                )}
+                ): null}
               </Row>
 
               {userPermissions.Print == 1 && (
