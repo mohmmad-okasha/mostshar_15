@@ -346,7 +346,6 @@ export default function CostCentersPage(props: any) {
     const updateData = fieldsConfig.reduce((acc: any, field) => {
       // Check if the field type is date
       if (field.type === "date" && form.getFieldValue(field.fieldName)) {
-        alert('ok')
         const parsedDate = dayjs(form.getFieldValue(field.fieldName)).format('YYYY-MM-DD'); // Strict parsing
         acc[field.fieldName] = parsedDate;
       } else {

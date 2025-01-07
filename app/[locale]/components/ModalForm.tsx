@@ -14,7 +14,6 @@ import {
 } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import initTranslations from "../../i18n";
-import moment from "moment";
 import dayjs from "dayjs";
 
 interface ModalFormProps {
@@ -61,16 +60,20 @@ export const ModalForm = ({
     (field: any) => (e: any) => {
       let value;
 
-      if (e && e.target) {
-        if (e.target.type === "checkbox") {
-          value = e.target.checked;
-        } else {
-          value = e.target.value;
-        }
-      } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
-        value = e.value;
+      if (field === "startDate") {
+        value = dayjs(e).format("YYYY-MM-DD");
       } else {
-        value = e;
+        if (e && e.target) {
+          if (e.target.type === "checkbox") {
+            value = e.target.checked;
+          } else {
+            value = e.target.value;
+          }
+        } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
+          value = e.value;
+        } else {
+          value = e;
+        }
       }
 
       setPageData((prevData: any) => ({
@@ -107,8 +110,6 @@ export const ModalForm = ({
   }: any) => {
     const displayedLabel =
       label || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-
-
 
     return (
       <Col key={fieldName} xs={{ flex: fieldWidth }} style={{ padding: 5 }}>
@@ -148,14 +149,13 @@ export const ModalForm = ({
               />
             )}
             {type === "date" && (
-
               <DatePicker
-              format="YYYY-MM-DD"
-              //value={value ? moment(value, "YYYY-MM-DD", true) : moment()}
-              value={dayjs()}
-              onChange={handleInputChange(fieldName)}
-              disabled={edit ? !editable : readOnly}
-            />
+                format='YYYY-MM-DD'
+                value={value ? dayjs(value, "YYYY-MM-DD", true) : dayjs()}
+                //value={dayjs()}
+                onChange={handleInputChange(fieldName)}
+                disabled={edit ? !editable : readOnly}
+              />
             )}
           </Form.Item>
         )}
