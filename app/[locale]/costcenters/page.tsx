@@ -338,12 +338,12 @@ export default function CostCentersPage(props: any) {
       return false;
     }
   }
-
+ 
   // --- Update Cost Center Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
-    
+
     const updateData = fieldsConfig.reduce((acc: any, field) => {
       // Check if the field type is date
       if (field.type === "date" && form.getFieldValue(field.fieldName)) {
