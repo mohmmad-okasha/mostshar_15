@@ -226,6 +226,13 @@ export default function App({ locale }: { locale: string }) {
                 loading={true}></Card>
             </div>
           )}
+          {locale === 'ar' && <style type='text/css'>
+            {`
+              .ant-layout-sider-trigger{
+                transform: scaleX(-1);  
+              }`
+            }
+          </style>}
         </Sider>
       )}
     </>

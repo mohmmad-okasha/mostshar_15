@@ -29,17 +29,17 @@ export default function RootLayout({
   const userName = window.localStorage.getItem("userName");
 
   // -- Disable Right Click --
-  useEffect(() => {
-    const disableContextMenu = (event: { preventDefault: () => void; }) => {
-      event.preventDefault();
-    };
+  // useEffect(() => {
+  //   const disableContextMenu = (event: { preventDefault: () => void; }) => {
+  //     event.preventDefault();
+  //   };
 
-    document.addEventListener('contextmenu', disableContextMenu);
+  //   document.addEventListener('contextmenu', disableContextMenu);
 
-    return () => {
-      document.removeEventListener('contextmenu', disableContextMenu);
-    };
-  }, []);
+  //   return () => {
+  //     document.removeEventListener('contextmenu', disableContextMenu);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (cookies.token) setAuthed("true");
