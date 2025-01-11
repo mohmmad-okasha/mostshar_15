@@ -538,7 +538,7 @@ export default function TransactionsPage(props: any) {
               maskClosable={false}
               footer={null} // Remove default footer
             >
-              <Card>
+              
                 <Form
                   form={form}
                   layout='vertical'
@@ -581,8 +581,16 @@ export default function TransactionsPage(props: any) {
                     </Col>
                     <Col key='entries' xs={{ flex: "100%" }} style={{ padding: 5 }}>
                       <Divider>{t("Entries")}</Divider>
-                      <Table columns={columns} dataSource={transactionData.entries} size='small' />
-                      
+                      <Table
+                        columns={[
+                          { title: t("Account"), dataIndex: "account" },
+                          { title: t("Dibet"), dataIndex: "dibet" },
+                          { title: t("Credit"), dataIndex: "credit" },
+                          { title: t("Cost Center"), dataIndex: "costCenter" },
+                        ]}
+                        dataSource={transactionData.entries}
+                        size='small'
+                      />
                     </Col>
                   </Row>
 
@@ -612,7 +620,7 @@ export default function TransactionsPage(props: any) {
                     </Button>
                   </div>
                 </Form>
-              </Card>
+              
             </Modal>
             <Card
               title={t(PageName)}
