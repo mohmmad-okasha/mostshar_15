@@ -176,7 +176,7 @@ export const ModalForm = ({
         <Form
           form={form}
           layout='vertical'
-          style={{ maxWidth: 500, textAlign: "center" }}
+          style={{ maxWidth: 500, textAlign: locale === "ar" ? "right" : "left" }}
           onFinish={handleOk}
           validateMessages={validateMessages}>
           <Row>
@@ -195,7 +195,7 @@ export const ModalForm = ({
             <Alert closable description={errors.saveErrors} type='error' showIcon />
           )}
           <Divider />
-          <div style={{ textAlign: "right", direction: "rtl" }}>
+          <div style={{ textAlign: "center", direction: "rtl" }}>
             <Button
               type='primary'
               shape='round'

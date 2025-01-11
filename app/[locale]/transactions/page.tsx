@@ -1,7 +1,7 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
@@ -13,14 +13,20 @@ import {
   getSettings,
 } from "@/app/shared";
 import {
+  Alert,
   Button,
   Card,
+  Col,
+  DatePicker,
   Divider,
   Dropdown,
   Form,
   Input,
   InputRef,
+  Modal,
   Result,
+  Row,
+  Table,
   Tooltip,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
@@ -37,6 +43,7 @@ import { DetailsCard } from "../components/DetailsCard";
 import ReusableTable from "../components/ReusableTable";
 import { TbPrinter } from "react-icons/tb";
 import dayjs from "dayjs";
+import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 
 // --- Constants ---
 const PageName = "Transactions";
@@ -120,54 +127,80 @@ export default function TransactionsPage(props: any) {
         showTable: true,
         showInput: true,
         showDetails: true,
-        fieldWidth: "100%",
+        fieldWidth: "50%",
         editable: true,
         columnLength: 20,
       },
       {
-        fieldName: "discription",
+        fieldName: "description",
         label: "Description",
-        type: "text area",
+        type: "text",
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
         showDetails: true,
+        fieldWidth: "50%",
+        editable: true,
+        columnLength: 20,
+      },
+      {
+        fieldName: "entries",
+        label: "Entries",
+        type: "multi-fields",
+        fields: [
+          {
+            fieldName: "account",
+            label: "Account",
+            type: "text",
+            rules: [{ required: true }],
+            fieldWidth: "50%",
+          },
+          {
+            fieldName: "debit",
+            label: "Debit",
+            type: "number",
+            rules: [{ required: true }],
+            fieldWidth: "25%",
+          },
+          {
+            fieldName: "credit",
+            label: "Credit",
+            type: "number",
+            rules: [{ required: true }],
+            fieldWidth: "25%",
+          },
+          {
+            fieldName: "description",
+            label: "Description",
+            type: "text area",
+            rules: [{ required: false }],
+            fieldWidth: "100%",
+          },
+          {
+            fieldName: "costCenter",
+            label: "Cost Center",
+            type: "text",
+            rules: [{ required: false }],
+            fieldWidth: "50%",
+          },
+        ],
+        showTable: true,
+        showInput: true,
+        showDetails: true,
         fieldWidth: "100%",
         editable: true,
-        columnLength: 20,
       },
       {
-        fieldName: "type",
-        label: "Type",
-        type: "select",
+        fieldName: "user",
+        label: "User",
+        type: "text",
         rules: [{ required: true }],
-        options: [
-          { value: "Fixed", label: t("Fixed") },
-          { value: "Variable", label: t("Variable") },
-        ],
         showTable: true,
-        showInput: true,
+        showInput: false,
         showDetails: true,
-        fieldWidth: "50%",
-        editable: true,
-        columnLength: 20,
+        fieldWidth: "100%",
+        editable: false,
       },
-      {
-        fieldName: "project",
-        label: "Project",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Project A", label: t("Project A") },
-          { value: "Project B", label: t("Project B") },
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "50%",
-        editable: true,
-        columnLength: 20,
-      }
     ],
     [t]
   );
@@ -309,16 +342,17 @@ export default function TransactionsPage(props: any) {
       return false;
     }
   }
- 
+
   // --- Update Cost Center Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
-
     const updateData = fieldsConfig.reduce((acc: any, field) => {
       // Check if the field type is date
       if (field.type === "date" && form.getFieldValue(field.fieldName)) {
-        const parsedDate = dayjs(form.getFieldValue(field.fieldName)).format('YYYY-MM-DD'); // Strict parsing
+        const parsedDate = dayjs(form.getFieldValue(field.fieldName)).format(
+          "YYYY-MM-DD"
+        ); // Strict parsing
         acc[field.fieldName] = parsedDate;
       } else {
         acc[field.fieldName] = form.getFieldValue(field.fieldName);
@@ -458,6 +492,35 @@ export default function TransactionsPage(props: any) {
     handleEdit(record);
   };
 
+  // --- Input Change Handler ---
+  const handleInputChange = useCallback(
+    (field: any) => (e: any) => {
+      let value;
+
+      if (field === "date") {
+        value = dayjs(e).format("YYYY-MM-DD");
+      } else {
+        if (e && e.target) {
+          if (e.target.type === "checkbox") {
+            value = e.target.checked;
+          } else {
+            value = e.target.value;
+          }
+        } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
+          value = e.value;
+        } else {
+          value = e;
+        }
+      }
+
+      setTransactionData((prevData: any) => ({
+        ...prevData,
+        [field]: value,
+      }));
+    },
+    []
+  );
+
   // --- Render ---
   return (
     <div className='responsive-card-wrapper'>
@@ -467,19 +530,90 @@ export default function TransactionsPage(props: any) {
         </div>
         {userPermissions.View == 1 && (
           <>
-            <ModalForm
-              isModalOpen={isModalOpen} // Control modal visibility
-              handleOk={handleOk} // Handle form submission
-              handleCancel={handleCancel} // Handle modal close
-              setPageData={setTransactionData} // Update cost center data
-              form={form} // Ant Design form instance
-              fieldsConfig={fieldsConfig} // Form fields configuration
-              pageData={transactionData} // Current form data
-              errors={Errors} // Error messages (if any)
-              modalTitle={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))} // Modal title
-              edit={edit} // Edit mode flag
-              locale={locale} // Current locale
-            />
+            <Modal
+              title={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))}
+              open={isModalOpen}
+              onCancel={handleCancel}
+              width={700}
+              maskClosable={false}
+              footer={null} // Remove default footer
+            >
+              <Card>
+                <Form
+                  form={form}
+                  layout='vertical'
+                  style={{
+                    maxWidth: 700,
+                    textAlign: locale === "ar" ? "right" : "left",
+                  }}
+                  onFinish={handleOk}
+                  validateMessages={validateMessages}>
+                  <Row>
+                    <Col key='date' xs={{ flex: "50%" }} style={{ padding: 5 }}>
+                      <Form.Item
+                        key='date'
+                        label={t("Date")}
+                        name='date'
+                        rules={[{ required: true }]}>
+                        <DatePicker
+                          format='YYYY-MM-DD'
+                          value={
+                            transactionData.date
+                              ? dayjs(transactionData.date, "YYYY-MM-DD", true)
+                              : dayjs()
+                          }
+                          onChange={handleInputChange("date")}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col key='description' xs={{ flex: "50%" }} style={{ padding: 5 }}>
+                      <Form.Item
+                        key='description'
+                        label={t("description")}
+                        name='description'
+                        rules={[{ required: true }]}>
+                        <Input
+                          value={transactionData.description}
+                          onChange={handleInputChange("description")}
+                          type={"text"}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col key='entries' xs={{ flex: "100%" }} style={{ padding: 5 }}>
+                      <Divider>{t("Entries")}</Divider>
+                      <Table columns={columns} dataSource={transactionData.entries} size='small' />
+                      
+                    </Col>
+                  </Row>
+
+                  {Errors.saveErrors && (
+                    <Alert
+                      closable
+                      description={Errors.saveErrors}
+                      type='error'
+                      showIcon
+                    />
+                  )}
+                  <Divider />
+                  <div style={{ textAlign: "center", direction: "rtl" }}>
+                    <Button
+                      type='primary'
+                      shape='round'
+                      htmlType='submit'
+                      icon={<SaveOutlined />}>
+                      {t("Save")}
+                    </Button>
+                    <Button
+                      shape='round'
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      style={{ marginRight: 8 }}>
+                      {t("Cancel")}
+                    </Button>
+                  </div>
+                </Form>
+              </Card>
+            </Modal>
             <Card
               title={t(PageName)}
               style={{
