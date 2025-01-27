@@ -1,6 +1,7 @@
 "use client";
 
 // --- Imports ---
+import '@ant-design/v5-patch-for-react-19';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
