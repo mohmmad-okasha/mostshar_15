@@ -172,47 +172,42 @@ export const ModalForm = ({
       maskClosable={false}
       footer={null} // Remove default footer
     >
-      <Card>
-        <Form
-          form={form}
-          layout='vertical'
-          style={{ maxWidth: 500, textAlign: locale === "ar" ? "right" : "left" }}
-          onFinish={handleOk}
-          validateMessages={validateMessages}>
-          <Row>
-            {fieldsConfig.map((field) =>
-              createFormItem({
-                ...field,
-                value: pageData[field.fieldName],
-                fieldOptions: field.options,
-              })
-            )}
-          </Row>
-
-          {element}
-
-          {errors.saveErrors && (
-            <Alert closable description={errors.saveErrors} type='error' showIcon />
+      <Divider />
+      <Form
+        form={form}
+        layout='vertical'
+        style={{ maxWidth: 500, textAlign: locale === "ar" ? "right" : "left" }}
+        onFinish={handleOk}
+        validateMessages={validateMessages}>
+        <Row>
+          {fieldsConfig.map((field) =>
+            createFormItem({
+              ...field,
+              value: pageData[field.fieldName],
+              fieldOptions: field.options,
+            })
           )}
-          <Divider />
-          <div style={{ textAlign: "center", direction: "rtl" }}>
-            <Button
-              type='primary'
-              shape='round'
-              htmlType='submit'
-              icon={<SaveOutlined />}>
-              {t("Save")}
-            </Button>
-            <Button
-              shape='round'
-              icon={<CloseOutlined />}
-              onClick={handleCancel}
-              style={{ marginRight: 8 }}>
-              {t("Cancel")}
-            </Button>
-          </div>
-        </Form>
-      </Card>
+        </Row>
+
+        {element}
+
+        {errors.saveErrors && (
+          <Alert closable description={errors.saveErrors} type='error' showIcon />
+        )}
+        <Divider />
+        <div style={{ textAlign: "center", direction: "rtl" }}>
+          <Button type='primary' shape='round' htmlType='submit' icon={<SaveOutlined />}>
+            {t("Save")}
+          </Button>
+          <Button
+            shape='round'
+            icon={<CloseOutlined />}
+            onClick={handleCancel}
+            style={{ marginRight: 8 }}>
+            {t("Cancel")}
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 };

@@ -758,7 +758,7 @@ export default function App() {
   // --- Render ---
   return (
     <div className='responsive-card-wrapper'>
-      <Card style={{ border: 0 }} loading={LangLoading}>
+      <Card style={{ backgroundColor: "#00000000", border: 0 }} loading={LangLoading}>
         <div>
           <Toaster />
         </div>
@@ -771,73 +771,65 @@ export default function App() {
               width={500}
               maskClosable={false}
               footer={[]}>
-              <Card>
-                <Form
-                  form={form}
-                  layout='vertical'
-                  style={{ maxWidth: 500, textAlign: "center" }}
-                  validateMessages={validateMessages}
-                  onFinish={handleOk}>
-                  <Row>
-                    {fieldsConfig.map((field) =>
-                      createFormItem({
-                        ...field,
-                        value: userData[field.fieldName],
-                      })
-                    )}
-                  </Row>
-
-                  <Card title={t("Permissions")}>
-                    <Search
-                      placeholder={t("Search")}
-                      allowClear
-                      onSearch={onSearch}
-                      onChange={(e) => onSearch(e.target.value)}
-                      style={{ marginBottom: "16px" }}
-                    />
-                    <Tree
-                      checkable
-                      //defaultExpandAll
-                      onCheck={onCheck}
-                      checkedKeys={checkedKeys}
-                      treeData={rolsFilteredData}
-                      style={{ direction: "ltr" }}
-                    />
-                  </Card>
-                  {Errors.saveErrors && (
-                    <>
-                      <Form.Item />
-                      <Alert
-                        closable
-                        description={Errors.saveErrors}
-                        type='error'
-                        showIcon
-                      />
-                    </>
+              <Divider />
+              <Form
+                form={form}
+                layout='vertical'
+                style={{ maxWidth: 500, textAlign: "center" }}
+                validateMessages={validateMessages}
+                onFinish={handleOk}>
+                <Row>
+                  {fieldsConfig.map((field) =>
+                    createFormItem({
+                      ...field,
+                      value: userData[field.fieldName],
+                    })
                   )}
-                  <Divider />
-                  <Form.Item
-                    style={{ marginBottom: -40, textAlign: "right", direction: "ltr" }}>
-                    <Button
-                      shape='round'
-                      icon={<CloseOutlined />}
-                      onClick={handleCancel}
-                      style={{ margin: 5 }}>
-                      {t("Cancel")}
-                    </Button>
+                </Row>
 
-                    <Button
-                      type='primary'
-                      shape='round'
-                      htmlType='submit'
-                      icon={<SaveOutlined />}
-                      style={{ margin: 5 }}>
-                      {t("Save")}
-                    </Button>
-                  </Form.Item>
-                </Form>
-                <br />
-              </Card>
+                <Card title={t("Permissions")}>
+                  <Search
+                    placeholder={t("Search")}
+                    allowClear
+                    onSearch={onSearch}
+                    onChange={(e) => onSearch(e.target.value)}
+                    style={{ marginBottom: "16px" }}
+                  />
+                  <Tree
+                    checkable
+                    //defaultExpandAll
+                    onCheck={onCheck}
+                    checkedKeys={checkedKeys}
+                    treeData={rolsFilteredData}
+                    style={{ direction: "ltr" }}
+                  />
+                </Card>
+                {Errors.saveErrors && (
+                  <>
+                    <Form.Item />
+                    <Alert
+                      closable
+                      description={Errors.saveErrors}
+                      type='error'
+                      showIcon
+                    />
+                  </>
+                )}
+<Divider />
+        <div style={{ textAlign: "center", direction: "rtl" }}>
+          <Button type='primary' shape='round' htmlType='submit' icon={<SaveOutlined />}>
+            {t("Save")}
+          </Button>
+          <Button
+            shape='round'
+            icon={<CloseOutlined />}
+            onClick={handleCancel}
+            style={{ marginRight: 8 }}>
+            {t("Cancel")}
+          </Button>
+        </div>
+              </Form>
+             
             </Modal>
             <Card
               title={t(PageName)}

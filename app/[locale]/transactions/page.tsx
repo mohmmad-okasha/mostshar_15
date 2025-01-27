@@ -524,7 +524,7 @@ export default function TransactionsPage(props: any) {
   // --- Render ---
   return (
     <div className='responsive-card-wrapper'>
-      <Card style={{ border: 0 }} loading={LangLoading}>
+      <Card style={{ backgroundColor: "#00000000", border: 0 }} loading={LangLoading}>
         <div>
           <Toaster />
         </div>
@@ -570,7 +570,7 @@ export default function TransactionsPage(props: any) {
                     <Col key='description' xs={{ flex: "50%" }} style={{ padding: 5 }}>
                       <Form.Item
                         key='description'
-                        label={t("description")}
+                        label={t("Description")}
                         name='description'
                         rules={[{ required: true }]}>
                         <Input

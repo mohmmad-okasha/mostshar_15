@@ -192,7 +192,7 @@ export default function App() {
 
   return (
     <div className='responsive-card-wrapper'>
-      <Card style={{ border: 0 }} loading={LangLoading}>
+      <Card style={{ backgroundColor: "#00000000", border: 0 }} loading={LangLoading}>
         <div>
           <Toaster />
         </div>
