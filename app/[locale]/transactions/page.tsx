@@ -557,6 +557,7 @@ export default function TransactionsPage(props: any) {
                         rules={[{ required: true }]}>
                         <DatePicker
                           format='YYYY-MM-DD'
+                          placeholder={t("Select Date")}
                           value={
                             transactionData.date
                               ? dayjs(transactionData.date, "YYYY-MM-DD", true)
