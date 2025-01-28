@@ -195,7 +195,7 @@ export const ModalForm = ({
           <Alert closable description={errors.saveErrors} type='error' showIcon />
         )}
         <Divider />
-        <div style={{ textAlign: "center", direction: "rtl" }}>
+        <div style={{ textAlign: "right", direction: "rtl" }}>
           <Button type='primary' shape='round' htmlType='submit' icon={<SaveOutlined />}>
             {t("Save")}
           </Button>

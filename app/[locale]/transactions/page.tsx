@@ -539,7 +539,7 @@ export default function TransactionsPage(props: any) {
               maskClosable={false}
               footer={null} // Remove default footer
             >
-              
+              <Divider />
                 <Form
                   form={form}
                   layout='vertical'
@@ -605,7 +605,7 @@ export default function TransactionsPage(props: any) {
                     />
                   )}
                   <Divider />
-                  <div style={{ textAlign: "center", direction: "rtl" }}>
+                  <div style={{ textAlign: "right", direction: "rtl" }}>
                     <Button
                       type='primary'
                       shape='round'
