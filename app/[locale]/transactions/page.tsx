@@ -191,17 +191,6 @@ export default function TransactionsPage(props: any) {
         fieldWidth: "100%",
         editable: true,
       },
-      {
-        fieldName: "user",
-        label: "User",
-        type: "text",
-        rules: [{ required: true }],
-        showTable: true,
-        showInput: false,
-        showDetails: true,
-        fieldWidth: "100%",
-        editable: false,
-      },
     ],
     [t]
   );
