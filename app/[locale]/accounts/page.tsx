@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
-  getRules,
+  getRules , 
   getApiUrl,
   saveLog,
   handlePrint,
