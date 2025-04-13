@@ -1,36 +1,41 @@
 "use client";
 
 // --- Imports ---
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import '@ant-design/v5-patch-for-react-19';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Axios from "axios";
 import { useCookies } from "react-cookie";
 import {
-  getRules , 
+  getRules,
   getApiUrl,
   saveLog,
   handlePrint,
   cardStyle,
-  generateAccountNumber,
   getSettings,
 } from "@/app/shared";
 import {
+  Alert,
   Button,
   Card,
+  Col,
+  DatePicker,
   Divider,
   Dropdown,
   Form,
   Input,
   InputRef,
+  Modal,
   Result,
+  Row,
+  Table,
   Tooltip,
-  Tree,
 } from "antd";
 import { BsPlusLg } from "react-icons/bs";
 import toast, { Toaster } from "react-hot-toast";
 import { FiDownloadCloud, FiMoreVertical } from "react-icons/fi";
 import initTranslations from "../../i18n.js";
 import { IoSync } from "react-icons/io5";
-import { KeyboardShortcuts } from "../components/KeyboardShortcuts"; // Import the KeyboardShortcuts component
+import { KeyboardShortcuts } from "../components/KeyboardShortcuts";
 import { ExportData } from "../components/ExportData";
 import { ExportDataMobile } from "../components/ExportDataMobile";
 import { TableActions } from "../components/TableActions";
@@ -38,13 +43,15 @@ import { ModalForm } from "../components/ModalForm";
 import { DetailsCard } from "../components/DetailsCard";
 import ReusableTable from "../components/ReusableTable";
 import { TbPrinter } from "react-icons/tb";
+import dayjs from "dayjs";
+import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 
 // --- Constants ---
-const PageName = "Accounts";
+const PageName = "Transactions";
 const api = getApiUrl();
 
 // --- Main Component ---
-export default function App(props: any) {
+export default function TransactionsPage(props: any) {
   let [settings, setSettings] = useState({
     lang: "",
     theme: "",
@@ -69,7 +76,7 @@ export default function App(props: any) {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allAccountsData, setAllAccountsData] = useState<any>([]);
+  const [allTransactionsData, setAllTransactionsData] = useState<any>([]);
   const [oldData, setOldData] = useState<any>([]);
   const [LangLoading, setLangloading] = useState(true);
   const [Loading, setLoading] = useState(true);
@@ -98,7 +105,7 @@ export default function App(props: any) {
   }, [window.innerWidth]);
 
   // --- set Language ---
-  const locale = settings.lang;
+  const locale = settings.lang ? settings.lang : "en";
   const [t, setT] = useState(() => (key: any) => key);
   useEffect(() => {
     setLangloading(true);
@@ -114,71 +121,21 @@ export default function App(props: any) {
   const fieldsConfig = useMemo(
     () => [
       {
-        fieldName: "accountNumber",
-        label: "Account Number",
-        type: "number",
-        rules: [{ required: false }],
-        readOnly: true,
+        fieldName: "date",
+        label: "Date",
+        type: "date",
+        rules: [{ required: true }],
         showTable: true,
-        showInput: false,
+        showInput: true,
         showDetails: true,
-        fieldWidth: "100%",
+        fieldWidth: "50%",
+        editable: true,
         columnLength: 20,
       },
       {
-        fieldName: "accountName",
-        label: "Account Name",
-        rules: [{ required: true }],
+        fieldName: "description",
+        label: "Description",
         type: "text",
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "100%",
-        editable: true,
-        columnLength: 20,
-      },
-      {
-        fieldName: "parentAccount",
-        label: "Parent Account",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Main", label: t("Main") },
-          ...allAccountsData.map((field: any) => ({
-            value: field.accountName,
-            label: field.accountName,
-          })),
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "100%",
-        editable: false,
-        columnLength: 20,
-      },
-      {
-        fieldName: "accountType",
-        label: "Account Type",
-        type: "select",
-        rules: [{ required: true }],
-        options: [
-          { value: "Assets", label: t("Assets") },
-          { value: "Liabilities", label: t("Liabilities") },
-          { value: "Equity", label: t("Equity") },
-          { value: "Revenue", label: t("Revenue") },
-          { value: "Expenses", label: t("Expenses") },
-        ],
-        showTable: true,
-        showInput: true,
-        showDetails: true,
-        fieldWidth: "50%",
-        editable: true,
-        columnLength: 20,
-      },
-      {
-        fieldName: "balance",
-        label: "Balance",
-        type: "number",
         rules: [{ required: false }],
         showTable: true,
         showInput: true,
@@ -188,23 +145,58 @@ export default function App(props: any) {
         columnLength: 20,
       },
       {
-        fieldName: "notes",
-        label: "Notes",
-        type: "text area",
-        rules: [{ required: false }],
+        fieldName: "entries",
+        label: "Entries",
+        type: "multi-fields",
+        fields: [
+          {
+            fieldName: "account",
+            label: "Account",
+            type: "text",
+            rules: [{ required: true }],
+            fieldWidth: "50%",
+          },
+          {
+            fieldName: "debit",
+            label: "Debit",
+            type: "number",
+            rules: [{ required: true }],
+            fieldWidth: "25%",
+          },
+          {
+            fieldName: "credit",
+            label: "Credit",
+            type: "number",
+            rules: [{ required: true }],
+            fieldWidth: "25%",
+          },
+          {
+            fieldName: "description",
+            label: "Description",
+            type: "text area",
+            rules: [{ required: false }],
+            fieldWidth: "100%",
+          },
+          {
+            fieldName: "costCenter",
+            label: "Cost Center",
+            type: "text",
+            rules: [{ required: false }],
+            fieldWidth: "50%",
+          },
+        ],
         showTable: true,
         showInput: true,
         showDetails: true,
         fieldWidth: "100%",
         editable: true,
-        columnLength: 20,
       },
     ],
-    [allAccountsData]
+    [t]
   );
 
-  // --- Initial Account Data State ---
-  const [accountData, setAccountData] = useState(() => {
+  // --- Initial Cost Center Data State ---
+  const [transactionData, setTransactionData] = useState(() => {
     const initialData: any = {};
     fieldsConfig.forEach((field) => {
       initialData[field.fieldName] = "";
@@ -212,20 +204,20 @@ export default function App(props: any) {
     return initialData;
   });
 
-  // --- to access last accountData value from inside useEffect ---
-  const accountDataRef = useRef(accountData);
+  // --- to access last transactionData value from inside useEffect ---
+  const transactionDataRef = useRef(transactionData);
 
-  // Update the ref whenever accountData changes
+  // Update the ref whenever transactionData changes
   useEffect(() => {
-    accountDataRef.current = accountData;
-  }, [accountData]);
+    transactionDataRef.current = transactionData;
+  }, [transactionData]);
 
   // --- (Fetch Data, Settings, Permissions) ---
   useEffect(() => {
     getSettings(userName).then((value) => {
       setSettings(value);
     });
-    getRules(userName, PageName.toLowerCase()).then((value) => {
+    getRules(userName, PageName.replace(/\s+/g, "").toLowerCase()).then((value) => {
       setUserPermissions(value);
     });
   }, [userName, PageName]);
@@ -276,34 +268,34 @@ export default function App(props: any) {
             onDelete={remove}
             userPermissions={userPermissions}
             isMobile={isMobile}
-            label={record.accountName}
+            label={record.name}
             locale={locale}
           />
         ),
       },
     ],
-    [fieldsConfig, remove, setAccountData, showModal]
+    [fieldsConfig, remove, setTransactionData, showModal]
   );
 
   // --- Filtered Data (useMemo) ---
   const filteredData = useMemo(() => {
     const searchTextLower = searchText.toLowerCase();
-    return allAccountsData.filter((account: any) => {
+    return allTransactionsData.filter((transaction: any) => {
       return fieldsConfig.some((field) =>
-        String(account[field.fieldName]).toLowerCase().includes(searchTextLower)
+        String(transaction[field.fieldName]).toLowerCase().includes(searchTextLower)
       );
     });
-  }, [allAccountsData, fieldsConfig, searchText]);
+  }, [allTransactionsData, fieldsConfig, searchText]);
 
   // --- Data Fetching Function ---
   async function getData(refresh?: boolean) {
     setLoading(true);
     try {
-      const response = await Axios.get(`${api}/accounts`);
-      setAllAccountsData(response.data);
+      const response = await Axios.get(`${api}/transactions`);
+      setAllTransactionsData(response.data);
     } catch (error) {
       setErrors({ ...Errors, connectionError: error });
-      console.error("Error fetching accounts:", error);
+      console.error("Error fetching cost centers:", error);
     } finally {
       setLoading(false);
       setCookies("loading", false);
@@ -317,19 +309,19 @@ export default function App(props: any) {
     }
   }
 
-  // --- Save Account Function ---
+  // --- Save Cost Center Function ---
   async function save() {
     setErrors({ ...Errors, saveErrors: "" });
-    const { _id, ...rest } = accountData; //to  send data without _id
+    const { _id, ...rest } = transactionData; //to  send data without _id
 
-    const response = await Axios.post(`${api}/accounts`, {
+    const response = await Axios.post(`${api}/transactions`, {
       ...rest,
       user: userName,
     });
 
     if (response.data.message === "Saved!") {
       getData();
-      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + accountData.accountName);
+      saveLog(t("Add") + " " + t(PageName.slice(0, -1)) + ": " + transactionData.name);
       toast.remove();
       toast.success(t(response.data.message), {
         position: "top-center",
@@ -341,12 +333,20 @@ export default function App(props: any) {
     }
   }
 
-  // --- Update Account Function ---
+  // --- Update Cost Center Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
     const updateData = fieldsConfig.reduce((acc: any, field) => {
-      acc[field.fieldName] = form.getFieldValue(field.fieldName);
+      // Check if the field type is date
+      if (field.type === "date" && form.getFieldValue(field.fieldName)) {
+        const parsedDate = dayjs(form.getFieldValue(field.fieldName)).format(
+          "YYYY-MM-DD"
+        ); // Strict parsing
+        acc[field.fieldName] = parsedDate;
+      } else {
+        acc[field.fieldName] = form.getFieldValue(field.fieldName);
+      }
       return acc;
     }, {});
 
@@ -362,10 +362,9 @@ export default function App(props: any) {
       });
       return;
     }
-    //
 
-    const response = await Axios.put(`${api}/accounts`, {
-      _id: accountData._id,
+    const response = await Axios.put(`${api}/transactions`, {
+      _id: transactionData._id,
       ...updateData,
     });
 
@@ -375,7 +374,7 @@ export default function App(props: any) {
       toast.success(t(response.data.message), {
         position: "top-center",
       });
-      saveLog(t("update") + " " + t("account") + ": " + accountData.accountName);
+      saveLog(t("update") + " " + t("cost center") + ": " + transactionData.name);
       setEdit(false);
       return true;
     } else {
@@ -384,12 +383,12 @@ export default function App(props: any) {
     }
   }
 
-  // --- Remove Account Function ---
+  // --- Remove Cost Center Function ---
   async function remove(id: string) {
-    Axios.delete(`${api}/accounts/${id}`)
+    Axios.delete(`${api}/transactions/${id}`)
       .then((res) => {
-        saveLog(t("remove") + " " + t("account") + ": " + accountData.accountName);
-        toast.success(t("Account") + " " + t("removed successfully."));
+        saveLog(t("remove") + " " + t("cost center") + ": " + transactionData.name);
+        toast.success(t("Cost Center") + " " + t("removed successfully."));
         getData();
       })
       .catch((error) => {
@@ -407,21 +406,13 @@ export default function App(props: any) {
     setErrors({ ...Errors, saveErrors: "" });
     setErrors("");
     setIsModalOpen(true);
-
-    if (!edit) {
-      // clear last parentAccount to fix account Number generat
-      setAccountData((prevData: any) => ({
-        ...prevData,
-        parentAccount: "",
-      }));
-    }
   }
 
   async function handleOk() {
     if (!edit) {
       if (await save()) {
         setIsModalOpen(false);
-        setAccountData(""); //clear accountData
+        setTransactionData(""); //clear transactionData
         form.resetFields(); //reset form fields
       }
     } else {
@@ -435,34 +426,16 @@ export default function App(props: any) {
   function handleCancel() {
     setIsModalOpen(false);
     setEdit(false);
-    setAccountData(""); //clear accountData
+    setTransactionData(""); //clear transactionData
     form.resetFields(); //reset form fields
   }
-
-  // --- Generate Account Number Effect Hook ---
-  useEffect(() => {
-    if (isModalOpen) {
-      getData();
-      const fetchAndGenerateAccountNumber = async () => {
-        if (accountData.parentAccount != "") {
-          const newAccountNumber = await generateAccountNumber(accountData.parentAccount);
-          setAccountData((prevData: any) => ({
-            ...prevData,
-            accountNumber: newAccountNumber,
-          }));
-        }
-      };
-
-      fetchAndGenerateAccountNumber();
-    }
-  }, [accountData.parentAccount]);
 
   // --- Set Form Field Value Effect Hook ---
   useEffect(() => {
     form.setFieldsValue({
-      accountNumber: accountData.accountNumber,
+      name: transactionData.name,
     });
-  }, [accountData.accountNumber]);
+  }, [transactionData.name]);
 
   // --- Validation Messages ---
   const validateMessages = {
@@ -477,60 +450,66 @@ export default function App(props: any) {
   };
 
   const handleEdit = (record: any) => {
-    setOldData(record);
-    form.setFieldsValue(
-      fieldsConfig.reduce((acc: any, field) => {
-        acc[field.fieldName] = record[field.fieldName];
+    if (userPermissions.Edit === 1) {
+      setOldData(record);
+
+      // Format date fields to "YYYY-MM-DD"
+      const formattedFields = fieldsConfig.reduce((acc: any, field) => {
+        const value = record[field.fieldName];
+
+        // Check if the field type is date
+        if (field.type === "date" && value) {
+          const parsedDate = dayjs(value); // Strict parsing
+          acc[field.fieldName] = parsedDate;
+        } else {
+          acc[field.fieldName] = value;
+        }
+
         return acc;
-      }, {})
-    );
-    setEdit(true);
-    showModal();
+      }, {});
+
+      form.setFieldsValue(formattedFields);
+      setEdit(true);
+      showModal();
+    }
   };
-
-  // --- Build Tree Data Function ---
-  function buildTreeData(data: any) {
-    const sortedData = data.sort((a: any, b: any) =>
-      a.accountNumber.localeCompare(b.accountNumber)
-    );
-
-    const map: any = {};
-    const treeData: any[] = [];
-
-    sortedData.forEach((item: any) => {
-      map[item.accountName] = {
-        key: item._id,
-        title: `${item.accountNumber} - ${item.accountName}`,
-        children: [],
-      };
-    });
-
-    sortedData.forEach((item: any) => {
-      if (item.parentAccount === "Main") {
-        treeData.push(map[item.accountName]);
-      } else if (map[item.parentAccount]) {
-        map[item.parentAccount].children.push(map[item.accountName]);
-      }
-    });
-
-    return treeData;
-  }
-
-  // --- Handle Tree Select Function ---
-  const handleSelect = (selectedKeys: any, { node }: { node: any }) => {
-    setSearchText(`${node.title.split(" - ")[1]}`);
-  };
-
-  // --- Tree Data (useMemo) ---
-  const treeData = useMemo(() => buildTreeData(allAccountsData), [allAccountsData]);
 
   const handleRowClick = (record: any) => {
-    setAccountData(record);
+    setTransactionData(record);
   };
 
   const handleRowDoubleClick = (record: any) => {
     handleEdit(record);
   };
+
+  // --- Input Change Handler ---
+  const handleInputChange = useCallback(
+    (field: any) => (e: any) => {
+      let value;
+
+      if (field === "date") {
+        value = dayjs(e).format("YYYY-MM-DD");
+      } else {
+        if (e && e.target) {
+          if (e.target.type === "checkbox") {
+            value = e.target.checked;
+          } else {
+            value = e.target.value;
+          }
+        } else if (typeof e === "object" && e?.hasOwnProperty("value")) {
+          value = e.value;
+        } else {
+          value = e;
+        }
+      }
+
+      setTransactionData((prevData: any) => ({
+        ...prevData,
+        [field]: value,
+      }));
+    },
+    []
+  );
 
   // --- Render ---
   return (
@@ -541,19 +520,99 @@ export default function App(props: any) {
         </div>
         {userPermissions.View == 1 && (
           <>
-            <ModalForm
-              isModalOpen={isModalOpen} // Control modal visibility
-              handleOk={handleOk} // Handle form submission
-              handleCancel={handleCancel} // Handle modal close
-              setPageData={setAccountData} // Update account data
-              form={form} // Ant Design form instance
-              fieldsConfig={fieldsConfig} // Form fields configuration
-              pageData={accountData} // Current form data
-              errors={Errors} // Error messages (if any)
-              modalTitle={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))} // Modal title
-              edit={edit} // Edit mode flag
-              locale={locale} // Current locale
-            />
+            <Modal
+              title={(edit ? t("Edit") : t("Add")) + " " + t(PageName.slice(0, -1))}
+              open={isModalOpen}
+              onCancel={handleCancel}
+              width={700}
+              maskClosable={false}
+              footer={null} // Remove default footer
+            >
+              <Divider />
+                <Form
+                  form={form}
+                  layout='vertical'
+                  style={{
+                    maxWidth: 700,
+                    textAlign: locale === "ar" ? "right" : "left",
+                  }}
+                  onFinish={handleOk}
+                  validateMessages={validateMessages}>
+                  <Row>
+                    <Col key='date' xs={{ flex: "50%" }} style={{ padding: 5 }}>
+                      <Form.Item
+                        key='date'
+                        label={t("Date")}
+                        name='date'
+                        rules={[{ required: true }]}>
+                        <DatePicker
+                          format='YYYY-MM-DD'
+                          placeholder={t("Select Date")}
+                          value={
+                            transactionData.date
+                              ? dayjs(transactionData.date, "YYYY-MM-DD", true)
+                              : dayjs()
+                          }
+                          onChange={handleInputChange("date")}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col key='description' xs={{ flex: "50%" }} style={{ padding: 5 }}>
+                      <Form.Item
+                        key='description'
+                        label={t("Description")}
+                        name='description'
+                        rules={[{ required: true }]}>
+                        <Input
+                          value={transactionData.description}
+                          onChange={handleInputChange("description")}
+                          type={"text"}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col key='entries' xs={{ flex: "100%" }} style={{ padding: 5 }}>
+                      <Divider>{t("Entries")}</Divider>
+                      <Table
+                        columns={[
+                          { title: t("Account"), dataIndex: "account" },
+                          { title: t("Dibet"), dataIndex: "dibet" },
+                          { title: t("Credit"), dataIndex: "credit" },
+                          { title: t("Cost Center"), dataIndex: "costCenter" },
+                        ]}
+                        dataSource={transactionData.entries}
+                        size='small'
+                      />
+                    </Col>
+                  </Row>
+
+                  {Errors.saveErrors && (
+                    <Alert
+                      closable
+                      description={Errors.saveErrors}
+                      type='error'
+                      showIcon
+                    />
+                  )}
+                  <Divider />
+                  <div style={{ textAlign: "right", direction: "rtl" }}>
+                    <Button
+                      type='primary'
+                      shape='round'
+                      htmlType='submit'
+                      icon={<SaveOutlined />}>
+                      {t("Save")}
+                    </Button>
+                    <Button
+                      shape='round'
+                      icon={<CloseOutlined />}
+                      onClick={handleCancel}
+                      style={{ marginRight: 8 }}>
+                      {t("Cancel")}
+                    </Button>
+                  </div>
+                </Form>
+              
+            </Modal>
             <Card
               title={t(PageName)}
               style={{
@@ -665,10 +724,6 @@ export default function App(props: any) {
               }>
               {!Errors.connectionError && (
                 <>
-                  <Card>
-                    <Tree onSelect={handleSelect} treeData={treeData} />
-                  </Card>
-                  <Divider />
                   <Input.Search
                     placeholder={t("Search...")}
                     onChange={(e) => setSearchText(e.target.value)}
@@ -676,7 +731,6 @@ export default function App(props: any) {
                     allowClear
                     value={searchText}
                     ref={searchRef}
-                    //onKeyDown={handleSearchKeyDown}
                   />
                   <div ref={tableRef} style={{ overflowX: "auto" }}>
                     <ReusableTable
@@ -684,44 +738,12 @@ export default function App(props: any) {
                       columns={columns}
                       data={filteredData}
                       loading={Loading}
-                      selectedId={accountData._id}
-                      theme={settings.theme}
+                      selectedId={transactionData._id}
+                      theme={settings.theme ? settings.theme : "light"}
                       onRowClick={handleRowClick}
                       onRowDoubleClick={handleRowDoubleClick}
                     />
                   </div>
-
-                  {/* <div ref={tableRef} style={{ overflowX: "auto" }}>
-                    <Table
-                      id='print-table'
-                      size='small'
-                      columns={columns.map((col: any) => ({
-                        ...col,
-                        ellipsis: true, // Ensure text doesn't overflow
-                      }))}
-                      dataSource={filteredData}
-                      loading={Loading}
-                      pagination={false}
-                      rowKey={(record) => record._id}
-                      scroll={{ x: "max-content" }}
-                      rowClassName={(record) =>
-                        record._id === accountData._id
-                          ? settings.theme === "dark"
-                            ? "selected-row-dark"
-                            : "selected-row-light"
-                          : ""
-                      } // Add a class to the selected row
-                      onRow={(record) => ({
-                        onClick: () => {
-                          setAccountData(record);
-                        },
-                        onDoubleClick: () => {
-                          handleEdit(record);
-                        },
-                        style: { cursor: "pointer" },
-                      })}
-                    />
-                  </div> */}
                 </>
               )}
               {Errors.connectionError && (
@@ -734,11 +756,11 @@ export default function App(props: any) {
 
             <br />
 
-            {accountData._id && !isModalOpen && (
+            {transactionData._id && !isModalOpen && (
               <div ref={detailsRef}>
                 <DetailsCard
                   fieldsConfig={fieldsConfig}
-                  recordData={accountData}
+                  recordData={transactionData}
                   locale={locale}
                   pageName={t(PageName)}
                   userPermissions={userPermissions}
@@ -748,22 +770,22 @@ export default function App(props: any) {
           </>
         )}
       </Card>
-      
+
       <KeyboardShortcuts
+        userPermissions={userPermissions}
         onPrint={() => handlePrint(tableRef, t(PageName), 12, locale)}
         onSearch={() => searchRef.current?.focus()}
         onRefresh={() => getData(true)}
         onNew={showModal}
         onDelete={() => {
           if (userPermissions.Remove == 1) {
-            const button = document.getElementById(accountDataRef.current._id);
+            const button = document.getElementById(transactionDataRef.current._id);
             if (button) {
               button.click();
             }
           }
         }}
         locale={locale}
-        userPermissions={userPermissions}
       />
     </div>
   );

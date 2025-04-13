@@ -38,7 +38,8 @@ export default async function initTranslations(
   i18nInstance.t = (key, options) => {
     // Convert the key to lowercase before passing it to the original `t` function
     const lowercaseKey = typeof key === 'string' ? key.toLowerCase() : key;
-    return originalT.call(i18nInstance, lowercaseKey, options);
+    const newValue = originalT.call(i18nInstance, lowercaseKey, options); // Get the translated value
+    return lowercaseKey === newValue ? key : newValue;
   };
 
   return {

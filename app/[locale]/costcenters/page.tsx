@@ -338,12 +338,12 @@ export default function CostCentersPage(props: any) {
       return false;
     }
   }
-
+ 
   // --- Update Cost Center Function ---
   async function update() {
     setErrors({ ...Errors, saveErrors: "" });
 
-    
+
     const updateData = fieldsConfig.reduce((acc: any, field) => {
       // Check if the field type is date
       if (field.type === "date" && form.getFieldValue(field.fieldName)) {
@@ -490,7 +490,7 @@ export default function CostCentersPage(props: any) {
   // --- Render ---
   return (
     <div className='responsive-card-wrapper'>
-      <Card style={{ border: 0 }} loading={LangLoading}>
+      <Card style={{ backgroundColor: "#00000000", border: 0 }} loading={LangLoading}>
         <div>
           <Toaster />
         </div>
